@@ -7,7 +7,7 @@
 atlas_plot_palette(atlas)
 }
 \arguments{
-\item{atlas}{A \code{ggseg_atlas} object.}
+\item{atlas}{a \code{ggseg_atlas} object}
 }
 \value{
 Named character vector of colours keyed by label.

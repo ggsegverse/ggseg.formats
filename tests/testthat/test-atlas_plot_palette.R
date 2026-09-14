@@ -130,7 +130,7 @@ describe("atlas_plot_palette()", {
     a <- suppressWarnings(set_atlas_palette(aseg(), uniform_palette(aseg())))
     cols <- suppressWarnings(atlas_plot_palette(a))
     context <- setdiff(names(cols), a$core$label)
-    expect_true(length(context) > 0L)
+    expect_gt(length(context), 0L)
     expect_true(all(cols[context] == context_fill_colour))
   })
 
