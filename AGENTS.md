@@ -170,8 +170,7 @@ the no-sf path. The package and its full test suite must pass with `sf`
 ## CI gates (all must be green before merge)
 
 - **R-CMD-check** — multi-OS / multi-R matrix.
-- **code-quality** — `air format --check` +
-  [`lintr::lint_package()`](https://lintr.r-lib.org/reference/lint.html),
+- **code-quality** — `air format --check` + `lintr::lint_package()`,
   **plus a `goodpractice` hard gate** running the union of all
   goodpractice and tidyverse checks (only
   `lintr_strings_as_factors_linter` is excluded; the package Depends on
@@ -204,9 +203,7 @@ Treat “merged with green CI” as done — not “code written”.
 - Local pre-PR loop: `air format .` →
   [`devtools::document()`](https://devtools.r-lib.org/reference/document.html)
   → [`devtools::test()`](https://devtools.r-lib.org/reference/test.html)
-  →
-  [`lintr::lint_package()`](https://lintr.r-lib.org/reference/lint.html)
-  →
+  → `lintr::lint_package()` →
   [`devtools::check()`](https://devtools.r-lib.org/reference/check.html).
   Fix the formatter/linter before committing; do not suppress lints to
   paper over a failure.

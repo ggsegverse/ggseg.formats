@@ -107,6 +107,8 @@ Query atlas contents without reaching into slots directly.
   : Get atlas meshes for 3D rendering
 - [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md)
   : Get the palette of an atlas
+- [`atlas_plot_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_plot_palette.md)
+  : Get a plottable palette for an atlas
 - [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md)
   : Get atlas polygons for 2D rendering
 - [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)

@@ -1,7 +1,6 @@
 # Reorder the structures of an atlas
 
-Moves structures within an atlas's geometry, the way
-[`dplyr::relocate()`](https://dplyr.tidyverse.org/reference/relocate.html)
+Moves structures within an atlas's geometry, the way `dplyr::relocate()`
 moves columns. Geometry rows are drawn in the order they appear, so this
 is what decides which structure is painted over which where two overlap.
 
@@ -49,11 +48,9 @@ The `ggseg_atlas`, with its geometry rows in the new order.
 ## Details
 
 **Later rows are drawn on top.** With neither `.before` nor `.after`,
-the structures move to the front, matching
-[`dplyr::relocate()`](https://dplyr.tidyverse.org/reference/relocate.html),
-which means they are drawn *first*, and so end up *behind* everything
-else. To bring a structure to the front visually, move it after the last
-one.
+the structures move to the front, matching `dplyr::relocate()`, which
+means they are drawn *first*, and so end up *behind* everything else. To
+bring a structure to the front visually, move it after the last one.
 
 The order is a property of the structure, not of a single view: an atlas
 holds one geometry row per structure with its views nested inside, so a

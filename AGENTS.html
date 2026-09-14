@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9004</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -136,7 +136,7 @@
 <ul><li>
 <strong>R-CMD-check</strong> — multi-OS / multi-R matrix.</li>
 <li>
-<strong>code-quality</strong> — <code>air format --check</code> + <code><a href="https://lintr.r-lib.org/reference/lint.html" class="external-link">lintr::lint_package()</a></code>, <strong>plus a <code>goodpractice</code> hard gate</strong> running the union of all goodpractice and tidyverse checks (only <code>lintr_strings_as_factors_linter</code> is excluded; the package Depends on R ≥ 4.1.0 where <code>stringsAsFactors = FALSE</code> already).</li>
+<strong>code-quality</strong> — <code>air format --check</code> + <code>lintr::lint_package()</code>, <strong>plus a <code>goodpractice</code> hard gate</strong> running the union of all goodpractice and tidyverse checks (only <code>lintr_strings_as_factors_linter</code> is excluded; the package Depends on R ≥ 4.1.0 where <code>stringsAsFactors = FALSE</code> already).</li>
 <li>
 <strong>test-coverage</strong> — must stay at 100%.</li>
 <li>
@@ -156,7 +156,7 @@
 <strong>Feature branches only</strong> — never commit to <code>main</code> unless explicitly told.</li>
 <li>Stage paths explicitly; never <code>git add .</code>/<code>-A</code> (pre-existing WIP must not be swept in).</li>
 <li>Open a PR with a Summary and Test Plan, and shepherd it to green CI.</li>
-<li>Local pre-PR loop: <code>air format .</code> → <code><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">devtools::document()</a></code> → <code><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">devtools::test()</a></code> → <code><a href="https://lintr.r-lib.org/reference/lint.html" class="external-link">lintr::lint_package()</a></code> → <code><a href="https://devtools.r-lib.org/reference/check.html" class="external-link">devtools::check()</a></code>. Fix the formatter/linter before committing; do not suppress lints to paper over a failure.</li>
+<li>Local pre-PR loop: <code>air format .</code> → <code><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">devtools::document()</a></code> → <code><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">devtools::test()</a></code> → <code>lintr::lint_package()</code> → <code><a href="https://devtools.r-lib.org/reference/check.html" class="external-link">devtools::check()</a></code>. Fix the formatter/linter before committing; do not suppress lints to paper over a failure.</li>
 </ul></div>
 </div>
 

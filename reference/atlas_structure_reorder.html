@@ -19,7 +19,7 @@ brain can still overlap on the page."><meta property="og:image" content="https:/
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9004</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,7 +56,7 @@ brain can still overlap on the page."><meta property="og:image" content="https:/
     </div>
 
     <div class="ref-description section level2">
-    <p>Moves structures within an atlas's geometry, the way <code><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">dplyr::relocate()</a></code>
+    <p>Moves structures within an atlas's geometry, the way <code>dplyr::relocate()</code>
 moves columns. Geometry rows are drawn in the order they appear, so this
 is what decides which structure is painted over which where two overlap.</p>
 <p>Overlap is common in subcortical atlases: a slab is a thick slice of the
@@ -106,7 +106,7 @@ name; <code>"label"</code> (the default) or <code>"region"</code>.</p></dd>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><strong>Later rows are drawn on top.</strong> With neither <code>.before</code> nor <code>.after</code>, the
-structures move to the front, matching <code><a href="https://dplyr.tidyverse.org/reference/relocate.html" class="external-link">dplyr::relocate()</a></code>, which means
+structures move to the front, matching <code>dplyr::relocate()</code>, which means
 they are drawn <em>first</em>, and so end up <em>behind</em> everything else. To bring a
 structure to the front visually, move it after the last one.</p>
 <p>The order is a property of the structure, not of a single view: an atlas
