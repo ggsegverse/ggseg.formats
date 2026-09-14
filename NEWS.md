@@ -1,5 +1,25 @@
 # ggseg.formats
 
+## ggseg.formats 0.0.4.9005 (development)
+
+- `plot()` on an atlas whose palette cannot tell its regions apart now falls
+  back to automatically assigned, distinguishable colours instead of drawing
+  the atlas faithfully as one solid silhouette. Several atlases are built from
+  colour lookup tables that give every region `0 0 0`, so they rendered as a
+  black brain in which no parcel could be told from its neighbour, and in the
+  subcortical ones the grey `cortex_` backdrop went black too and read as a
+  region. A palette counts as unusable only when every one of the atlas's
+  regions resolves to a single colour: a palette that is merely dark, or an
+  atlas with a single region, is left alone. Contextual geometry -- the
+  `cortex_` silhouette and the `unknown` medial wall, whether or not the atlas
+  keeps them in `core` -- stays its conventional grey in the fallback, so
+  backdrop is never mistaken for a parcel. Falling back warns and names the
+  atlas, because the real fix belongs in the atlas's lookup table.
+
+- New `atlas_plot_palette()` exposes that decision, returning the atlas palette
+  when it is usable and the fallback when it is not. Downstream renderers
+  should read the palette through it rather than reaching for `atlas$palette`.
+
 ## ggseg.formats 0.0.4.9004 (development)
 
 - New `atlas_structure_reorder()` moves structures within an atlas's geometry

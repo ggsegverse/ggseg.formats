@@ -205,7 +205,11 @@ as.data.frame.ggseg_atlas <- function(x, ...) {
 plot.ggseg_atlas <- function(x, ...) {
   flat <- polygons_unnest(atlas_polygons(x))
   flat <- order_context_behind(flat, x$core$label)
-  fill_colors <- resolve_fill_colors(flat$label, x$palette, x$core$label)
+  fill_colors <- resolve_fill_colors(
+    flat$label,
+    atlas_plot_palette(x),
+    x$core$label
+  )
   dots <- list(...)
 
   # One panel per spatially separate piece, arranged in a near-square grid so
@@ -415,7 +419,9 @@ infer_cortical_hemi <- function(result) {
 #' region of the atlas, and that is a property of the geometry, not of the
 #' palette. Atlas creation returns no palette when it was given no colours, so
 #' without this the generated colours would be spread across the backdrop too
-#' and it would compete with the regions it sits behind.
+#' and it would compete with the regions it sits behind. The generated branch
+#' additionally greys the backdrop names the pipelines reserve (`cortex_*`,
+#' `unknown`), which some atlases keep inside `core`.
 #'
 #' @param labels Character vector of region labels (deduplicated internally).
 #' @param palette Optional named character vector of colours keyed by label.
@@ -435,18 +441,13 @@ resolve_fill_colors <- function(labels, palette = NULL, core_labels = NULL) {
   if (!is.null(palette)) {
     vals <- palette[labels]
     matched <- !is.na(vals) & !is_context
-    return(stats::setNames(ifelse(matched, vals, "#CCCCCC"), labels))
+    return(stats::setNames(
+      ifelse(matched, vals, context_fill_colour),
+      labels
+    ))
   }
 
-  region <- labels[!is_context]
-  n <- length(region)
-  cols <- stats::setNames(rep("#CCCCCC", length(labels)), labels)
-  cols[region] <- grDevices::hcl(
-    h = seq(0, 360, length.out = n + 1L)[seq_len(n)],
-    c = 80,
-    l = 65
-  )
-  cols
+  fallback_palette(labels, labels[!is_context])
 }
 
 #' Draw a single atlas polygon piece on the current device
