@@ -1,5 +1,15 @@
 # ggseg.formats
 
+## ggseg.formats 0.0.4.9006 (development)
+
+- `atlas_region_rename()` gains `match_on`, bringing it in line with the rest
+  of the `atlas_region_*` family. It still only ever writes to `region`;
+  `match_on` chooses the column the pattern is matched and substituted
+  against. The default `"region"` is the existing behaviour, while `"label"`
+  derives display names from the source identifiers, so
+  `atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")` turns label
+  `ctx-lh-superiorfrontal` into region `superiorfrontal`.
+
 ## ggseg.formats 0.0.4.9005 (development)
 
 - `plot()` on an atlas whose palette cannot tell its regions apart now falls

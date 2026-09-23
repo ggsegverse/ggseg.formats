@@ -39,7 +39,12 @@ atlas_region_op(
 
 atlas_context_remove(atlas)
 
-atlas_region_rename(atlas, pattern, replacement)
+atlas_region_rename(
+  atlas,
+  pattern,
+  replacement,
+  match_on = c("region", "label")
+)
 
 atlas_region_keep(atlas, pattern, match_on = c("region", "label"))
 
@@ -197,8 +202,14 @@ via \code{\link[=atlas_view_gather]{atlas_view_gather()}} so the plot focuses ti
 labelled regions.
 
 \item \code{atlas_region_rename()}: Rename regions matching a pattern. Only
-affects the \code{region} column, not \code{label}. If \code{replacement} is a function,
-it receives matched names and returns new names.
+ever writes to the \code{region} column, never to \code{label}. \code{match_on} chooses
+which column the pattern is matched and substituted against: the default
+\code{"region"} rewrites the display names in place, while \code{"label"} derives
+them from the source identifiers, so
+\code{atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")} turns
+label \code{ctx-lh-superiorfrontal} into region \code{superiorfrontal}. If
+\code{replacement} is a function, it receives the matched values of that
+column and returns the new region names.
 
 \item \code{atlas_region_keep()}: Keep only matching regions. Non-matching
 regions are removed from core, palette, and 3D data but sf geometry
