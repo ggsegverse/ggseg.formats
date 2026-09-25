@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9005</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9006</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,12 @@
 <span></span>
 <span><span class="fu">atlas_context_remove</span><span class="op">(</span><span class="va">atlas</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">atlas_region_rename</span><span class="op">(</span><span class="va">atlas</span>, <span class="va">pattern</span>, <span class="va">replacement</span><span class="op">)</span></span>
+<span><span class="fu">atlas_region_rename</span><span class="op">(</span></span>
+<span>  <span class="va">atlas</span>,</span>
+<span>  <span class="va">pattern</span>,</span>
+<span>  <span class="va">replacement</span>,</span>
+<span>  match_on <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region"</span>, <span class="st">"label"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">atlas_region_keep</span><span class="op">(</span><span class="va">atlas</span>, <span class="va">pattern</span>, match_on <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"region"</span>, <span class="st">"label"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -258,8 +263,14 @@ via <code>atlas_region_contextual()</code> plus pipeline-generated outlines
 via <code>atlas_view_gather()</code> so the plot focuses tightly on the
 labelled regions.</p></li>
 <li><p><code>atlas_region_rename()</code>: Rename regions matching a pattern. Only
-affects the <code>region</code> column, not <code>label</code>. If <code>replacement</code> is a function,
-it receives matched names and returns new names.</p></li>
+ever writes to the <code>region</code> column, never to <code>label</code>. <code>match_on</code> chooses
+which column the pattern is matched and substituted against: the default
+<code>"region"</code> rewrites the display names in place, while <code>"label"</code> derives
+them from the source identifiers, so
+<code>atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")</code> turns
+label <code>ctx-lh-superiorfrontal</code> into region <code>superiorfrontal</code>. If
+<code>replacement</code> is a function, it receives the matched values of that
+column and returns the new region names.</p></li>
 <li><p><code>atlas_region_keep()</code>: Keep only matching regions. Non-matching
 regions are removed from core, palette, and 3D data but sf geometry
 is preserved for surface continuity.</p></li>

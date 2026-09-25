@@ -26,7 +26,12 @@ atlas_region_op(
 
 atlas_context_remove(atlas)
 
-atlas_region_rename(atlas, pattern, replacement)
+atlas_region_rename(
+  atlas,
+  pattern,
+  replacement,
+  match_on = c("region", "label")
+)
 
 atlas_region_keep(atlas, pattern, match_on = c("region", "label"))
 
@@ -230,9 +235,15 @@ Modified `ggseg_atlas` object
   via `atlas_view_gather()` so the plot focuses tightly on the labelled
   regions.
 
-- `atlas_region_rename()`: Rename regions matching a pattern. Only
-  affects the `region` column, not `label`. If `replacement` is a
-  function, it receives matched names and returns new names.
+- `atlas_region_rename()`: Rename regions matching a pattern. Only ever
+  writes to the `region` column, never to `label`. `match_on` chooses
+  which column the pattern is matched and substituted against: the
+  default `"region"` rewrites the display names in place, while
+  `"label"` derives them from the source identifiers, so
+  `atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")` turns
+  label `ctx-lh-superiorfrontal` into region `superiorfrontal`. If
+  `replacement` is a function, it receives the matched values of that
+  column and returns the new region names.
 
 - `atlas_region_keep()`: Keep only matching regions. Non-matching
   regions are removed from core, palette, and 3D data but sf geometry is
