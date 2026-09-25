@@ -729,6 +729,40 @@ describe("atlas_region_rename", {
     result <- atlas_region_rename(atlas, "parietal", "PARIETAL")
     expect_true(is.na(result$core$region[1]))
   })
+
+  it("derives regions from labels when matching on label", {
+    atlas <- make_test_atlas()
+    result <- atlas_region_rename(atlas, "^lh_", "left ", match_on = "label")
+    lh <- grepl("^lh_", atlas$core$label)
+    expect_identical(
+      result$core$region[lh],
+      sub("^lh_", "left ", atlas$core$label[lh])
+    )
+  })
+
+  it("leaves regions whose label does not match", {
+    atlas <- make_test_atlas()
+    result <- atlas_region_rename(atlas, "^lh_", "left ", match_on = "label")
+    rh <- !grepl("^lh_", atlas$core$label)
+    expect_identical(result$core$region[rh], atlas$core$region[rh])
+  })
+
+  it("passes label values to a replacement function when matching on label", {
+    atlas <- make_test_atlas()
+    result <- atlas_region_rename(atlas, ".*", toupper, match_on = "label")
+    expect_identical(result$core$region, toupper(atlas$core$label))
+  })
+
+  it("never writes to label when matching on label", {
+    atlas <- make_test_atlas()
+    result <- atlas_region_rename(atlas, "^lh_", "", match_on = "label")
+    expect_identical(result$core$label, atlas$core$label)
+  })
+
+  it("rejects an unknown match_on", {
+    atlas <- make_test_atlas()
+    expect_error(atlas_region_rename(atlas, "frontal", "f", match_on = "nope"))
+  })
 })
 
 

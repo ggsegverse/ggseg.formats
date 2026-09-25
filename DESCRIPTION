@@ -1,6 +1,6 @@
 Package: ggseg.formats
 Title: Brain Atlas Data Structures for the 'ggsegverse' Ecosystem
-Version: 0.0.4.9005
+Version: 0.0.4.9006
 Authors@R:
     c(person("Athanasia Mo", "Mowinckel", , "a.m.mowinckel@psykologi.uio.no",
              role = c("aut", "cre"),

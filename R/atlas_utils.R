@@ -355,22 +355,36 @@ atlas_context_remove <- function(atlas) {
 
 
 #' @describeIn atlas_manipulation Rename regions matching a pattern. Only
-#'   affects the `region` column, not `label`. If `replacement` is a function,
-#'   it receives matched names and returns new names.
+#'   ever writes to the `region` column, never to `label`. `match_on` chooses
+#'   which column the pattern is matched and substituted against: the default
+#'   `"region"` rewrites the display names in place, while `"label"` derives
+#'   them from the source identifiers, so
+#'   `atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")` turns
+#'   label `ctx-lh-superiorfrontal` into region `superiorfrontal`. If
+#'   `replacement` is a function, it receives the matched values of that
+#'   column and returns the new region names.
 #' @export
 #' @family atlas manipulations
-atlas_region_rename <- function(atlas, pattern, replacement) {
+atlas_region_rename <- function(
+  atlas,
+  pattern,
+  replacement,
+  match_on = c("region", "label")
+) {
+  match_on <- match.arg(match_on)
+
   new_core <- atlas$core
-  match_mask <- grepl(pattern, new_core$region, ignore.case = TRUE)
-  match_mask[is.na(new_core$region)] <- FALSE
+  source_values <- new_core[[match_on]]
+  match_mask <- grepl(pattern, source_values, ignore.case = TRUE)
+  match_mask[is.na(source_values)] <- FALSE
 
   if (is.function(replacement)) {
-    new_core$region[match_mask] <- replacement(new_core$region[match_mask])
+    new_core$region[match_mask] <- replacement(source_values[match_mask])
   } else {
     new_core$region[match_mask] <- gsub(
       pattern,
       replacement,
-      new_core$region[match_mask],
+      source_values[match_mask],
       ignore.case = TRUE
     )
   }
