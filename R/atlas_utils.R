@@ -162,30 +162,6 @@ atlas_type.brain_atlas <- function(x) {
 #' @name atlas_manipulation
 #' @export
 #' @family atlas manipulations
-#' Warn that a pattern selected nothing
-#'
-#' The region verbs are pattern-driven, so a typo or a pattern written for a
-#' different parcellation selects nothing and the call does nothing. Silence
-#' there is indistinguishable from success, which is how dead
-#' `atlas_region_remove("corpuscallosum")` calls survived in published
-#' cerebellar documentation. `atlas_simplify()` in ggseg.extra has warned in
-#' the same situation for some time; this is the same courtesy.
-#' @noRd
-warn_no_region_match <- function(
-  pattern,
-  consequence,
-  call = rlang::caller_env()
-) {
-  cli::cli_warn(
-    c(
-      "No regions matched {.val {pattern}}.",
-      "i" = consequence
-    ),
-    call = call
-  )
-}
-
-
 atlas_region_remove <- function(
   atlas,
   pattern,
@@ -853,6 +829,30 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
 
 
 #' @keywords internal
+#' Warn that a pattern selected nothing
+#'
+#' The region verbs are pattern-driven, so a typo or a pattern written for a
+#' different parcellation selects nothing and the call does nothing. Silence
+#' there is indistinguishable from success, which is how dead
+#' `atlas_region_remove("corpuscallosum")` calls survived in published
+#' cerebellar documentation. `atlas_simplify()` in ggseg.extra has warned in
+#' the same situation for some time; this is the same courtesy.
+#' @noRd
+warn_no_region_match <- function(
+  pattern,
+  consequence,
+  call = rlang::caller_env()
+) {
+  cli::cli_warn(
+    c(
+      "No regions matched {.val {pattern}}.",
+      "i" = consequence
+    ),
+    call = call
+  )
+}
+
+
 #' @noRd
 get_uniq <- function(x, type) {
   type <- match.arg(type, c("label", "region"))
