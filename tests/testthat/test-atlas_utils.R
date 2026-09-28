@@ -1763,11 +1763,11 @@ describe("atlas_view_reorder with nonexistent views", {
 describe("atlas_region_remove with tract atlas", {
   it("removes matching regions from tract core and palette", {
     before <- tracula()
-    expect_true(any(grepl("cst", before$core$label)))
+    expect_true(any(grepl("cst", before$core$label, fixed = TRUE)))
 
     result <- atlas_region_remove(before, "cst", match_on = "label")
 
-    expect_false(any(grepl("cst", result$core$label)))
+    expect_false(any(grepl("cst", result$core$label, fixed = TRUE)))
     expect_lt(nrow(result$core), nrow(before$core))
     expect_s3_class(result$data, "ggseg_data_tract")
   })
@@ -1790,8 +1790,8 @@ describe("atlas_region_contextual with tract atlas", {
 
     result <- atlas_region_contextual(before, "cst", match_on = "label")
 
-    expect_false(any(grepl("cst", result$core$label)))
-    expect_true(any(grepl("cst", result$data$geom$label)))
+    expect_false(any(grepl("cst", result$core$label, fixed = TRUE)))
+    expect_true(any(grepl("cst", result$data$geom$label, fixed = TRUE)))
     expect_s3_class(result$data, "ggseg_data_tract")
   })
 })
@@ -1804,7 +1804,7 @@ describe("atlas_region_keep with tract atlas", {
     # Guard the vacuous pass: all() of nothing is TRUE, so a pattern that
     # matched nothing used to satisfy the assertion below on an empty atlas.
     expect_gt(nrow(result$core), 0L)
-    expect_true(all(grepl("cst", result$core$label)))
+    expect_true(all(grepl("cst", result$core$label, fixed = TRUE)))
     expect_s3_class(result$data, "ggseg_data_tract")
   })
 })

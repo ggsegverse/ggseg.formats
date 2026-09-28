@@ -5,7 +5,7 @@
 - `atlas_region_remove()`, `atlas_region_contextual()` and
   `atlas_region_keep()` warn when their pattern matches no region. They used
   to return the atlas unchanged and say nothing, so a pattern written for
-  another parcellation, or simply mistyped, did nothing quietly. Three such
+  another parcellation, or with a typo in it, did nothing quietly. Three such
   calls had been sitting in published ggseg.extra tutorials -- including
   `atlas_region_remove("corpuscallosum")` on a cerebellar atlas -- and one in
   this package's own test suite, where `atlas_region_keep()` emptied the atlas
