@@ -337,6 +337,49 @@ describe("guess_type", {
 
 # atlas_region_remove ----
 
+describe("the region verbs on a pattern that matches nothing", {
+  # A pattern written for another parcellation, or simply mistyped, used to
+  # do its nothing in silence.
+  it("says so rather than removing nothing quietly", {
+    atlas <- make_test_atlas()
+
+    expect_warning(
+      result <- atlas_region_remove(atlas, "no_such_region"),
+      "No regions matched"
+    )
+    expect_identical(result$core, atlas$core)
+  })
+
+  it("says so rather than making nothing contextual", {
+    atlas <- make_test_atlas()
+
+    expect_warning(
+      result <- atlas_region_contextual(atlas, "no_such_region"),
+      "No regions matched"
+    )
+    expect_identical(result$core, atlas$core)
+  })
+
+  it("warns that keeping nothing leaves the atlas empty", {
+    atlas <- make_test_atlas()
+
+    expect_warning(
+      result <- atlas_region_keep(atlas, "no_such_region"),
+      "no regions"
+    )
+    expect_identical(nrow(result$core), 0L)
+  })
+
+  it("stays silent when the pattern matches", {
+    atlas <- make_test_atlas()
+
+    expect_no_warning(atlas_region_remove(atlas, "parietal"))
+    expect_no_warning(atlas_region_contextual(atlas, "parietal"))
+    expect_no_warning(atlas_region_keep(atlas, "parietal"))
+  })
+})
+
+
 describe("atlas_region_remove", {
   it("removes matching regions from core, palette, sf, and vertices", {
     atlas <- make_test_atlas()
@@ -359,7 +402,10 @@ describe("atlas_region_remove", {
   it("preserves NA regions in core", {
     atlas <- make_test_atlas()
     atlas$core$region[1] <- NA
-    result <- atlas_region_remove(atlas, "nonexistent")
+    expect_warning(
+      result <- atlas_region_remove(atlas, "nonexistent"),
+      "No regions matched"
+    )
     expect_identical(nrow(result$core), 3L)
   })
 })
@@ -409,7 +455,10 @@ make_cerebellar_atlas <- function() {
 describe("cerebellar region ops preserve vertices + meshes", {
   it("atlas_region_remove keeps deep-nuclei meshes and cerebellar type", {
     cb <- make_cerebellar_atlas()
-    result <- atlas_region_remove(cb, "nonexistent")
+    expect_warning(
+      result <- atlas_region_remove(cb, "nonexistent"),
+      "No regions matched"
+    )
 
     expect_identical(atlas_type(result), "cerebellar")
     expect_s3_class(result$data, "ggseg_data_cerebellar")
@@ -480,8 +529,11 @@ describe("atlas_region_contextual", {
 
   it("respects ignore.case = FALSE", {
     atlas <- make_test_atlas()
-    result <- atlas_region_contextual(atlas, "FRONTAL", ignore.case = FALSE)
     # no region matches the upper-case pattern, so nothing is demoted
+    expect_warning(
+      result <- atlas_region_contextual(atlas, "FRONTAL", ignore.case = FALSE),
+      "No regions matched"
+    )
     expect_identical(nrow(result$core), nrow(atlas$core))
   })
 
@@ -1710,12 +1762,13 @@ describe("atlas_view_reorder with nonexistent views", {
 
 describe("atlas_region_remove with tract atlas", {
   it("removes matching regions from tract core and palette", {
-    result <- atlas_region_remove(tracula(), "corticospinal")
-    expect_false(any(grepl(
-      "corticospinal",
-      result$core$region,
-      ignore.case = TRUE
-    )))
+    before <- tracula()
+    expect_true(any(grepl("cst", before$core$label)))
+
+    result <- atlas_region_remove(before, "cst", match_on = "label")
+
+    expect_false(any(grepl("cst", result$core$label)))
+    expect_lt(nrow(result$core), nrow(before$core))
     expect_s3_class(result$data, "ggseg_data_tract")
   })
 
@@ -1733,12 +1786,12 @@ describe("atlas_region_remove with tract atlas", {
 
 describe("atlas_region_contextual with tract atlas", {
   it("keeps sf but removes from core/palette", {
-    result <- atlas_region_contextual(tracula(), "corticospinal")
-    expect_false(any(grepl(
-      "corticospinal",
-      result$core$region,
-      ignore.case = TRUE
-    )))
+    before <- tracula()
+
+    result <- atlas_region_contextual(before, "cst", match_on = "label")
+
+    expect_false(any(grepl("cst", result$core$label)))
+    expect_true(any(grepl("cst", result$data$geom$label)))
     expect_s3_class(result$data, "ggseg_data_tract")
   })
 })
@@ -1746,12 +1799,12 @@ describe("atlas_region_contextual with tract atlas", {
 
 describe("atlas_region_keep with tract atlas", {
   it("keeps only matching regions", {
-    result <- atlas_region_keep(tracula(), "corticospinal")
-    expect_true(all(grepl(
-      "corticospinal",
-      result$core$region,
-      ignore.case = TRUE
-    )))
+    result <- atlas_region_keep(tracula(), "cst", match_on = "label")
+
+    # Guard the vacuous pass: all() of nothing is TRUE, so a pattern that
+    # matched nothing used to satisfy the assertion below on an empty atlas.
+    expect_gt(nrow(result$core), 0L)
+    expect_true(all(grepl("cst", result$core$label)))
     expect_s3_class(result$data, "ggseg_data_tract")
   })
 })

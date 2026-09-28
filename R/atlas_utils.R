@@ -162,6 +162,30 @@ atlas_type.brain_atlas <- function(x) {
 #' @name atlas_manipulation
 #' @export
 #' @family atlas manipulations
+#' Warn that a pattern selected nothing
+#'
+#' The region verbs are pattern-driven, so a typo or a pattern written for a
+#' different parcellation selects nothing and the call does nothing. Silence
+#' there is indistinguishable from success, which is how dead
+#' `atlas_region_remove("corpuscallosum")` calls survived in published
+#' cerebellar documentation. `atlas_simplify()` in ggseg.extra has warned in
+#' the same situation for some time; this is the same courtesy.
+#' @noRd
+warn_no_region_match <- function(
+  pattern,
+  consequence,
+  call = rlang::caller_env()
+) {
+  cli::cli_warn(
+    c(
+      "No regions matched {.val {pattern}}.",
+      "i" = consequence
+    ),
+    call = call
+  )
+}
+
+
 atlas_region_remove <- function(
   atlas,
   pattern,
@@ -173,12 +197,21 @@ atlas_region_remove <- function(
   keep_mask <- !grepl(pattern, match_col, ignore.case = TRUE)
   keep_mask[is.na(match_col)] <- TRUE
 
+  # The pattern is matched against the geometry too, and geometry carries
+  # labels that core does not -- context outlines like `cortex_`. Only a
+  # pattern that hits neither has done nothing.
+  geom <- geom_from_data(atlas$data)
+  if (all(keep_mask) && !any(geom_matches_pattern(geom, pattern))) {
+    warn_no_region_match(pattern, "Nothing was removed.")
+    return(atlas)
+  }
+
   labels_to_remove <- atlas$core$label[!keep_mask]
 
   new_core <- atlas$core[keep_mask, , drop = FALSE]
   new_palette <- atlas$palette[!names(atlas$palette) %in% labels_to_remove]
 
-  new_geom <- geom_drop_pattern(geom_from_data(atlas$data), pattern)
+  new_geom <- geom_drop_pattern(geom, pattern)
   new_data <- rebuild_data_with_geom(
     atlas$data,
     new_geom,
@@ -214,6 +247,11 @@ atlas_region_contextual <- function(
   match_col <- atlas$core[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = ignore.case)
   keep_mask[is.na(match_col)] <- TRUE
+
+  if (all(keep_mask)) {
+    warn_no_region_match(pattern, "No region was made contextual.")
+    return(atlas)
+  }
 
   labels_to_remove <- atlas$core$label[!keep_mask]
 
@@ -410,6 +448,12 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("region", "label")) {
   match_col <- atlas$core[[match_on]]
   keep_mask <- grepl(pattern, match_col, ignore.case = TRUE)
   keep_mask[is.na(match_col)] <- FALSE
+
+  if (!any(keep_mask)) {
+    # Unlike its siblings this one cannot no-op: keeping nothing is an atlas
+    # with no regions left, which is worth saying out loud.
+    warn_no_region_match(pattern, "The atlas has been left with no regions.")
+  }
 
   labels_to_keep <- atlas$core$label[keep_mask]
 
