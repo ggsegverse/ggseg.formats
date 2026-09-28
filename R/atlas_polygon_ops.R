@@ -102,6 +102,24 @@ polygons_remove_region <- function(polygons, drop_labels, views = NULL) {
 #' `polygons_drop_pattern()` (sf-free), sf geometry is row-filtered on `label`.
 #' @noRd
 #' @keywords internal
+#' Whether any geometry row's label matches a pattern
+#'
+#' Geometry carries labels core does not -- the context outlines a pipeline
+#' draws behind the regions -- so "nothing matched" has to consult both.
+#' @noRd
+geom_matches_pattern <- function(geom, pattern) {
+  if (is.null(geom)) {
+    return(FALSE)
+  }
+  labels <- if (inherits(geom, "brain_polygons")) {
+    polygons_unnest(geom)$label
+  } else {
+    geom$label
+  }
+  any(grepl(pattern, labels, ignore.case = TRUE))
+}
+
+
 geom_drop_pattern <- function(geom, pattern) {
   if (is.null(geom)) {
     return(NULL)
