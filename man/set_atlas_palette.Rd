@@ -28,7 +28,7 @@ a <- set_atlas_palette(a, setNames(grDevices::rainbow(length(labs)), labs))
 \seealso{
 \code{\link[=atlas_palette]{atlas_palette()}} to read the palette.
 
-Other atlas setters: 
-\code{\link{set_atlas_type}()}
+Other atlas setters:
+\code{\link[=set_atlas_type]{set_atlas_type()}}
 }
 \concept{atlas setters}

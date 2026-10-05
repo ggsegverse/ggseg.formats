@@ -29,6 +29,25 @@ This atlas contains major white matter tracts reconstructed from diffusion
 MRI using FreeSurfer's TRACULA training data. It works with both ggseg
 (2D slice projections) and ggseg3d (3D tube mesh visualizations).
 }
+\section{Core columns}{
+
+\code{core} carries one row per atlas region with the columns \code{hemi}, \code{region},
+\code{label} and \code{names}, plus the atlas's own grouping column. \code{label} is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; \code{region} is a short, hemisphere-free key derived from it; \code{names} is the
+long-form display name, and is also the \code{region} value this atlas shipped
+before version 0.1.0 (see \code{\link[=legacy_region_map]{legacy_region_map()}}).
+}
+
+\section{Tract labels}{
+
+\code{label} is the name FreeSurfer's TRACULA writes its per-pathway outputs
+under, including the trailing \code{.bbr.prep} (for example \code{lh.af.bbr.prep}), so
+a table of TRACULA output joins to the atlas as it comes. \code{label_short} is
+the same identifier with the suffix stripped -- the name
+\code{FreeSurferColorLUT.txt} gives the pathway at ids 5100-5399.
+}
+
 \examples{
 tracula()
 plot(tracula())
@@ -46,10 +65,10 @@ Frontiers in Neuroinformatics, 5:23.
 \code{\link[=aseg]{aseg()}} for subcortical structures,
 \code{\link[=ggseg_atlas]{ggseg_atlas()}} for the atlas class constructor
 
-Other ggseg_atlases: 
-\code{\link{aseg}()},
-\code{\link{dk}()},
-\code{\link{suit}()}
+Other ggseg_atlases:
+\code{\link[=aseg]{aseg()}},
+\code{\link[=dk]{dk()}},
+\code{\link[=suit]{suit()}}
 }
 \concept{ggseg_atlases}
 \concept{tract_atlases}

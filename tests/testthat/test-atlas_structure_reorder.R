@@ -82,7 +82,8 @@ describe("atlas_structure_reorder()", {
       core = data.frame(
         hemi = c("left", "left"),
         region = c("a", "b"),
-        label = c("a", "b")
+        label = c("a", "b"),
+        names = c("a", "b")
       ),
       data = ggseg_data_cortical(geom = geom, vertices = NULL)
     )

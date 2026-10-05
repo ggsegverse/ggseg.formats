@@ -123,8 +123,9 @@ The `$core` data frame is the single source of truth for what regions an atlas
 contains. Every manipulation function updates core first and then propagates
 changes to geometry and palette.
 
-The required columns are `region` (a human-readable name) and `label` (a unique
-identifier that links core to geometry). Most atlases also carry `hemi`:
+The required columns are `region` (a short, hemisphere-free key), `label` (a
+unique identifier that links core to geometry and palette) and `names` (the
+long-form display name). Most atlases also carry `hemi`:
 
 ```{r}
 #| label: core-structure
@@ -160,6 +161,16 @@ geometry):
 ```{r}
 #| label: atlas-labels
 head(atlas_labels(dk()))
+```
+
+`atlas_names()` returns the long-form display names. These are also the `region`
+values the atlases shipped before version 0.1.0, so `legacy_region_map()` can
+translate a table written against the old keys:
+
+```{r}
+#| label: atlas-names
+head(atlas_names(dk()))
+head(legacy_region_map(dk()))
 ```
 
 `atlas_views()` returns the available 2D views:

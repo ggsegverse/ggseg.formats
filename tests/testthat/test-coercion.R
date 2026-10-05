@@ -1,6 +1,11 @@
 describe("as_ggseg_atlas", {
   it("converts list to ggseg_atlas", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -41,7 +46,8 @@ describe("as_ggseg_atlas.ggseg_atlas", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
-      label = c("lh_frontal", "rh_frontal")
+      label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal")
     )
 
     legacy <- structure(
@@ -64,7 +70,12 @@ describe("as_ggseg_atlas.ggseg_atlas", {
   })
 
   it("returns unchanged if already has proper data structure", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -92,7 +103,12 @@ describe("as_ggseg_atlas.ggseg_atlas", {
 
 describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
   it("auto-converts old brain_atlas with proper data to ggseg_atlas", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -120,6 +136,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
       view = c("lateral", "lateral"),
       colour = c("#FF0000", "#00FF00"),
       geometry = sf::st_sfc(
@@ -160,7 +177,8 @@ describe("as_ggseg_atlas.list", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
 
     legacy_list <- list(
@@ -189,7 +207,12 @@ describe("convert_legacy_brain_data", {
   })
 
   it("returns atlas unchanged if already has core", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -209,6 +232,7 @@ describe("convert_legacy_brain_data", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
       view = c("lateral", "lateral"),
       colour = c("#FF0000", "#00FF00"),
       geometry = sf::st_sfc(
@@ -239,6 +263,7 @@ describe("convert_legacy_brain_data", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
       side = c("lateral", "lateral"),
       geometry = sf::st_sfc(
         make_polygon(),
@@ -291,7 +316,12 @@ describe("convert_legacy_brain_data", {
 
 describe("as_brain_atlas (deprecated)", {
   it("warns and delegates to as_ggseg_atlas", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
     atlas <- ggseg_atlas(
@@ -324,7 +354,8 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
         core = data.frame(
           hemi = "left",
           region = "frontal",
-          label = "lh_frontal"
+          label = "lh_frontal",
+          names = "frontal"
         ),
         data = sf_geom
       ),
@@ -349,7 +380,8 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
         core = data.frame(
           hemi = "left",
           region = "frontal",
-          label = "lh_frontal"
+          label = "lh_frontal",
+          names = "frontal"
         ),
         sf = sf_geom,
         vertices = NULL,

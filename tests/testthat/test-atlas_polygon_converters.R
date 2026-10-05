@@ -18,7 +18,12 @@ describe("as_polygon_atlas()", {
   })
 
   it("errors when the atlas has no 2D geometry", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -58,7 +63,12 @@ describe("as_sf_atlas()", {
   })
 
   it("errors when the atlas has no 2D geometry", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 

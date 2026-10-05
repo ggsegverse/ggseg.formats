@@ -30,6 +30,16 @@ This atlas is derived from FreeSurfer's \code{aseg.mgz} volumetric segmentation.
 It works with both ggseg (2D slice views) and ggseg3d (3D mesh
 visualizations) from a single object.
 }
+\section{Core columns}{
+
+\code{core} carries one row per atlas region with the columns \code{hemi}, \code{region},
+\code{label} and \code{names}, plus the atlas's own grouping column. \code{label} is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; \code{region} is a short, hemisphere-free key derived from it; \code{names} is the
+long-form display name, and is also the \code{region} value this atlas shipped
+before version 0.1.0 (see \code{\link[=legacy_region_map]{legacy_region_map()}}).
+}
+
 \section{Structures}{
 
 The atlas contains bilateral structures:
@@ -71,10 +81,10 @@ Neuron, 33(3):341-355.
 \code{\link[=dk]{dk()}} for cortical parcellation,
 \code{\link[=ggseg_atlas]{ggseg_atlas()}} for the atlas class constructor
 
-Other ggseg_atlases: 
-\code{\link{dk}()},
-\code{\link{suit}()},
-\code{\link{tracula}()}
+Other ggseg_atlases:
+\code{\link[=dk]{dk()}},
+\code{\link[=suit]{suit()}},
+\code{\link[=tracula]{tracula()}}
 }
 \concept{ggseg_atlases}
 \concept{subcortical_atlases}

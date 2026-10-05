@@ -52,6 +52,44 @@ atlas_labels.brain_atlas <- function(x) {
 }
 
 
+#' Extract unique long-form region names from an atlas
+#'
+#' The `names` column of `core` holds the long-form display name of each
+#' region, as against the short, hemisphere-free key in `region` and the atlas
+#' identifier in `label`. For the atlases bundled here it is also the `region`
+#' value shipped before the 0.1.0 re-keying, which is what makes that re-keying
+#' recoverable; see [legacy_region_map()].
+#'
+#' @param x brain atlas
+#' @return Character vector of long-form region names, or a zero-length
+#'   character vector when the atlas carries no `names` column.
+#' @examples
+#' atlas_names(dk())
+#' atlas_names(aseg())
+#'
+#' @export
+#' @seealso [atlas_regions()], [atlas_labels()], [legacy_region_map()]
+#' @family atlas accessors
+atlas_names <- function(x) {
+  UseMethod("atlas_names")
+}
+
+#' @export
+atlas_names.ggseg_atlas <- function(x) {
+  get_uniq(x$core, "names")
+}
+
+#' @export
+atlas_names.brain_atlas <- function(x) {
+  get_uniq(x$core, "names")
+}
+
+#' @export
+atlas_names.data.frame <- function(x) {
+  get_uniq(x, "names")
+}
+
+
 #' @rdname atlas_regions
 #' @export
 brain_regions <- function(x) {
@@ -178,7 +216,7 @@ atlas_region_remove <- function(
   # pattern that hits neither has done nothing.
   geom <- geom_from_data(atlas$data)
   if (all(keep_mask) && !any(geom_matches_pattern(geom, pattern))) {
-    warn_no_region_match(pattern, "Nothing was removed.")
+    warn_no_region_match(pattern, "Nothing was removed.", atlas)
     return(atlas)
   }
 
@@ -225,7 +263,7 @@ atlas_region_contextual <- function(
   keep_mask[is.na(match_col)] <- TRUE
 
   if (all(keep_mask)) {
-    warn_no_region_match(pattern, "No region was made contextual.")
+    warn_no_region_match(pattern, "No region was made contextual.", atlas)
     return(atlas)
   }
 
@@ -428,7 +466,11 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("region", "label")) {
   if (!any(keep_mask)) {
     # Unlike its siblings this one cannot no-op: keeping nothing is an atlas
     # with no regions left, which is worth saying out loud.
-    warn_no_region_match(pattern, "The atlas has been left with no regions.")
+    warn_no_region_match(
+      pattern,
+      "The atlas has been left with no regions.",
+      atlas
+    )
   }
 
   labels_to_keep <- atlas$core$label[keep_mask]
@@ -841,21 +883,58 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
 warn_no_region_match <- function(
   pattern,
   consequence,
+  atlas = NULL,
   call = rlang::caller_env()
 ) {
   cli::cli_warn(
     c(
       "No regions matched {.val {pattern}}.",
-      "i" = consequence
+      "i" = consequence,
+      legacy_region_hint(atlas, pattern)
     ),
     call = call
   )
 }
 
 
+#' Hint that a pattern looks like a pre-0.1.0 region name
+#'
+#' `region` was re-keyed to short, hemisphere-free identifiers in 0.1.0, so a
+#' pattern carried over from older code matches nothing while still matching
+#' the long-form `names`. Without this the only symptom is a blank figure.
+#' @noRd
+legacy_region_hint <- function(atlas, pattern) {
+  if (is.null(atlas) || !"names" %in% names(atlas$core)) {
+    return(character(0))
+  }
+  legacy <- atlas$core$names
+  hit <- grepl(pattern, legacy, ignore.case = TRUE) & !is.na(legacy)
+  if (!any(hit)) {
+    return(character(0))
+  }
+  # nolint start: object_usage_linter. Used in the cli template below.
+  matched <- utils::head(unique(legacy[hit]), 3)
+  current <- utils::head(unique(atlas$core$region[hit]), 3)
+  # nolint end
+  c(
+    "!" = cli::format_inline(
+      "It matches the long-form {.field names} {.val {matched}}, which
+       {.field region} held before ggseg.formats 0.1.0, where {.field region}
+       is now {.val {current}}."
+    ),
+    "i" = cli::format_inline(
+      "Use {.fn legacy_region_map} for the full mapping."
+    )
+  )
+}
+
+
 #' @noRd
 get_uniq <- function(x, type) {
-  type <- match.arg(type, c("label", "region"))
+  type <- match.arg(type, c("label", "region", "names"))
+  if (!type %in% names(x)) {
+    return(character(0))
+  }
   x <- unique(x[[type]])
   x <- x[!is.na(x)]
   sort(x)
@@ -993,8 +1072,8 @@ add_op_region_meta <- function(core, palette, into, colour) {
     core_row <- core[1, , drop = FALSE]
     core_row[] <- NA
     core_row$label <- into
-    if ("region" %in% names(core_row)) {
-      core_row$region <- into
+    for (col in intersect(c("region", "names"), names(core_row))) {
+      core_row[[col]] <- into
     }
     core <- rbind(core, core_row)
   }
@@ -1069,6 +1148,56 @@ reposition_views <- function(
 
   result <- do.call(rbind, view_data)
   sf::st_as_sf(result)
+}
+
+
+#' Re-key an atlas's `label` column everywhere it appears
+#'
+#' `label` is the atlas's join key, carried by `core`, by the palette's names
+#' and by every payload slot (`geom`, `vertices`, `meshes`, `centerlines`).
+#' Rewriting it in one place and not the others silently decouples geometry
+#' from metadata, so this does all of them at once. Labels absent from
+#' `mapping` -- contextual geometry such as the `cortex_` silhouette -- are
+#' left alone. Used by the `data-raw` build scripts.
+#' @param atlas A `ggseg_atlas` object.
+#' @param mapping Named character vector: names are current labels, values the
+#'   replacements.
+#' @noRd
+#' @keywords internal
+relabel_atlas <- function(atlas, mapping) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  if (!is.character(mapping) || is.null(names(mapping))) {
+    cli::cli_abort("{.arg mapping} must be a named character vector.")
+  }
+
+  remap <- function(x) {
+    hit <- match(x, names(mapping))
+    x[!is.na(hit)] <- unname(mapping[hit[!is.na(hit)]])
+    x
+  }
+
+  core <- atlas$core
+  core$label <- remap(core$label)
+
+  palette <- atlas$palette
+  names(palette) <- remap(names(palette))
+
+  data <- atlas$data
+  for (slot in names(data)) {
+    if (is.data.frame(data[[slot]]) && "label" %in% names(data[[slot]])) {
+      data[[slot]]$label <- remap(data[[slot]]$label)
+    }
+  }
+
+  ggseg_atlas(
+    atlas = atlas$atlas,
+    type = atlas$type,
+    palette = palette,
+    core = core,
+    data = data
+  )
 }
 
 

@@ -690,6 +690,8 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
     )
   }
 
+  validate_core_names(core, atlas)
+
   if (
     !inherits(data, "ggseg_atlas_data") &&
       !inherits(data, "brain_atlas_data")
@@ -712,6 +714,44 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
 
   invisible()
 }
+
+#' Enforce the `names` column of `core`
+#'
+#' `names` holds the long-form region name and is part of the `core` schema. It
+#' arrived after roughly twenty atlas packages had already been published
+#' against the schema without it, so a hard requirement would break every one
+#' of them on load. The policy is therefore: required and strictly validated
+#' when present -- a malformed `names` is an error, because a half-filled column
+#' is worse than none -- and a warning, once per atlas per session, when absent.
+#' @noRd
+#' @keywords internal
+validate_core_names <- function(core, atlas) {
+  if (!"names" %in% names(core)) {
+    rlang::warn(
+      cli::format_message(c(
+        "!" = "{.arg core} has no {.field names} column.",
+        "i" = "{.field names} holds the long-form region name and is part of
+               the {.arg core} schema; add it when rebuilding
+               {.val {atlas}}.",
+        "i" = "See {.fn atlas_names}."
+      )),
+      class = "ggseg.formats_missing_names",
+      .frequency = "once",
+      .frequency_id = paste0("ggseg.formats-core-names-", atlas)
+    )
+    return(invisible())
+  }
+
+  if (!is.character(core$names)) {
+    cli::cli_abort(
+      "{.arg core$names} must be a character vector, not
+       {.cls {class(core$names)[1]}}."
+    )
+  }
+
+  invisible()
+}
+
 
 #' Print the header and summary block for a ggseg atlas
 #'

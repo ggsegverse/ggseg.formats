@@ -79,7 +79,12 @@ describe("migrate_atlas_files()", {
 
 describe("migrate_atlas_object()", {
   it("returns NULL for an atlas without 2D geometry", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 

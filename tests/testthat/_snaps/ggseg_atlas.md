@@ -115,17 +115,17 @@
       v ggseg3d (centerlines)
       --------------------------------------------------------------------------------
     Output
-            hemi      region       label                           names
-      1  midline       acomm       acomm             anterior commissure
-      2  midline    cc bodyc    cc.bodyc    corpus callosum body central
-      3  midline    cc bodyp    cc.bodyp   corpus callosum body parietal
-      4  midline   cc bodypf   cc.bodypf corpus callosum body prefrontal
-      5  midline   cc bodypm   cc.bodypm   corpus callosum body premotor
-      6  midline    cc bodyt    cc.bodyt   corpus callosum body temporal
-      7  midline     cc genu     cc.genu            corpus callosum genu
-      8  midline  cc rostrum  cc.rostrum         corpus callosum rostrum
-      9  midline cc splenium cc.splenium        corpus callosum splenium
-      10    left          af       lh.af              arcuate fasciculus
+            hemi      region                label label_short               names
+      1  midline       acomm       acomm.bbr.prep       acomm anterior commissure
+      2  midline    cc bodyc    cc.bodyc.bbr.prep    cc.bodyc     CC body central
+      3  midline    cc bodyp    cc.bodyp.bbr.prep    cc.bodyp    CC body parietal
+      4  midline   cc bodypf   cc.bodypf.bbr.prep   cc.bodypf  CC body prefrontal
+      5  midline   cc bodypm   cc.bodypm.bbr.prep   cc.bodypm    CC body premotor
+      6  midline    cc bodyt    cc.bodyt.bbr.prep    cc.bodyt    CC body temporal
+      7  midline     cc genu     cc.genu.bbr.prep     cc.genu             CC genu
+      8  midline  cc rostrum  cc.rostrum.bbr.prep  cc.rostrum          CC rostrum
+      9  midline cc splenium cc.splenium.bbr.prep cc.splenium         CC splenium
+      10    left          af       lh.af.bbr.prep       lh.af  arcuate fasciculus
                    group
       1       commissure
       2  corpus callosum
@@ -156,28 +156,17 @@
       v ggseg3d (meshes)
       --------------------------------------------------------------------------------
     Output
-         hemi            region                  label                names
-      1  left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
-      2  left          thalamus          Left-Thalamus             thalamus
-      3  left           caudate           Left-Caudate              caudate
-      4  left           putamen           Left-Putamen              putamen
-      5  left          pallidum          Left-Pallidum             pallidum
-      6  <NA>        brain stem             Brain-Stem           brain stem
-      7  left       hippocampus       Left-Hippocampus          hippocampus
-      8  left          amygdala          Left-Amygdala             amygdala
-      9  left    accumbens area    Left-Accumbens-area            accumbens
-      10 left         ventraldc         Left-VentralDC ventral diencephalon
-             structure
-      1     cerebellum
-      2  basal ganglia
-      3  basal ganglia
-      4  basal ganglia
-      5  basal ganglia
-      6      brainstem
-      7         limbic
-      8         limbic
-      9  basal ganglia
-      10  diencephalon
+         hemi            region                  label          names     structure
+      1  left cerebellum cortex Left-Cerebellum-Cortex     Cerebellum    cerebellum
+      2  left          thalamus          Left-Thalamus       Thalamus basal ganglia
+      3  left           caudate           Left-Caudate        Caudate basal ganglia
+      4  left           putamen           Left-Putamen        Putamen basal ganglia
+      5  left          pallidum          Left-Pallidum       Pallidum basal ganglia
+      6  <NA>        brain stem             Brain-Stem     Brain Stem     brainstem
+      7  left       hippocampus       Left-Hippocampus    Hippocampus        limbic
+      8  left          amygdala          Left-Amygdala       Amygdala        limbic
+      9  left    accumbens area    Left-Accumbens-area accumbens area basal ganglia
+      10 left         ventraldc         Left-VentralDC      ventraldc  diencephalon
     Message
       ... with 19 more rows
 
@@ -238,8 +227,8 @@
       x ggseg3d (none)
       --------------------------------------------------------------------------------
     Output
-        hemi  region      label
-      1 left frontal lh_frontal
+        hemi  region      label   names
+      1 left frontal lh_frontal frontal
 
 # print.ggseg_atlas rendering branches / prints a polygon atlas summary with views
 

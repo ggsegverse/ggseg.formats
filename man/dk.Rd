@@ -31,6 +31,16 @@ most widely used cortical parcellations in neuroimaging research.
 The atlas works with both ggseg (2D polygon plots) and ggseg3d (3D mesh
 visualizations) from a single object.
 }
+\section{Core columns}{
+
+\code{core} carries one row per atlas region with the columns \code{hemi}, \code{region},
+\code{label} and \code{names}, plus the atlas's own grouping column. \code{label} is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; \code{region} is a short, hemisphere-free key derived from it; \code{names} is the
+long-form display name, and is also the \code{region} value this atlas shipped
+before version 0.1.0 (see \code{\link[=legacy_region_map]{legacy_region_map()}}).
+}
+
 \section{Regions}{
 
 The atlas contains 34 regions per hemisphere including:
@@ -67,10 +77,10 @@ Cerebral Cortex, 14(1):11-22.
 \code{\link[=aseg]{aseg()}} for subcortical structures,
 \code{\link[=ggseg_atlas]{ggseg_atlas()}} for the atlas class constructor
 
-Other ggseg_atlases: 
-\code{\link{aseg}()},
-\code{\link{suit}()},
-\code{\link{tracula}()}
+Other ggseg_atlases:
+\code{\link[=aseg]{aseg()}},
+\code{\link[=suit]{suit()}},
+\code{\link[=tracula]{tracula()}}
 }
 \concept{cortical_atlases}
 \concept{ggseg_atlases}

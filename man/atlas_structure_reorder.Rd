@@ -61,7 +61,7 @@ a <- atlas_structure_reorder(a, "Left-Thalamus", .before = "Left-Putamen")
 \code{\link[=atlas_view_reorder]{atlas_view_reorder()}}, which moves whole views around the
 canvas rather than structures within them.
 
-Other atlas manipulations: 
+Other atlas manipulations:
 \code{\link{atlas_manipulation}}
 }
 \concept{atlas manipulations}

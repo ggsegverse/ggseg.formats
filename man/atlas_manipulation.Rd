@@ -275,43 +275,7 @@ dk() |>
 
 }
 \seealso{
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
-
-Other atlas manipulations: 
-\code{\link{atlas_structure_reorder}()}
+Other atlas manipulations:
+\code{\link[=atlas_structure_reorder]{atlas_structure_reorder()}}
 }
 \concept{atlas manipulations}
