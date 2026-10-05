@@ -38,6 +38,8 @@ so partial matches work:
 ``` r
 
 no_cc <- atlas_region_remove(dk(), "corpus callosum")
+#> Warning in atlas_region_remove(dk(), "corpus callosum"): No regions matched "corpus callosum".
+#> ℹ Nothing was removed.
 "corpus callosum" %in% atlas_regions(no_cc)
 #> [1] FALSE
 ```
@@ -79,6 +81,8 @@ the sf geometry in place:
 ``` r
 
 ctx <- atlas_region_contextual(aseg(), "ventricle")
+#> Warning in atlas_region_contextual(aseg(), "ventricle"): No regions matched "ventricle".
+#> ℹ No region was made contextual.
 "lateral ventricle" %in% atlas_regions(ctx)
 #> [1] FALSE
 ```

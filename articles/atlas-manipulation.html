@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9006</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -117,6 +117,8 @@ argument is passed to <code><a href="https://rdrr.io/r/base/grep.html" class="ex
 <code>ignore.case = TRUE</code>, so partial matches work:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">no_cc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_remove</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"corpus callosum"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in atlas_region_remove(dk(), "corpus callosum"): No regions matched <span style="color: #0000BB;">"corpus callosum"</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Nothing was removed.</span></span>
 <span><span class="st">"corpus callosum"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">no_cc</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_region_keep()</a></code> is the inverse: it keeps only the
@@ -148,6 +150,8 @@ grey) but not appear in the legend or carry data. This is what
 core, palette, and 3D data but leaves the sf geometry in place:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_contextual</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"ventricle"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning in atlas_region_contextual(aseg(), "ventricle"): No regions matched <span style="color: #0000BB;">"ventricle"</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> No region was made contextual.</span></span>
 <span><span class="st">"lateral ventricle"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">ctx</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
 <p>Compare that to <code><a href="../reference/atlas_manipulation.html">atlas_region_remove()</a></code>, which would
