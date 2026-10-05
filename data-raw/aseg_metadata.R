@@ -5,10 +5,11 @@
 # stripped into `hemi`, the remainder lowercased with separators spaced);
 # `structure` groups regions.
 #
-# `names` holds the long-form display name. For every label the CRAN 0.0.4
-# release shipped, it is verbatim the `region` value of that release, so the
-# 0.1.0 re-keying of `region` stays recoverable by joining on `names`. Labels
-# 0.0.4 never shipped carry a spelled-out name in the same style.
+# `names` holds the curated long-form display name: fully spelled out, chosen
+# to read well as a figure label or legend entry. It is deliberately NOT the
+# `region` value the CRAN 0.0.4 release shipped -- several of those were
+# mechanically derived and read poorly. Migration from the old keys goes
+# through data-raw/legacy_regions.R and `legacy_region_map()` instead.
 #
 # Based on: # nolint start: line_length_linter.
 # https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT
@@ -88,41 +89,41 @@ aseg_metadata <- data.frame(
     "third ventricle",
     "fourth ventricle",
     "cerebrospinal fluid",
-    "Thalamus",
-    "Thalamus",
-    "Caudate",
-    "Caudate",
-    "Putamen",
-    "Putamen",
-    "Pallidum",
-    "Pallidum",
-    "Hippocampus",
-    "Hippocampus",
-    "Amygdala",
-    "Amygdala",
-    "accumbens area",
-    "accumbens area",
-    "ventraldc",
-    "ventraldc",
+    "thalamus",
+    "thalamus",
+    "caudate",
+    "caudate",
+    "putamen",
+    "putamen",
+    "pallidum",
+    "pallidum",
+    "hippocampus",
+    "hippocampus",
+    "amygdala",
+    "amygdala",
+    "accumbens",
+    "accumbens",
+    "ventral diencephalon",
+    "ventral diencephalon",
     "vessel",
     "vessel",
     "choroid plexus",
     "choroid plexus",
-    "Brain Stem",
-    "Cerebellum",
-    "Cerebellum",
+    "brain stem",
+    "cerebellum cortex",
+    "cerebellum cortex",
     "cerebellum white matter",
     "cerebellum white matter",
-    "Thalamus Proper",
-    "Thalamus Proper",
+    "thalamus proper",
+    "thalamus proper",
     "white matter hypointensities",
     "non-white matter hypointensities",
-    "Optic Chiasm",
-    "cc posterior",
-    "cc mid posterior",
-    "cc central",
-    "cc mid anterior",
-    "cc anterior"
+    "optic chiasm",
+    "corpus callosum posterior",
+    "corpus callosum mid-posterior",
+    "corpus callosum central",
+    "corpus callosum mid-anterior",
+    "corpus callosum anterior"
   ),
   structure = c(
     "cortex",

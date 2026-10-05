@@ -8,34 +8,43 @@ the `names` column that makes the old values recoverable. Code written against
 
 ### Breaking changes
 
-- **`region` is now a short, hemisphere-free key, and the long-form name lives
-  in `names`.** `region` used to hold a prettified display name
-  (`"banks of superior temporal sulcus"`); it now holds the key derived from
-  `label` (`"bankssts"`). `label` is unchanged and remains the stable join key.
+- **`region` is now a short, hemisphere-free key.** `region` used to hold a
+  prettified display name (`"banks of superior temporal sulcus"`); it now holds
+  the key derived from `label` (`"bankssts"`). `label` is unchanged and remains
+  the stable join key.
 
   Nothing errors when this bites: `merge(all.x = TRUE)` and the ggseg fill
   scale both yield `NA` for an unmatched region, which draws as a blank parcel.
 
-  To migrate, join on `names` instead of `region`, or translate your own tables
-  with the new `legacy_region_map()`:
+  **To migrate, translate your tables with the new `legacy_region_map()`**,
+  which returns the old long name to new `region` key mapping:
 
   ``` r
   map <- legacy_region_map(dk())
   my_data$region <- unname(map[my_data$region])
   ```
 
-  Recoverability of the pre-0.1.0 `region` values through `names`: `dk` 35/35,
-  `tracula` 26/26, `suit` 13/13 (its `region` values never changed, so nothing
-  has to be recovered), `aseg` 18/19. The one `aseg` value that cannot be
-  recovered is `"Thalamus Proper"`, which was an alias of `"Thalamus"` on the
-  single `Left-Thalamus`/`Right-Thalamus` label; the alias rows are gone.
+  Every pre-0.1.0 `region` value of all four bundled atlases translates:
+  `dk` 35/35, `aseg` 19/19, `tracula` 26/26, `suit` 13/13 (`suit`'s keys never
+  changed, so its map is the identity). `aseg`'s `"Thalamus Proper"` translates
+  too, to `"thalamus"`, even though the alias row it lived on is gone from
+  `core`.
+
+  Do **not** reach for `names` to do this. `names` is the curated display name,
+  spelled out to read well in a legend, and for several regions it deliberately
+  differs from what 0.0.4 shipped as `region` — `aseg` has
+  `names` `"ventral diencephalon"` where 0.0.4 had `region` `"ventraldc"`, and
+  `"corpus callosum posterior"` where 0.0.4 had `"cc posterior"`.
+  `legacy_region_map()` reads a recorded table of the 0.0.4 values instead, so
+  it stays correct however `names` is later improved.
 
   `atlas_region_remove()`, `atlas_region_contextual()` and
   `atlas_region_keep()` now recognise a pre-0.1.0 name in a pattern that
   matched nothing, and say which key to use instead rather than leaving a blank
   figure behind.
 
-- **`names` is part of the `core` schema.** It is validated by `ggseg_atlas()`:
+- **`names` is part of the `core` schema**, holding the curated long-form
+  display name. It is validated by `ggseg_atlas()`:
   a `names` column that is not character is an error, because a half-filled key
   column is worse than none. An atlas built without one still loads, but warns
   once per atlas per session, so the roughly twenty published atlas packages
@@ -89,8 +98,11 @@ the `names` column that makes the old values recoverable. Code written against
 ### New features
 
 - New `legacy_region_map()` returns the pre-0.1.0 `region` name to current
-  `region` key mapping for an atlas.
-- New `atlas_names()` accessor returns an atlas's long-form region names.
+  `region` key mapping for an atlas, read from a recorded table of what each
+  bundled atlas shipped at 0.0.4 rather than inferred from the atlas's current
+  columns.
+- New `atlas_names()` accessor returns an atlas's curated long-form display
+  names.
 - New `relabel_atlas()` re-keys an atlas's `label` values across `core`, the
   palette and every geometry payload at once. `label` is the join key all three
   are keyed on, so rewriting it in one place and not the others silently

@@ -10,9 +10,11 @@
 # (the lh./rh. prefix becomes `hemi`, the remainder with dots spaced becomes
 # `region`); `group` classifies tracts.
 #
-# `names` holds the long-form display name, verbatim the `region` value the
-# CRAN 0.0.4 release shipped, so the 0.1.0 re-keying of `region` stays
-# recoverable by joining on `names`.
+# `names` holds the curated long-form display name: fully spelled out, chosen
+# to read well as a figure label or legend entry. It is deliberately NOT the
+# `region` value the CRAN 0.0.4 release shipped -- several of those were
+# mechanically derived and read poorly. Migration from the old keys goes
+# through data-raw/legacy_regions.R and `legacy_region_map()` instead.
 #
 # Based on: https://surfer.nmr.mgh.harvard.edu/fswiki/Tracula
 
@@ -68,14 +70,14 @@ tracula_metadata <- data.frame(
   ),
   names = c(
     # CC segments
-    "CC rostrum",
-    "CC genu",
-    "CC body central",
-    "CC body prefrontal",
-    "CC body premotor",
-    "CC body parietal",
-    "CC body temporal",
-    "CC splenium",
+    "corpus callosum rostrum",
+    "corpus callosum genu",
+    "corpus callosum body central",
+    "corpus callosum body prefrontal",
+    "corpus callosum body premotor",
+    "corpus callosum body parietal",
+    "corpus callosum body temporal",
+    "corpus callosum splenium",
     # Commissures
     "anterior commissure",
     # Cerebellar
@@ -93,9 +95,9 @@ tracula_metadata <- data.frame(
     "inferior longitudinal fasciculus",
     "middle longitudinal fasciculus",
     "optic radiation",
-    "SLF I",
-    "SLF II",
-    "SLF III",
+    "superior longitudinal fasciculus I",
+    "superior longitudinal fasciculus II",
+    "superior longitudinal fasciculus III",
     "uncinate fasciculus",
     # Right tracts (same names)
     "corticospinal tract",
@@ -110,9 +112,9 @@ tracula_metadata <- data.frame(
     "inferior longitudinal fasciculus",
     "middle longitudinal fasciculus",
     "optic radiation",
-    "SLF I",
-    "SLF II",
-    "SLF III",
+    "superior longitudinal fasciculus I",
+    "superior longitudinal fasciculus II",
+    "superior longitudinal fasciculus III",
     "uncinate fasciculus"
   ),
   group = c(

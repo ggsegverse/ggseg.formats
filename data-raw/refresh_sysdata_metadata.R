@@ -19,6 +19,7 @@ source("data-raw/dk_metadata.R")
 source("data-raw/aseg_metadata.R")
 source("data-raw/tracula_metadata.R")
 source("data-raw/suit_metadata.R")
+source("data-raw/legacy_regions.R")
 
 env <- new.env(parent = emptyenv())
 load("R/sysdata.rda", envir = env)
@@ -93,6 +94,19 @@ for (nm in c(".dk_atlas", ".aseg_atlas", ".tracula_atlas", ".suit_atlas")) {
   stopifnot(is_ggseg_atlas(env[[nm]]))
 }
 
+# The pre-0.1.0 region names ship beside the atlases so legacy_region_map()
+# can translate old keys without the atlases themselves carrying them.
+env$.legacy_regions <- legacy_regions
+
+for (nm in names(legacy_regions)) {
+  atlas <- env[[paste0(".", nm, "_atlas")]]
+  stopifnot(
+    "every recorded legacy label must still exist" = all(
+      legacy_regions[[nm]]$label %in% atlas$core$label
+    )
+  )
+}
+
 save(
   list = ls(env, all.names = TRUE),
   file = "R/sysdata.rda",
@@ -101,4 +115,6 @@ save(
   version = 2
 )
 
-cli::cli_alert_success("Reapplied metadata to the four bundled atlases.")
+cli::cli_alert_success(
+  "Reapplied metadata and the legacy region table to the four bundled atlases."
+)

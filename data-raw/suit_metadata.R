@@ -4,12 +4,13 @@
 # hemisphere-free `region`. `label` is built from `hemi` and `region` by the
 # atlas itself, so only `region` is matched on here.
 #
-# `names` holds the long-form display name, spelled out from the Diedrichsen
-# SUIT nomenclature (lobules I-X plus Crus I/II for the cerebellar cortex, and
-# the dentate, interposed and fastigial deep nuclei). The SUIT release ships no
-# machine-readable lookup table of long names alongside the parcellation, so
-# these are written out here rather than imported. `region` is unchanged from
-# the CRAN 0.0.4 release, so nothing has to be recovered through `names`.
+# `names` holds the curated long-form display name, spelled out from the
+# Diedrichsen SUIT nomenclature (lobules I-X plus Crus I/II for the cerebellar
+# cortex, and the dentate, interposed and fastigial deep nuclei). The SUIT
+# release ships no machine-readable lookup table of long names alongside the
+# parcellation, so these are written out here rather than imported. `region` is
+# unchanged from the CRAN 0.0.4 release, so nothing has to be migrated for this
+# atlas.
 #
 # Based on: https://github.com/DiedrichsenLab/cerebellar_atlases
 

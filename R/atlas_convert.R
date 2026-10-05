@@ -493,9 +493,12 @@ assemble_legacy_atlas <- function(setup, result, original_palette) {
 
 #' Back-fill `names` on a core recovered from a legacy atlas
 #'
-#' A legacy atlas's `region` is the long-form display name, which is what
-#' `names` holds in the current schema, so copying it across leaves the
-#' converted atlas schema-complete instead of missing a required column.
+#' A legacy atlas's `region` holds a long-form, human-readable name -- which is
+#' exactly the contract `names` carries in the current schema -- so copying it
+#' across leaves the converted atlas schema-complete instead of missing a
+#' required column, and gives it a sensible display name rather than a
+#' placeholder. This is unrelated to `legacy_region_map()`, which translates the
+#' *bundled* atlases' old keys and reads its own recorded table.
 #' @noRd
 #' @keywords internal
 fill_legacy_core_names <- function(core) {

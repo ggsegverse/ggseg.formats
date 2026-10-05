@@ -37,8 +37,10 @@ visualizations) from a single object.
 \code{label} and \code{names}, plus the atlas's own grouping column. \code{label} is the
 stable atlas identifier and the key the palette and the geometry are keyed
 on; \code{region} is a short, hemisphere-free key derived from it; \code{names} is the
-long-form display name, and is also the \code{region} value this atlas shipped
-before version 0.1.0 (see \code{\link[=legacy_region_map]{legacy_region_map()}}).
+curated long-form display name, spelled out to read well in a figure legend.
+
+\code{region} held the long-form name until version 0.1.0. \code{names} is not a record
+of those old values -- use \code{\link[=legacy_region_map]{legacy_region_map()}} to translate them.
 }
 
 \section{Regions}{

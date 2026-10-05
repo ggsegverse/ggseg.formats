@@ -750,7 +750,8 @@ validate_core_label_unique <- function(core, atlas) {
 
 #' Enforce the `names` column of `core`
 #'
-#' `names` holds the long-form region name and is part of the `core` schema. It
+#' `names` holds the curated long-form display name and is part of the `core`
+#' schema. It
 #' arrived after roughly twenty atlas packages had already been published
 #' against the schema without it, so a hard requirement would break every one
 #' of them on load. The policy is therefore: required and strictly validated
@@ -763,7 +764,7 @@ validate_core_names <- function(core, atlas) {
     rlang::warn(
       cli::format_message(c(
         "!" = "{.arg core} has no {.field names} column.",
-        "i" = "{.field names} holds the long-form region name and is part of
+        "i" = "{.field names} holds the long-form display name and is part of
                the {.arg core} schema; add it when rebuilding
                {.val {atlas}}.",
         "i" = "See {.fn atlas_names}."

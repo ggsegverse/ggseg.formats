@@ -900,27 +900,37 @@ warn_no_region_match <- function(
 #' Hint that a pattern looks like a pre-0.1.0 region name
 #'
 #' `region` was re-keyed to short, hemisphere-free identifiers in 0.1.0, so a
-#' pattern carried over from older code matches nothing while still matching
-#' the long-form `names`. Without this the only symptom is a blank figure.
+#' pattern carried over from older code matches nothing. Without this the only
+#' symptom is a blank figure. Matched against the recorded 0.0.4 region names
+#' rather than against `names`, which is the curated display name and need not
+#' resemble what 0.0.4 shipped.
 #' @noRd
 legacy_region_hint <- function(atlas, pattern) {
-  if (is.null(atlas) || !"names" %in% names(atlas$core)) {
+  if (is.null(atlas) || length(atlas$atlas) != 1 || is.na(atlas$atlas)) {
     return(character(0))
   }
-  legacy <- atlas$core$names
-  hit <- grepl(pattern, legacy, ignore.case = TRUE) & !is.na(legacy)
+  legacy <- .legacy_regions[[atlas$atlas]] # nolint: object_usage_linter.
+  if (is.null(legacy)) {
+    return(character(0))
+  }
+  hit <- grepl(pattern, legacy$legacy_region, ignore.case = TRUE)
   if (!any(hit)) {
     return(character(0))
   }
   # nolint start: object_usage_linter. Used in the cli template below.
-  matched <- utils::head(unique(legacy[hit]), 3)
-  current <- utils::head(unique(atlas$core$region[hit]), 3)
+  matched <- utils::head(unique(legacy$legacy_region[hit]), 3)
+  current <- utils::head(
+    stats::na.omit(unique(
+      atlas$core$region[match(legacy$label[hit], atlas$core$label)]
+    )),
+    3
+  )
   # nolint end
   c(
     "!" = cli::format_inline(
-      "It matches the long-form {.field names} {.val {matched}}, which
-       {.field region} held before ggseg.formats 0.1.0, where {.field region}
-       is now {.val {current}}."
+      "It matches the long-form {.field region} {.val {matched}}, which this
+       atlas used before ggseg.formats 0.1.0, where {.field region} is now
+       {.val {current}}."
     ),
     "i" = cli::format_inline(
       "Use {.fn legacy_region_map} for the full mapping."

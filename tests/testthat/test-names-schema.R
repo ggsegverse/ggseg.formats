@@ -273,35 +273,109 @@ describe("legacy_region_map", {
     expect_identical(unname(map[["anterior commissure"]]), "acomm")
   })
 
-  it("recovers every pre-0.1.0 dk region", {
-    expect_length(legacy_region_map(dk()), 35L)
+  it("recovers every pre-0.1.0 region of every bundled atlas", {
+    expected <- c(dk = 35L, aseg = 19L, tracula = 26L, suit = 13L)
+    actual <- vapply(
+      list(dk = dk(), aseg = aseg(), tracula = tracula(), suit = suit()),
+      function(a) length(legacy_region_map(a)),
+      integer(1)
+    )
+    expect_identical(actual, expected)
+  })
+
+  it("maps dk's long annotation names to the short keys", {
     expect_identical(
       legacy_region_map(dk())[["banks of superior temporal sulcus"]],
       "bankssts"
     )
   })
 
-  it("drops aliases that collapsed onto one key", {
+  it("translates an alias whose core row is gone", {
     map <- legacy_region_map(aseg())
     expect_identical(map[["Thalamus"]], "thalamus")
-    expect_false("Thalamus Proper" %in% names(map))
+    expect_identical(map[["Thalamus Proper"]], "thalamus")
   })
 
-  it("has one entry per retained long-form name", {
+  it("maps suit onto itself, since its keys never changed", {
+    map <- legacy_region_map(suit())
+    expect_identical(unname(map), names(map))
+  })
+
+  it("only ever maps onto a key the atlas actually has", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      expect_true(all(unname(legacy_region_map(atlas)) %in% atlas$core$region))
+    }
+  })
+
+  it("has one entry per old name", {
     map <- legacy_region_map(aseg())
     expect_false(anyDuplicated(names(map)) > 0)
   })
 
-  it("warns and returns nothing for an atlas without names", {
+  it("warns and returns nothing for an atlas it records no history for", {
     expect_warning(
-      map <- legacy_region_map(atlas_without_names("no-names-map")),
-      "no .*names.* column"
+      map <- legacy_region_map(atlas_without_names("no-such-atlas")),
+      "No pre-0.1.0 region names"
     )
     expect_length(map, 0L)
   })
 
   it("errors on a non-atlas", {
     expect_error(legacy_region_map(data.frame(x = 1)), "must be a")
+  })
+})
+
+describe("names is the curated display name, not the legacy key", {
+  # The two were briefly the same column. Keeping them apart is a deliberate
+  # decision, so assert the specific values that would regress if `names` were
+  # ever repurposed as the migration table again.
+  it("spells out the aseg regions 0.0.4 abbreviated", {
+    core <- aseg()$core
+    name_of <- function(label) core$names[core$label == label]
+
+    expect_identical(name_of("Left-VentralDC"), "ventral diencephalon")
+    expect_identical(name_of("Left-Accumbens-area"), "accumbens")
+    expect_identical(name_of("CC_Posterior"), "corpus callosum posterior")
+    expect_identical(name_of("CC_Mid_Anterior"), "corpus callosum mid-anterior")
+  })
+
+  it("does not reuse the 0.0.4 region strings as aseg names", {
+    legacy <- names(legacy_region_map(aseg()))
+    expect_false(any(
+      c("ventraldc", "accumbens area", "cc posterior") %in%
+        atlas_names(aseg())
+    ))
+    expect_false(setequal(atlas_names(aseg()), legacy))
+  })
+
+  it("spells out the tracula tracts 0.0.4 abbreviated", {
+    core <- tracula()$core
+    name_of <- function(label) core$names[core$label == label]
+
+    expect_match(
+      name_of("lh.slf1.bbr.prep"),
+      "superior longitudinal fasciculus I",
+      fixed = TRUE
+    )
+    expect_identical(name_of("cc.genu.bbr.prep"), "corpus callosum genu")
+  })
+
+  it("does not reuse the 0.0.4 region strings as tracula names", {
+    expect_false(any(c("SLF I", "CC genu") %in% atlas_names(tracula())))
+    expect_false(setequal(
+      atlas_names(tracula()),
+      names(
+        legacy_region_map(tracula())
+      )
+    ))
+  })
+
+  it("keeps every bundled atlas's names readable", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      nms <- atlas_names(atlas)
+      expect_false(any(grepl("[._]", nms)))
+      expect_true(all(nzchar(nms)))
+    }
   })
 })
 

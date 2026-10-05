@@ -125,7 +125,7 @@ changes to geometry and palette.
 
 The required columns are `region` (a short, hemisphere-free key), `label` (a
 unique identifier that links core to geometry and palette) and `names` (the
-long-form display name). Most atlases also carry `hemi`:
+curated long-form display name). Most atlases also carry `hemi`:
 
 ```{r}
 #| label: core-structure
@@ -163,14 +163,23 @@ geometry):
 head(atlas_labels(dk()))
 ```
 
-`atlas_names()` returns the long-form display names. These are also the `region`
-values the atlases shipped before version 0.1.0, so `legacy_region_map()` can
-translate a table written against the old keys:
+`atlas_names()` returns the curated long-form display names — what you want for
+a figure legend:
 
 ```{r}
 #| label: atlas-names
-head(atlas_names(dk()))
-head(legacy_region_map(dk()))
+head(atlas_names(aseg()))
+```
+
+`region` held long-form names itself until version 0.1.0. `legacy_region_map()`
+translates those old values to the current keys, which is what you need to fix a
+table or script written against an earlier release. It reads a recorded table of
+what each bundled atlas shipped at 0.0.4, so it is not the same thing as
+`names`:
+
+```{r}
+#| label: legacy-region-map
+head(legacy_region_map(aseg()))
 ```
 
 `atlas_views()` returns the available 2D views:
