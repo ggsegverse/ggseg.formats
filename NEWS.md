@@ -44,6 +44,14 @@ the `names` column that makes the old values recoverable. Code written against
   `atlas_labels()`. It is preserved by every verb that rebuilds `core`
   (the `atlas_region_*`, `atlas_view_*` and `atlas_structure_*` families).
 
+- **`ggseg_atlas()` warns when `core$label` is not unique.** `label` is the key
+  the palette and every geometry slot are joined on, so a duplicated label fans
+  one geometry row into several: the same parcel is drawn more than once, and in
+  3D that also breaks semi-transparent compositing. The bundled `aseg` carried
+  such alias rows until this release (ggseg3d#55). Like the missing-`names`
+  warning this cannot be an error, since published atlas packages may carry
+  duplicates and would stop loading.
+
 - **`suit()` gains the `names` column** it was missing, so all four bundled
   atlases now carry the same `core` schema.
 

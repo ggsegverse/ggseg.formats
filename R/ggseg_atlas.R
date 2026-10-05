@@ -691,6 +691,7 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
   }
 
   validate_core_names(core, atlas)
+  validate_core_label_unique(core, atlas)
 
   if (
     !inherits(data, "ggseg_atlas_data") &&
@@ -714,6 +715,38 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
 
   invisible()
 }
+
+#' Warn when `core$label` is not unique
+#'
+#' `label` is the key the palette and every geometry slot are joined on, so a
+#' duplicated label fans one geometry row into several: the same parcel is
+#' drawn more than once, which in 3D also breaks semi-transparent compositing.
+#' The bundled `aseg` carried such alias rows until 0.1.0. This cannot be an
+#' error -- published atlas packages may carry them and would stop loading --
+#' so it warns once per atlas per session, like the missing `names` column.
+#' @noRd
+#' @keywords internal
+validate_core_label_unique <- function(core, atlas) {
+  dupes <- unique(core$label[duplicated(core$label)]) # nolint
+  if (length(dupes) == 0) {
+    return(invisible())
+  }
+  rlang::warn(
+    cli::format_message(c(
+      "!" = "{.arg core$label} is not unique in {.val {atlas}}:
+             {.val {utils::head(dupes, 3)}}.",
+      "i" = "{.field label} is the key the palette and geometry join on, so a
+             duplicate draws the same region more than once.",
+      "i" = "Keep one row per {.field label} and move any alias name into
+             {.field names}."
+    )),
+    class = "ggseg.formats_duplicate_labels",
+    .frequency = "once",
+    .frequency_id = paste0("ggseg.formats-core-label-unique-", atlas)
+  )
+  invisible()
+}
+
 
 #' Enforce the `names` column of `core`
 #'

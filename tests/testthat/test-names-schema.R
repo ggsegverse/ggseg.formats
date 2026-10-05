@@ -127,6 +127,53 @@ describe("core names validation", {
   })
 })
 
+describe("core label uniqueness", {
+  it("warns when two core rows share a label", {
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("thalamus", "thalamus proper"),
+      label = c("Left-Thalamus", "Left-Thalamus"),
+      names = c("Thalamus", "Thalamus Proper")
+    )
+    vertices <- data.frame(label = "Left-Thalamus")
+    vertices$vertices <- list(1L:3L)
+    expect_warning(
+      ggseg_atlas(
+        atlas = "dupe-labels",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(vertices = vertices)
+      ),
+      class = "ggseg.formats_duplicate_labels"
+    )
+  })
+
+  it("does not error on duplicate labels", {
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("a", "b"),
+      label = c("x", "x"),
+      names = c("a", "b")
+    )
+    vertices <- data.frame(label = "x")
+    vertices$vertices <- list(1L:3L)
+    atlas <- suppressWarnings(ggseg_atlas(
+      atlas = "dupe-no-error",
+      type = "cortical",
+      core = core,
+      data = ggseg_data_cortical(vertices = vertices)
+    ))
+    expect_s3_class(atlas, "ggseg_atlas")
+  })
+
+  it("gives every bundled atlas unique core labels", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      expect_false(anyDuplicated(atlas$core$label) > 0)
+      expect_identical(nrow(atlas$core), length(atlas_labels(atlas)))
+    }
+  })
+})
+
 describe("bundled atlas schema", {
   it("gives every bundled atlas a character names column", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
