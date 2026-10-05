@@ -7,7 +7,7 @@
 legacy_region_map(atlas)
 }
 \arguments{
-\item{atlas}{A \code{ggseg_atlas} object.}
+\item{atlas}{a \code{ggseg_atlas} object}
 }
 \value{
 A named character vector whose names are the pre-0.1.0 \code{region}

@@ -23,7 +23,7 @@
 #' `"Thalamus Proper"` did in `aseg`, both still translate even though the alias
 #' row itself is gone from `core`.
 #'
-#' @param atlas A `ggseg_atlas` object.
+#' @inheritParams atlas_palette
 #'
 #' @return A named character vector whose names are the pre-0.1.0 `region`
 #'   values and whose values are the current `region` keys. Zero-length for an
