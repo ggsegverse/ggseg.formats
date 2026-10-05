@@ -3,7 +3,12 @@
 # One row per raw FreeSurfer aseg label. `label` is the untouched atlas
 # identifier; `hemi` and `region` are derived mechanically from it (hemisphere
 # stripped into `hemi`, the remainder lowercased with separators spaced);
-# `names` is the fully spelled-out label; `structure` groups regions.
+# `structure` groups regions.
+#
+# `names` holds the long-form display name. For every label the CRAN 0.0.4
+# release shipped, it is verbatim the `region` value of that release, so the
+# 0.1.0 re-keying of `region` stays recoverable by joining on `names`. Labels
+# 0.0.4 never shipped carry a spelled-out name in the same style.
 #
 # Based on: # nolint start: line_length_linter.
 # https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT
@@ -83,41 +88,41 @@ aseg_metadata <- data.frame(
     "third ventricle",
     "fourth ventricle",
     "cerebrospinal fluid",
-    "thalamus",
-    "thalamus",
-    "caudate",
-    "caudate",
-    "putamen",
-    "putamen",
-    "pallidum",
-    "pallidum",
-    "hippocampus",
-    "hippocampus",
-    "amygdala",
-    "amygdala",
-    "accumbens",
-    "accumbens",
-    "ventral diencephalon",
-    "ventral diencephalon",
+    "Thalamus",
+    "Thalamus",
+    "Caudate",
+    "Caudate",
+    "Putamen",
+    "Putamen",
+    "Pallidum",
+    "Pallidum",
+    "Hippocampus",
+    "Hippocampus",
+    "Amygdala",
+    "Amygdala",
+    "accumbens area",
+    "accumbens area",
+    "ventraldc",
+    "ventraldc",
     "vessel",
     "vessel",
     "choroid plexus",
     "choroid plexus",
-    "brain stem",
-    "cerebellum cortex",
-    "cerebellum cortex",
+    "Brain Stem",
+    "Cerebellum",
+    "Cerebellum",
     "cerebellum white matter",
     "cerebellum white matter",
-    "thalamus proper",
-    "thalamus proper",
+    "Thalamus Proper",
+    "Thalamus Proper",
     "white matter hypointensities",
     "non-white matter hypointensities",
-    "optic chiasm",
-    "corpus callosum posterior",
-    "corpus callosum mid-posterior",
-    "corpus callosum central",
-    "corpus callosum mid-anterior",
-    "corpus callosum anterior"
+    "Optic Chiasm",
+    "cc posterior",
+    "cc mid posterior",
+    "cc central",
+    "cc mid anterior",
+    "cc anterior"
   ),
   structure = c(
     "cortex",

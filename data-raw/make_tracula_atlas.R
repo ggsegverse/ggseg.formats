@@ -204,14 +204,23 @@ stopifnot(
 # those filenames cannot supply.
 cli::cli_h2("Post-processing atlas")
 
+# `label` is canonically the .bbr.prep form FreeSurfer emits, which is what
+# users join their own TRACULA tables on. Depending on how much of the
+# filename the reader strips, the raw labels may arrive in the short LUT form
+# instead; relabelling to the canonical form is a no-op when they do not.
+tracula_raw <- relabel_atlas(
+  tracula_raw,
+  setNames(tracula_metadata$label, tracula_metadata$label_short)
+)
+
 core_with_meta <- tracula_raw$core |>
   rename(region_raw = region) |>
   left_join(
-    select(tracula_metadata, label, region, names, group),
+    select(tracula_metadata, label, label_short, region, names, group),
     by = "label"
   ) |>
   mutate(region = coalesce(region, region_raw)) |>
-  select(hemi, region, label, names, group)
+  select(hemi, region, label, label_short, names, group)
 
 n_with_group <- sum(!is.na(core_with_meta$group))
 n_total <- nrow(core_with_meta)

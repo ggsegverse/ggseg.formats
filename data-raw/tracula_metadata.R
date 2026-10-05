@@ -1,17 +1,23 @@
 # TRACULA tract metadata
 #
-# One row per FreeSurfer TRACULA tract. `label` is the atlas identifier, which
-# is the name FreeSurferColorLUT.txt gives the pathway (ids 5100-5399) -- the
-# streamline files carry a trailing .bbr.prep, but that names a processing step
-# rather than the tract, and the LUT is what the atlas is keyed on. `hemi` and
-# `region` are derived mechanically from the label (the lh./rh. prefix becomes
-# `hemi`, the remainder with dots spaced becomes `region`); `names` is the fully
-# spelled-out label; `group` classifies tracts.
+# One row per FreeSurfer TRACULA tract. `label` is the atlas identifier: the
+# name TRACULA writes its per-pathway outputs under, which carries a trailing
+# .bbr.prep. That suffix names a processing step rather than the tract, but it
+# is what FreeSurfer emits and what users join their own tables on, so it is
+# the canonical key. `label_short` is the same identifier with the suffix
+# stripped -- the name FreeSurferColorLUT.txt gives the pathway (ids
+# 5100-5399). `hemi` and `region` are derived mechanically from `label_short`
+# (the lh./rh. prefix becomes `hemi`, the remainder with dots spaced becomes
+# `region`); `group` classifies tracts.
+#
+# `names` holds the long-form display name, verbatim the `region` value the
+# CRAN 0.0.4 release shipped, so the 0.1.0 re-keying of `region` stays
+# recoverable by joining on `names`.
 #
 # Based on: https://surfer.nmr.mgh.harvard.edu/fswiki/Tracula
 
 tracula_metadata <- data.frame(
-  label = c(
+  label_short = c(
     # Corpus callosum segments
     "cc.rostrum",
     "cc.genu",
@@ -62,14 +68,14 @@ tracula_metadata <- data.frame(
   ),
   names = c(
     # CC segments
-    "corpus callosum rostrum",
-    "corpus callosum genu",
-    "corpus callosum body central",
-    "corpus callosum body prefrontal",
-    "corpus callosum body premotor",
-    "corpus callosum body parietal",
-    "corpus callosum body temporal",
-    "corpus callosum splenium",
+    "CC rostrum",
+    "CC genu",
+    "CC body central",
+    "CC body prefrontal",
+    "CC body premotor",
+    "CC body parietal",
+    "CC body temporal",
+    "CC splenium",
     # Commissures
     "anterior commissure",
     # Cerebellar
@@ -87,9 +93,9 @@ tracula_metadata <- data.frame(
     "inferior longitudinal fasciculus",
     "middle longitudinal fasciculus",
     "optic radiation",
-    "superior longitudinal fasciculus I",
-    "superior longitudinal fasciculus II",
-    "superior longitudinal fasciculus III",
+    "SLF I",
+    "SLF II",
+    "SLF III",
     "uncinate fasciculus",
     # Right tracts (same names)
     "corticospinal tract",
@@ -104,9 +110,9 @@ tracula_metadata <- data.frame(
     "inferior longitudinal fasciculus",
     "middle longitudinal fasciculus",
     "optic radiation",
-    "superior longitudinal fasciculus I",
-    "superior longitudinal fasciculus II",
-    "superior longitudinal fasciculus III",
+    "SLF I",
+    "SLF II",
+    "SLF III",
     "uncinate fasciculus"
   ),
   group = c(
@@ -130,15 +136,16 @@ tracula_metadata <- data.frame(
   )
 )
 
-tracula_metadata$hemi <- "midline"
-tracula_metadata$hemi[grepl("^lh\\.", tracula_metadata$label)] <- "left"
-tracula_metadata$hemi[grepl("^rh\\.", tracula_metadata$label)] <- "right"
+tracula_metadata$label <- paste0(tracula_metadata$label_short, ".bbr.prep")
 
-tracula_metadata$region <- tracula_metadata$label |>
+tracula_metadata$hemi <- "midline"
+tracula_metadata$hemi[grepl("^lh\\.", tracula_metadata$label_short)] <- "left"
+tracula_metadata$hemi[grepl("^rh\\.", tracula_metadata$label_short)] <- "right"
+
+tracula_metadata$region <- tracula_metadata$label_short |>
   sub("^(lh|rh)\\.", "", x = _) |>
-  sub("\\.bbr\\.prep$", "", x = _) |>
   gsub("\\.", " ", x = _)
 
 tracula_metadata <- tracula_metadata[,
-  c("label", "hemi", "region", "names", "group")
+  c("label", "label_short", "hemi", "region", "names", "group")
 ]
