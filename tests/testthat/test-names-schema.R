@@ -58,10 +58,10 @@ atlas_without_names <- function(name = "nameless") {
 }
 
 describe("atlas_names", {
-  it("returns the sorted unique long-form names of a bundled atlas", {
+  it("returns the names column of a bundled atlas in core row order", {
     result <- atlas_names(dk())
     expect_type(result, "character")
-    expect_identical(result, sort(unique(dk()$core$names)))
+    expect_identical(result, dk()$core$names)
     expect_true("banks of superior temporal sulcus" %in% result)
   })
 
@@ -77,7 +77,7 @@ describe("atlas_names", {
 
   it("has a data.frame method", {
     df <- data.frame(names = c("b", "a", NA, "a"))
-    expect_identical(atlas_names(df), c("a", "b"))
+    expect_identical(atlas_names(df), c("b", "a", NA, "a"))
   })
 })
 
@@ -174,6 +174,44 @@ describe("core label uniqueness", {
   })
 })
 
+describe("core-column accessor alignment", {
+  it("returns one element per core row for every bundled atlas", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      n <- nrow(atlas$core)
+      expect_length(atlas_labels(atlas), n)
+      expect_length(atlas_regions(atlas), n)
+      expect_length(atlas_names(atlas), n)
+    }
+  })
+
+  it("returns the core columns in core row order", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      expect_identical(atlas_labels(atlas), atlas$core$label)
+      expect_identical(atlas_regions(atlas), atlas$core$region)
+      expect_identical(atlas_names(atlas), atlas$core$names)
+    }
+  })
+
+  it("describes the same row across the three accessors", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      i <- seq_len(nrow(atlas$core))
+      row_of <- match(atlas_labels(atlas)[i], atlas$core$label)
+      expect_identical(row_of, i)
+      expect_identical(atlas_regions(atlas)[i], atlas$core$region[row_of])
+      expect_identical(atlas_names(atlas)[i], atlas$core$names[row_of])
+    }
+  })
+
+  it("recovers the old distinct region set through unique()", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      regions <- atlas_regions(atlas)
+      distinct <- sort(unique(regions[!is.na(regions)]))
+      expect_identical(distinct, sort(unique(atlas$core$region)))
+      expect_lt(length(distinct), nrow(atlas$core))
+    }
+  })
+})
+
 describe("bundled atlas schema", {
   it("gives every bundled atlas a character names column", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
@@ -185,7 +223,7 @@ describe("bundled atlas schema", {
 
   it("keeps tracula labels and palette keys as FreeSurfer emits them", {
     expected <- cran_0_0_4_tracula_labels()
-    expect_identical(atlas_labels(tracula()), expected)
+    expect_identical(sort(atlas_labels(tracula())), expected)
     expect_identical(sort(names(atlas_palette(tracula()))), expected)
   })
 

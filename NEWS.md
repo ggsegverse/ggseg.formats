@@ -43,6 +43,29 @@ the `names` column that makes the old values recoverable. Code written against
   matched nothing, and say which key to use instead rather than leaving a blank
   figure behind.
 
+- **`atlas_regions()`, `atlas_labels()` and `atlas_names()` return the raw
+  `core` column.** They used to return a sorted, de-duplicated, `NA`-dropped
+  set, so the three disagreed on length for the same atlas — `dk` has 70 `core`
+  rows but returned 35 regions and 35 names — and could not be zipped. Each now
+  returns one element per `core` row, in `core` row order, with repeats and
+  `NA`s retained, so `atlas_labels(a)[i]`, `atlas_regions(a)[i]` and
+  `atlas_names(a)[i]` describe the same row.
+
+  Concretely: `atlas_regions()` and `atlas_names()` now **repeat** values (once
+  per hemisphere or view row) and are **no longer sorted**; `atlas_labels()` is
+  the same length as before for the bundled atlases, whose labels are unique,
+  but is now in `core` order rather than alphabetical. Any code that indexed the
+  old output positionally, or relied on it being a set, needs `unique()`:
+
+  ``` r
+  unique(atlas_regions(dk()))        # the old, de-duplicated value
+  sort(unique(atlas_regions(dk())))  # the old value exactly
+  ```
+
+  `atlas_views()` is unchanged: views are a separate axis, not a `core` column.
+  `atlas_names()` still returns a zero-length character vector for an atlas
+  carrying no `names` column.
+
 - **`names` is part of the `core` schema**, holding the curated long-form
   display name. It is validated by `ggseg_atlas()`:
   a `names` column that is not character is an error, because a half-filled key

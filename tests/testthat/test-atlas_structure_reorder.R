@@ -45,7 +45,7 @@ describe("atlas_structure_reorder()", {
 
   it("moves both hemispheres when given a region", {
     a <- aseg()
-    region <- atlas_regions(a)[1]
+    region <- unique(atlas_regions(a))[1]
     out <- atlas_structure_reorder(a, region, match_on = "region")
 
     moved <- a$core$label[a$core$region == region]

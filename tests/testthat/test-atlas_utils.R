@@ -216,10 +216,10 @@ make_cortical_hemi_atlas <- function() {
 # atlas_regions ----
 
 describe("atlas_regions", {
-  it("extracts sorted unique regions from brain_atlas", {
+  it("returns the region column in core row order, repeats retained", {
     atlas <- make_test_atlas()
     result <- atlas_regions(atlas)
-    expect_identical(result, c("frontal", "parietal"))
+    expect_identical(result, c("frontal", "parietal", "frontal"))
   })
 
   it("excludes context-only geometry (labels in sf but not in core)", {
@@ -231,7 +231,7 @@ describe("atlas_regions", {
   it("works with data.frame", {
     df <- data.frame(region = c("frontal", "parietal", "frontal"))
     result <- atlas_regions(df)
-    expect_identical(result, c("frontal", "parietal"))
+    expect_identical(result, c("frontal", "parietal", "frontal"))
   })
 
   it("works with ggseg_atlas", {
@@ -246,13 +246,24 @@ describe("atlas_regions", {
 # atlas_labels ----
 
 describe("atlas_labels", {
-  it("extracts sorted unique labels from brain_atlas", {
+  it("returns the label column in core row order", {
     atlas <- make_test_atlas()
     result <- atlas_labels(atlas)
     expect_identical(result, c("lh_frontal", "lh_parietal", "rh_frontal"))
   })
 
-  it("excludes NA labels", {
+  it("is row-aligned with atlas_regions() and atlas_names()", {
+    atlas <- make_test_atlas()
+    expect_length(atlas_labels(atlas), nrow(atlas$core))
+    expect_length(atlas_regions(atlas), nrow(atlas$core))
+    expect_length(atlas_names(atlas), nrow(atlas$core))
+    i <- 3L
+    expect_identical(atlas_labels(atlas)[i], "rh_frontal")
+    expect_identical(atlas_regions(atlas)[i], "frontal")
+    expect_identical(atlas_names(atlas)[i], "frontal")
+  })
+
+  it("retains NA labels", {
     core <- data.frame(
       hemi = c("left", "left"),
       region = c("frontal", "unknown"),
@@ -267,7 +278,7 @@ describe("atlas_labels", {
       core = core,
       data = ggseg_data_cortical(vertices = vertices)
     )
-    expect_identical(atlas_labels(atlas), "lh_frontal")
+    expect_identical(atlas_labels(atlas), c("lh_frontal", NA))
   })
 })
 
@@ -305,16 +316,20 @@ describe("atlas_type", {
 })
 
 
-# get_uniq ----
+# get_col ----
 
-describe("get_uniq", {
-  it("returns sorted unique values excluding NA", {
+describe("get_col", {
+  it("returns the column unchanged, repeats and NA retained", {
     df <- data.frame(region = c("c", "a", "b", NA, "a"), label = 1:5)
-    expect_identical(get_uniq(df, "region"), c("a", "b", "c"))
+    expect_identical(get_col(df, "region"), c("c", "a", "b", NA, "a"))
+  })
+
+  it("returns a zero-length character vector for an absent column", {
+    expect_identical(get_col(data.frame(), "region"), character(0))
   })
 
   it("errors with invalid type", {
-    expect_error(get_uniq(data.frame(), "invalid"))
+    expect_error(get_col(data.frame(), "invalid"))
   })
 })
 

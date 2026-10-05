@@ -54,7 +54,7 @@ legacy_region_map <- function(atlas) {
     return(stats::setNames(character(0), character(0)))
   }
 
-  current <- atlas$core$region[match(legacy$label, atlas$core$label)]
+  current <- atlas_regions(atlas)[match(legacy$label, atlas_labels(atlas))]
   keep <- !is.na(current)
   map <- stats::setNames(current[keep], legacy$legacy_region[keep])
   map[!duplicated(names(map))]

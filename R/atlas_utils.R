@@ -1,7 +1,11 @@
-#' Extract unique region names from an atlas
+#' Extract the region column of an atlas
 #'
 #' @param x brain atlas
-#' @return Character vector of region names
+#' @return The `region` column of `core`, unchanged: one element per `core`
+#'   row, in `core` row order, with repeats and `NA`s retained. It is therefore
+#'   row-aligned with [atlas_labels()] and [atlas_names()]. Use `unique()` for
+#'   the distinct set. A zero-length character vector when the atlas carries no
+#'   `region` column.
 #' @examples
 #' atlas_regions(dk())
 #' atlas_regions(aseg())
@@ -14,23 +18,27 @@ atlas_regions <- function(x) {
 
 #' @export
 atlas_regions.ggseg_atlas <- function(x) {
-  get_uniq(x$core, "region")
+  get_col(x$core, "region")
 }
 
 #' @export
 atlas_regions.brain_atlas <- function(x) {
-  get_uniq(x$core, "region")
+  get_col(x$core, "region")
 }
 
 #' @export
 atlas_regions.data.frame <- function(x) {
-  get_uniq(x, "region")
+  get_col(x, "region")
 }
 
-#' Extract unique labels from an atlas
+#' Extract the label column of an atlas
 #'
 #' @param x brain atlas
-#' @return Character vector of atlas region labels
+#' @return The `label` column of `core`, unchanged: one element per `core` row,
+#'   in `core` row order, with repeats and `NA`s retained. It is therefore
+#'   row-aligned with [atlas_regions()] and [atlas_names()]. Use `unique()` for
+#'   the distinct set. A zero-length character vector when the atlas carries no
+#'   `label` column.
 #' @examples
 #' atlas_labels(dk())
 #' atlas_labels(aseg())
@@ -43,16 +51,16 @@ atlas_labels <- function(x) {
 
 #' @export
 atlas_labels.ggseg_atlas <- function(x) {
-  get_uniq(x$core, "label")
+  get_col(x$core, "label")
 }
 
 #' @export
 atlas_labels.brain_atlas <- function(x) {
-  get_uniq(x$core, "label")
+  get_col(x$core, "label")
 }
 
 
-#' Extract unique long-form region names from an atlas
+#' Extract the long-form region name column of an atlas
 #'
 #' The `names` column of `core` holds the long-form display name of each
 #' region, as against the short, hemisphere-free key in `region` and the atlas
@@ -61,8 +69,11 @@ atlas_labels.brain_atlas <- function(x) {
 #' recoverable; see [legacy_region_map()].
 #'
 #' @param x brain atlas
-#' @return Character vector of long-form region names, or a zero-length
-#'   character vector when the atlas carries no `names` column.
+#' @return The `names` column of `core`, unchanged: one element per `core` row,
+#'   in `core` row order, with repeats and `NA`s retained. It is therefore
+#'   row-aligned with [atlas_regions()] and [atlas_labels()]. Use `unique()` for
+#'   the distinct set. A zero-length character vector when the atlas carries no
+#'   `names` column.
 #' @examples
 #' atlas_names(dk())
 #' atlas_names(aseg())
@@ -76,17 +87,17 @@ atlas_names <- function(x) {
 
 #' @export
 atlas_names.ggseg_atlas <- function(x) {
-  get_uniq(x$core, "names")
+  get_col(x$core, "names")
 }
 
 #' @export
 atlas_names.brain_atlas <- function(x) {
-  get_uniq(x$core, "names")
+  get_col(x$core, "names")
 }
 
 #' @export
 atlas_names.data.frame <- function(x) {
-  get_uniq(x, "names")
+  get_col(x, "names")
 }
 
 
@@ -940,14 +951,12 @@ legacy_region_hint <- function(atlas, pattern) {
 
 
 #' @noRd
-get_uniq <- function(x, type) {
+get_col <- function(x, type) {
   type <- match.arg(type, c("label", "region", "names"))
   if (!type %in% names(x)) {
     return(character(0))
   }
-  x <- unique(x[[type]])
-  x <- x[!is.na(x)]
-  sort(x)
+  x[[type]]
 }
 
 #' @noRd

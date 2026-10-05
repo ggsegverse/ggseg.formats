@@ -3,7 +3,7 @@
 \name{atlas_regions}
 \alias{atlas_regions}
 \alias{brain_regions}
-\title{Extract unique region names from an atlas}
+\title{Extract the region column of an atlas}
 \usage{
 atlas_regions(x)
 
@@ -13,10 +13,14 @@ brain_regions(x)
 \item{x}{brain atlas}
 }
 \value{
-Character vector of region names
+The \code{region} column of \code{core}, unchanged: one element per \code{core}
+row, in \code{core} row order, with repeats and \code{NA}s retained. It is therefore
+row-aligned with \code{\link[=atlas_labels]{atlas_labels()}} and \code{\link[=atlas_names]{atlas_names()}}. Use \code{unique()} for
+the distinct set. A zero-length character vector when the atlas carries no
+\code{region} column.
 }
 \description{
-Extract unique region names from an atlas
+Extract the region column of an atlas
 }
 \examples{
 atlas_regions(dk())

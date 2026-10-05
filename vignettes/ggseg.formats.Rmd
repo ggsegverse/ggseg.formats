@@ -148,15 +148,19 @@ manipulation vignette).
 A set of accessor functions lets you pull information out without reaching into
 slots directly.
 
-`atlas_regions()` returns the sorted unique region names:
+Each of these returns one element per `core` row, in `core` row order, so they
+are row-aligned with each other: `atlas_labels(a)[i]`, `atlas_regions(a)[i]` and
+`atlas_names(a)[i]` all describe the same row. Wrap a call in `unique()` when
+you want the distinct set instead.
+
+`atlas_regions()` returns the region keys:
 
 ```{r}
 #| label: atlas-regions
-atlas_regions(dk())
+unique(atlas_regions(dk()))
 ```
 
-`atlas_labels()` returns the unique labels (the identifiers used to join
-geometry):
+`atlas_labels()` returns the labels (the identifiers used to join geometry):
 
 ```{r}
 #| label: atlas-labels

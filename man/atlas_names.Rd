@@ -2,7 +2,7 @@
 % Please edit documentation in R/atlas_utils.R
 \name{atlas_names}
 \alias{atlas_names}
-\title{Extract unique long-form region names from an atlas}
+\title{Extract the long-form region name column of an atlas}
 \usage{
 atlas_names(x)
 }
@@ -10,8 +10,11 @@ atlas_names(x)
 \item{x}{brain atlas}
 }
 \value{
-Character vector of long-form region names, or a zero-length
-character vector when the atlas carries no \code{names} column.
+The \code{names} column of \code{core}, unchanged: one element per \code{core} row,
+in \code{core} row order, with repeats and \code{NA}s retained. It is therefore
+row-aligned with \code{\link[=atlas_regions]{atlas_regions()}} and \code{\link[=atlas_labels]{atlas_labels()}}. Use \code{unique()} for
+the distinct set. A zero-length character vector when the atlas carries no
+\code{names} column.
 }
 \description{
 The \code{names} column of \code{core} holds the long-form display name of each
