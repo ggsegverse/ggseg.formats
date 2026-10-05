@@ -1151,19 +1151,34 @@ reposition_views <- function(
 }
 
 
-#' Re-key an atlas's `label` column everywhere it appears
+#' Re-key an atlas's labels
 #'
-#' `label` is the atlas's join key, carried by `core`, by the palette's names
-#' and by every payload slot (`geom`, `vertices`, `meshes`, `centerlines`).
-#' Rewriting it in one place and not the others silently decouples geometry
-#' from metadata, so this does all of them at once. Labels absent from
-#' `mapping` -- contextual geometry such as the `cortex_` silhouette -- are
-#' left alone. Used by the `data-raw` build scripts.
-#' @param atlas A `ggseg_atlas` object.
-#' @param mapping Named character vector: names are current labels, values the
-#'   replacements.
-#' @noRd
-#' @keywords internal
+#' `label` is an atlas's join key: `core`, the palette's names and every
+#' geometry payload (`geom`, `vertices`, `meshes`, `centerlines`) are keyed on
+#' it. Rewriting it in one of those places and not the others silently decouples
+#' geometry from metadata, which is how a renamed region ends up drawn in the
+#' wrong colour or not at all, so this rewrites all of them together.
+#'
+#' Labels absent from `mapping` are left alone, so contextual geometry such as
+#' the `cortex_` silhouette survives a partial re-key untouched.
+#'
+#' This is the supported way to correct an atlas's identifiers -- the operation
+#' `tracula()` itself needed when its `.bbr.prep` suffix was restored. Use
+#' [atlas_region_rename()] instead to change the display names in `region`,
+#' which is not a join key.
+#'
+#' @inheritParams atlas_palette
+#' @param mapping Named character vector: names are the atlas's current labels,
+#'   values the replacements.
+#'
+#' @return The `ggseg_atlas` with `mapping` applied to `core$label`, the
+#'   palette's names and every payload slot that carries a `label` column.
+#' @family atlas manipulations
+#' @seealso [atlas_region_rename()] to rename regions rather than re-key labels.
+#' @export
+#' @examples
+#' a <- relabel_atlas(aseg(), c("Left-Thalamus" = "lh_thalamus"))
+#' head(atlas_labels(a))
 relabel_atlas <- function(atlas, mapping) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")

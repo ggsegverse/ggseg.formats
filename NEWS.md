@@ -91,6 +91,11 @@ the `names` column that makes the old values recoverable. Code written against
 - New `legacy_region_map()` returns the pre-0.1.0 `region` name to current
   `region` key mapping for an atlas.
 - New `atlas_names()` accessor returns an atlas's long-form region names.
+- New `relabel_atlas()` re-keys an atlas's `label` values across `core`, the
+  palette and every geometry payload at once. `label` is the join key all three
+  are keyed on, so rewriting it in one place and not the others silently
+  decouples geometry from metadata; this is the operation `tracula()` itself
+  needed when its `.bbr.prep` suffix was restored.
 - New `atlas_structure_reorder()` moves structures within an atlas's geometry
   the way `dplyr::relocate()` moves columns, with `.before` and `.after`
   anchors. Geometry rows are drawn in the order they appear, so this is what
