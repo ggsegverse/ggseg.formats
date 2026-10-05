@@ -1,253 +1,75 @@
 # ggseg.formats
 
-## ggseg.formats 0.1.0
-
-This release re-keys the `region` column of all four bundled atlases and adds
-the `names` column that makes the old values recoverable. Code written against
-`region` before 0.1.0 needs updating; see **Breaking changes** below for how.
+## ggseg.formats (development version)
 
 ### Breaking changes
 
-- **`region` is now a short, hemisphere-free key.** `region` used to hold a
-  prettified display name (`"banks of superior temporal sulcus"`); it now holds
-  the key derived from `label` (`"bankssts"`). `label` is unchanged and remains
-  the stable join key.
-
-  Nothing errors when this bites: `merge(all.x = TRUE)` and the ggseg fill
-  scale both yield `NA` for an unmatched region, which draws as a blank parcel.
-
-  **To migrate, translate your tables with the new `legacy_region_map()`**,
-  which returns the old long name to new `region` key mapping:
+- `region` is now a short, hemisphere-free key derived from `label`
+  (`"bankssts"`), not a long-form display name. `label` is unchanged. Translate
+  your own tables with the new `legacy_region_map()`; see
+  `vignette("migrating-atlases")`.
 
   ``` r
-  map <- legacy_region_map(dk())
-  my_data$region <- unname(map[my_data$region])
+  my_data$region <- unname(legacy_region_map(dk())[my_data$region])
   ```
 
-  Every pre-0.1.0 `region` value of all four bundled atlases translates:
-  `dk` 35/35, `aseg` 19/19, `tracula` 26/26, `suit` 13/13 (`suit`'s keys never
-  changed, so its map is the identity). `aseg`'s `"Thalamus Proper"` translates
-  too, to `"thalamus"`, even though the alias row it lived on is gone from
-  `core`.
-
-  Do **not** reach for `names` to do this. `names` is the curated display name,
-  spelled out to read well in a legend, and for several regions it deliberately
-  differs from what 0.0.4 shipped as `region` — `aseg` has
-  `names` `"ventral diencephalon"` where 0.0.4 had `region` `"ventraldc"`, and
-  `"corpus callosum posterior"` where 0.0.4 had `"cc posterior"`.
-  `legacy_region_map()` reads a recorded table of the 0.0.4 values instead, so
-  it stays correct however `names` is later improved.
-
-  `atlas_region_remove()`, `atlas_region_contextual()` and
-  `atlas_region_keep()` now recognise a pre-0.1.0 name in a pattern that
-  matched nothing, and say which key to use instead rather than leaving a blank
-  figure behind.
-
-- **`atlas_regions()`, `atlas_labels()` and `atlas_names()` return the raw
-  `core` column.** They used to return a sorted, de-duplicated, `NA`-dropped
-  set, so the three disagreed on length for the same atlas — `dk` has 70 `core`
-  rows but returned 35 regions and 35 names — and could not be zipped. Each now
-  returns one element per `core` row, in `core` row order, with repeats and
-  `NA`s retained, so `atlas_labels(a)[i]`, `atlas_regions(a)[i]` and
-  `atlas_names(a)[i]` describe the same row.
-
-  Concretely: `atlas_regions()` and `atlas_names()` now **repeat** values (once
-  per hemisphere or view row) and are **no longer sorted**; `atlas_labels()` is
-  the same length as before for the bundled atlases, whose labels are unique,
-  but is now in `core` order rather than alphabetical. Any code that indexed the
-  old output positionally, or relied on it being a set, needs `unique()`:
-
-  ``` r
-  unique(atlas_regions(dk()))        # the old, de-duplicated value
-  sort(unique(atlas_regions(dk())))  # the old value exactly
-  ```
-
-  `atlas_views()` is unchanged: views are a separate axis, not a `core` column.
-  `atlas_names()` still returns a zero-length character vector for an atlas
-  carrying no `names` column.
-
-- **`names` is part of the `core` schema**, holding the curated long-form
-  display name. It is validated by `ggseg_atlas()`:
-  a `names` column that is not character is an error, because a half-filled key
-  column is worse than none. An atlas built without one still loads, but warns
-  once per atlas per session, so the roughly twenty published atlas packages
-  that predate the column keep working while their maintainers add it. New
-  `atlas_names()` accessor reads it, alongside `atlas_regions()` and
-  `atlas_labels()`. It is preserved by every verb that rebuilds `core`
-  (the `atlas_region_*`, `atlas_view_*` and `atlas_structure_*` families).
-
-- **`ggseg_atlas()` warns when `core$label` is not unique.** `label` is the key
-  the palette and every geometry slot are joined on, so a duplicated label fans
-  one geometry row into several: the same parcel is drawn more than once, and in
-  3D that also breaks semi-transparent compositing. The bundled `aseg` carried
-  such alias rows until this release (ggseg3d#55). Like the missing-`names`
-  warning this cannot be an error, since published atlas packages may carry
-  duplicates and would stop loading.
-
-- **`suit()` gains the `names` column** it was missing, so all four bundled
-  atlases now carry the same `core` schema.
-
-- **`tracula()` labels carry the `.bbr.prep` suffix again.** 0.0.4.9001 stripped
-  it, on the grounds that it names a processing step rather than a tract and
-  that `FreeSurferColorLUT.txt` omits it. But it is what FreeSurfer's TRACULA
-  actually emits and what users' own tables are keyed on, and `label` is the
-  key documented as stable — so stripping it silently turned every user palette
-  all-`NA` and stopped TRACULA output joining at all (0 of 42 labels and 0 of 42
-  palette keys survived). The suffixed form is canonical again, matching 0.0.4
-  exactly, and the suffix-free LUT name is kept in a new `label_short` column.
-
-- **`aseg()` drops the alias rows.** `core` goes from 47 rows to 29 and
-  `atlas_regions(aseg())` from 19 to 18 values: the previous label matching left
-  most structures with a duplicate row, and `"Thalamus"`/`"Thalamus Proper"`
-  were two regions on one label.
-
-- **`aseg()` gains two `structure` levels and loses the `NA` one.** The levels
-  go from 6 to 8: `diencephalon` is new (the ventral diencephalon was
-  unclassified), `corpus callosum` and `ventricle` now cover the callosal
-  segments and the choroid plexus, and no region is left unclassified.
+- `atlas_regions()`, `atlas_labels()` and `atlas_names()` return their `core`
+  column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
+  instead of a sorted, de-duplicated set, so the three are now row-aligned.
+  `sort(unique(x))` recovers the old value. `atlas_views()` is unchanged.
+- `names` is part of the `core` schema, read by the new `atlas_names()`, and
+  `suit()` gains it. A non-character `names` is an error; a missing one warns
+  once per atlas per session, so older atlas packages keep loading.
+- `ggseg_atlas()` warns when `core$label` is not unique, since the palette and
+  every geometry slot are joined on it (ggseg3d#55).
+- `aseg()` drops its alias rows (`core` 47 to 29 rows, `"Thalamus Proper"` gone),
+  gains the `diencephalon` and `corpus callosum`/`ventricle` `structure` levels,
+  and leaves no region unclassified.
+- `tracula()` labels carry the `.bbr.prep` suffix again, as FreeSurfer emits it;
+  stripping it in 0.0.4.9001 broke every join and palette. The suffix-free name
+  moved to a new `label_short` column.
 
 ### Atlas data
 
-- The bundled atlases were rebuilt with lighter geometry: `dk` polygons are
-  simplified (roughly a quarter of the previous vertex count) and the `aseg`
-  cortex silhouette is smoothed without inflating, shrinking `R/sysdata.rda`
-  from 3.4 MB to 2.1 MB. Figures are visually unchanged.
-- `tracula()` was rebuilt from anatomical slabs with post-hoc smoothing, so
-  tracts are projected from the slab that contains them rather than from a
-  fixed set of planes, and `atlas_view_select()` decides which views keep each
-  tract instead of the nine hand-tuned region/view pairs the build script used
-  to carry.
+- The bundled atlases were rebuilt with lighter geometry, shrinking
+  `R/sysdata.rda` from 3.4 MB to 2.1 MB, and `tracula()` from anatomical slabs.
+  Figures are visually unchanged.
 
 ### New features
 
-- New `legacy_region_map()` returns the pre-0.1.0 `region` name to current
-  `region` key mapping for an atlas, read from a recorded table of what each
-  bundled atlas shipped at 0.0.4 rather than inferred from the atlas's current
-  columns.
-- New `atlas_names()` accessor returns an atlas's curated long-form display
-  names.
-- New `relabel_atlas()` re-keys an atlas's `label` values across `core`, the
-  palette and every geometry payload at once. `label` is the join key all three
-  are keyed on, so rewriting it in one place and not the others silently
-  decouples geometry from metadata; this is the operation `tracula()` itself
-  needed when its `.bbr.prep` suffix was restored.
-- New `atlas_structure_reorder()` moves structures within an atlas's geometry
-  the way `dplyr::relocate()` moves columns, with `.before` and `.after`
-  anchors. Geometry rows are drawn in the order they appear, so this is what
-  decides which structure is painted over which where two overlap - common in
-  subcortical atlases, where a thick slab flattens structures onto one panel
-  that never touch in the brain. Note that the order belongs to the structure
-  rather than to a view: an atlas holds one geometry row per structure with
-  its views nested inside, so a structure keeps the same depth everywhere it
-  is drawn.
-- New `atlas_view_select()` keeps each region only in the views that show it
-  well. A slice or projection slab catches a structure in cross-section as
-  readily as along its length, so most regions leave a sliver in most views,
-  leaving every panel cluttered and every region drawn several times over. A
-  region is kept only where it holds at least `threshold` of the area it
-  reaches in its best view.
-
-  Regions are compared as a whole, across the labels sharing a `region` in
-  `core`, so bilateral structures stay together — assigning left and right
-  independently splits pairs across panels, which reads as an error rather
-  than a choice. Every region survives in at least one view, and context
-  geometry is never touched. Single-hemisphere views (a sagittal panel cuts
-  one hemisphere while axial and coronal panels show both) are detected from
-  the hemispheres actually present and weighted up so they compete fairly;
-  `weights` overrides this per view.
-
-  This was previously hand-rolled in atlas build scripts, where it ran to
-  roughly ninety lines apiece and drifted between them.
-- New `atlas_centerlines()` accessor returns a tract atlas's centerlines,
-  joined with core region info and palette colours, like `atlas_meshes()` and
-  `atlas_vertices()` do for the other geometry types. A tract atlas represents
-  each pathway as a curve swept into a tube rather than as a stored surface,
-  so the centerline is the geometry that defines it — and it was the one
-  payload with no getter, leaving callers reaching into `atlas$data`.
-- New `atlas_plot_palette()` exposes the palette-fallback decision described
-  below, returning the atlas palette when it is usable and the fallback when it
-  is not. Downstream renderers should read the palette through it rather than
-  reaching for `atlas$palette`.
-- New `set_atlas_palette()` setter replaces a palette without requiring users
-  to assign `atlas$palette` directly; it validates the value and warns if the
-  new palette does not cover every atlas label.
-- New `set_atlas_type()` setter replaces an atlas type without assigning
-  `atlas$type` directly. Type is coupled to both the `<type>_atlas` subclass and
-  the `ggseg_data_<type>` payload class, so a direct field assignment leaves the
-  subclass stale and `is_tract_atlas()` disagreeing with `atlas_type()`. The
-  setter reconstructs through `ggseg_atlas()`, so it keeps all three in
-  agreement and errors when the payload does not match the requested type.
-- `atlas_region_rename()` gains `match_on`, bringing it in line with the rest
-  of the `atlas_region_*` family. It still only ever writes to `region`;
-  `match_on` chooses the column the pattern is matched and substituted
-  against. The default `"region"` is the existing behaviour, while `"label"`
-  derives display names from the source identifiers, so
-  `atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")` turns label
-  `ctx-lh-superiorfrontal` into region `superiorfrontal`.
-- The exported API is now organised into three documented families
-  (`@family`): **atlas accessors** (read-only getters such as `atlas_palette()`,
-  `atlas_labels()`), **atlas setters** (`set_atlas_palette()`), and **atlas
-  manipulations** (structural transforms such as `atlas_region_rename()`,
-  `atlas_view_reorder()`). Accessors are pure getters — there is no
-  `atlas_palette<-()` replacement form.
+- New `legacy_region_map()` gives the pre-0.1.0 `region` to current `region`
+  mapping for a bundled atlas.
+- New accessors `atlas_names()`, `atlas_centerlines()` and
+  `atlas_plot_palette()`, the last substituting a fallback for an unusable
+  palette; renderers should read the palette through it.
+- New setters `set_atlas_palette()` and `set_atlas_type()` keep the coupled
+  subclasses in agreement.
+- New `relabel_atlas()` re-keys `label` across `core`, the palette and every
+  geometry payload at once.
+- New `atlas_structure_reorder()` moves structures with `.before`/`.after`
+  anchors, deciding which is drawn over which.
+- New `atlas_view_select()` keeps each region only in the views where it holds at
+  least `threshold` of its best view's area, comparing regions whole.
+- `atlas_region_rename()` gains `match_on`; it still only writes to `region`.
+- The exported API is organised into three `@family` groups: accessors, setters
+  and manipulations.
 
 ### Bug fixes
 
-- `atlas_region_remove()`, `atlas_region_contextual()` and
-  `atlas_region_keep()` warn when their pattern matches no region. They used
-  to return the atlas unchanged and say nothing, so a pattern written for
-  another parcellation, or with a typo in it, did nothing quietly. Three such
-  calls had been sitting in published ggseg.extra tutorials -- including
-  `atlas_region_remove("corpuscallosum")` on a cerebellar atlas -- and one in
-  this package's own test suite, where `atlas_region_keep()` emptied the atlas
-  and the assertion passed vacuously on the zero rows left behind.
-- `plot()` on an atlas whose palette cannot tell its regions apart now falls
-  back to automatically assigned, distinguishable colours instead of drawing
-  the atlas faithfully as one solid silhouette. Several atlases are built from
-  colour lookup tables that give every region `0 0 0`, so they rendered as a
-  black brain in which no parcel could be told from its neighbour, and in the
-  subcortical ones the grey `cortex_` backdrop went black too and read as a
-  region. A palette counts as unusable only when every one of the atlas's
-  regions resolves to a single colour: a palette that is merely dark, or an
-  atlas with a single region, is left alone. Contextual geometry -- the
-  `cortex_` silhouette and the `unknown` medial wall, whether or not the atlas
-  keeps them in `core` -- stays its conventional grey in the fallback, so
-  backdrop is never mistaken for a parcel. Falling back warns and names the
-  atlas, because the real fix belongs in the atlas's lookup table.
-- `atlas_view_reorder()` now reorders the geometry rows as well as
-  repositioning them, so the new order actually shows up in a plot.
-  Consumers read view order off the row order - `ggseg::geom_brain()` lays
-  panels out in the order it meets the views - so moving the coordinates
-  without moving the rows left the plot unchanged. The sf branch always
-  rebuilt its rows group by group; the pure-R polygon branch, which every
-  bundled atlas has used since the sf-optional migration, did not. The
-  reposition parity tests compared coordinates only, which is how it went
-  unnoticed; they now compare row order too.
-- `plot()` now draws atlas panels in the order the views are laid out, so
-  `atlas_view_reorder()` is reflected in the output. Panels were previously
-  ordered by the sequence in which views appeared in the underlying row table;
-  for `brain_polygons` those rows nest by `label`, so the order depended on
-  which views the first label happened to carry — neither following the atlas
-  layout nor stable across atlases. Panels are now ordered by position.
-- `plot()` now divides a view into panels by hemisphere where the atlas makes
-  that division unambiguous, instead of always guessing panel boundaries from
-  coordinate gaps. The old heuristic split only on gaps wider than 12% of the
-  view's total span, so atlases whose hemispheres sat a little closer together
-  collapsed into a single wide panel and drew both hemispheres at a third of
-  their proper size. A view is only split this way when both hemispheres are
-  present, their extents are disjoint, and every midline structure and
-  contextual silhouette falls wholly inside one of them; anything spanning the
-  divide keeps the view whole, so no region is clipped out of the figure.
-  Views the hemisphere rule cannot resolve still fall back to gap splitting.
-  Of the bundled atlases only `suit()` changes, gaining a second panel that
-  renders the deep nuclei at a legible size (#18).
+- The `atlas_region_*` verbs warn when their pattern matches no region, instead
+  of silently returning the atlas unchanged.
+- `plot()` falls back to distinguishable colours, with a warning, when a palette
+  resolves every region to one colour; contextual geometry stays grey.
+- `atlas_view_reorder()` reorders the geometry rows, not just their coordinates,
+  so the new order shows up in a plot.
+- `plot()` orders panels by view position, and splits a view by hemisphere where
+  that is unambiguous rather than guessing from coordinate gaps. Of the bundled
+  atlases only `suit()` changes (#18).
 
 ### Internals
 
-- `.Rbuildignore` excludes `revdep/`, `*.Rcheck/` and `*.tar.gz`, so a source
-  tarball built from a working tree that has been used for a reverse-dependency
-  check no longer sweeps those in.
-- `LazyData: true` is dropped; the package has no `data/` directory.
+- `.Rbuildignore` excludes `revdep/`, `*.Rcheck/` and `*.tar.gz`; `LazyData` is
+  dropped, as the package has no `data/`.
 
 ## ggseg.formats 0.0.4
 
