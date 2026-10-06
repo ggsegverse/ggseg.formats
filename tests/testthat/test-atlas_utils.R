@@ -25,7 +25,8 @@ make_test_atlas <- function() {
   core <- data.frame(
     hemi = c("left", "left", "right"),
     region = c("frontal", "parietal", "frontal"),
-    label = c("lh_frontal", "lh_parietal", "rh_frontal")
+    label = c("lh_frontal", "lh_parietal", "rh_frontal"),
+    names = c("frontal", "parietal", "frontal")
   )
   palette <- c(
     lh_frontal = "#FF0000",
@@ -109,7 +110,11 @@ make_multiview_atlas <- function() {
       c("frontal", "parietal", "temporal", "occipital", "insula"),
       2
     ),
-    label = core_labels
+    label = core_labels,
+    names = rep(
+      c("frontal", "parietal", "temporal", "occipital", "insula"),
+      2
+    )
   )
 
   palette <- setNames(
@@ -187,7 +192,8 @@ make_cortical_hemi_atlas <- function() {
   core <- data.frame(
     hemi = c("left", "left", "right", "right"),
     region = c("frontal", "parietal", "frontal", "parietal"),
-    label = c(lh_labels, rh_labels)
+    label = c(lh_labels, rh_labels),
+    names = c("frontal", "parietal", "frontal", "parietal")
   )
 
   palette <- c(
@@ -210,10 +216,10 @@ make_cortical_hemi_atlas <- function() {
 # atlas_regions ----
 
 describe("atlas_regions", {
-  it("extracts sorted unique regions from brain_atlas", {
+  it("returns the region column in core row order, repeats retained", {
     atlas <- make_test_atlas()
     result <- atlas_regions(atlas)
-    expect_identical(result, c("frontal", "parietal"))
+    expect_identical(result, c("frontal", "parietal", "frontal"))
   })
 
   it("excludes context-only geometry (labels in sf but not in core)", {
@@ -225,7 +231,7 @@ describe("atlas_regions", {
   it("works with data.frame", {
     df <- data.frame(region = c("frontal", "parietal", "frontal"))
     result <- atlas_regions(df)
-    expect_identical(result, c("frontal", "parietal"))
+    expect_identical(result, c("frontal", "parietal", "frontal"))
   })
 
   it("works with ggseg_atlas", {
@@ -240,17 +246,29 @@ describe("atlas_regions", {
 # atlas_labels ----
 
 describe("atlas_labels", {
-  it("extracts sorted unique labels from brain_atlas", {
+  it("returns the label column in core row order", {
     atlas <- make_test_atlas()
     result <- atlas_labels(atlas)
     expect_identical(result, c("lh_frontal", "lh_parietal", "rh_frontal"))
   })
 
-  it("excludes NA labels", {
+  it("is row-aligned with atlas_regions() and atlas_names()", {
+    atlas <- make_test_atlas()
+    expect_length(atlas_labels(atlas), nrow(atlas$core))
+    expect_length(atlas_regions(atlas), nrow(atlas$core))
+    expect_length(atlas_names(atlas), nrow(atlas$core))
+    i <- 3L
+    expect_identical(atlas_labels(atlas)[i], "rh_frontal")
+    expect_identical(atlas_regions(atlas)[i], "frontal")
+    expect_identical(atlas_names(atlas)[i], "frontal")
+  })
+
+  it("retains NA labels", {
     core <- data.frame(
       hemi = c("left", "left"),
       region = c("frontal", "unknown"),
-      label = c("lh_frontal", NA)
+      label = c("lh_frontal", NA),
+      names = c("frontal", "unknown")
     )
     vertices <- data.frame(label = c("lh_frontal", NA))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -260,7 +278,7 @@ describe("atlas_labels", {
       core = core,
       data = ggseg_data_cortical(vertices = vertices)
     )
-    expect_identical(atlas_labels(atlas), "lh_frontal")
+    expect_identical(atlas_labels(atlas), c("lh_frontal", NA))
   })
 })
 
@@ -298,16 +316,20 @@ describe("atlas_type", {
 })
 
 
-# get_uniq ----
+# get_col ----
 
-describe("get_uniq", {
-  it("returns sorted unique values excluding NA", {
+describe("get_col", {
+  it("returns the column unchanged, repeats and NA retained", {
     df <- data.frame(region = c("c", "a", "b", NA, "a"), label = 1:5)
-    expect_identical(get_uniq(df, "region"), c("a", "b", "c"))
+    expect_identical(get_col(df, "region"), c("c", "a", "b", NA, "a"))
+  })
+
+  it("returns a zero-length character vector for an absent column", {
+    expect_identical(get_col(data.frame(), "region"), character(0))
   })
 
   it("errors with invalid type", {
-    expect_error(get_uniq(data.frame(), "invalid"))
+    expect_error(get_col(data.frame(), "invalid"))
   })
 })
 
@@ -430,7 +452,8 @@ make_cerebellar_atlas <- function() {
   core <- data.frame(
     hemi = c(NA, NA),
     region = c("lobule I", "dentate"),
-    label = c("lobule_I", "dentate")
+    label = c("lobule_I", "dentate"),
+    names = c("lobule I", "dentate nucleus")
   )
   vertices <- data.frame(label = "lobule_I")
   vertices$vertices <- list(1L:3L)
@@ -585,7 +608,8 @@ describe("atlas_region_op", {
     core <- data.frame(
       hemi = c(NA, NA),
       region = c("cortex", "wm"),
-      label = c("cortex", "wm")
+      label = c("cortex", "wm"),
+      names = c("cortex", "white matter")
     )
     ggseg_atlas(
       atlas = "op",
@@ -1056,7 +1080,8 @@ make_view_select_atlas <- function() {
   core <- data.frame(
     hemi = c("left", "right", "left", "right"),
     region = c("frontal", "frontal", "temporal", "temporal"),
-    label = c("lh_frontal", "rh_frontal", "lh_temporal", "rh_temporal")
+    label = c("lh_frontal", "rh_frontal", "lh_temporal", "rh_temporal"),
+    names = c("frontal", "frontal", "temporal", "temporal")
   )
 
   ggseg_atlas(
@@ -1584,7 +1609,12 @@ describe("atlas_view_remove_region", {
   })
 
   it("warns when atlas has no 2D data", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
     atlas <- ggseg_atlas(
@@ -1618,7 +1648,12 @@ describe("atlas_view_keep", {
   })
 
   it("warns when atlas has no 2D data", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
     atlas <- ggseg_atlas(
@@ -1634,7 +1669,12 @@ describe("atlas_view_keep", {
 
 describe("atlas_view_reorder", {
   it("warns when atlas has no 2D data", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
     atlas <- ggseg_atlas(
@@ -1838,7 +1878,8 @@ describe("guess_type edge cases", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -1907,7 +1948,8 @@ describe("atlas_region_remove with no sf data", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "parietal"),
-      label = c("lh_frontal", "rh_parietal")
+      label = c("lh_frontal", "rh_parietal"),
+      names = c("frontal", "parietal")
     )
     vertices <- data.frame(
       label = c("lh_frontal", "rh_parietal")
@@ -1946,7 +1988,8 @@ describe("atlas_region_op edge cases", {
     core <- data.frame(
       hemi = c(NA, NA),
       region = c("cortex", "wm"),
-      label = c("cortex", "wm")
+      label = c("cortex", "wm"),
+      names = c("cortex", "white matter")
     )
     ggseg_atlas(
       atlas = "op",
@@ -2027,7 +2070,8 @@ describe("atlas_region_op edge cases", {
     core <- data.frame(
       hemi = c(NA, NA),
       region = c("a", "b"),
-      label = c("a", "b")
+      label = c("a", "b"),
+      names = c("a", "b")
     )
     atlas <- ggseg_atlas(
       atlas = "op",
@@ -2049,7 +2093,8 @@ describe("atlas_region_op edge cases", {
     core <- data.frame(
       hemi = c(NA, NA),
       region = c("a", "b"),
-      label = c("a", "b")
+      label = c("a", "b"),
+      names = c("a", "b")
     )
     atlas <- ggseg_atlas(
       atlas = "op",
@@ -2074,7 +2119,7 @@ describe("atlas_context_remove edge cases", {
   }
 
   it("returns the atlas unchanged when there is no 2D geometry", {
-    core <- data.frame(hemi = NA, region = "a", label = "a")
+    core <- data.frame(hemi = NA, region = "a", label = "a", names = "a")
     vertices <- data.frame(label = "a")
     vertices$vertices <- list(1L:3L)
     atlas <- ggseg_atlas(
@@ -2096,7 +2141,8 @@ describe("atlas_context_remove edge cases", {
     core <- data.frame(
       hemi = c(NA, NA, NA),
       region = c("a", "b", "c"),
-      label = c("a", "b", "ctx")
+      label = c("a", "b", "ctx"),
+      names = c("a", "b", "c")
     )
     atlas <- ggseg_atlas(
       atlas = "t",
@@ -2181,7 +2227,7 @@ describe("atlas_view_gather sf early returns", {
       view = "v1",
       geometry = sf::st_sfc(make_sq(0, 0))
     )
-    core <- data.frame(hemi = NA, region = "a", label = "a")
+    core <- data.frame(hemi = NA, region = "a", label = "a", names = "a")
     atlas <- ggseg_atlas(
       atlas = "x",
       type = "subcortical",
@@ -2211,7 +2257,8 @@ describe("atlas_view_gather sf early returns", {
     core <- data.frame(
       hemi = c(NA, NA),
       region = c("a", "b"),
-      label = c("a", "b")
+      label = c("a", "b"),
+      names = c("a", "b")
     )
     atlas <- ggseg_atlas(
       atlas = "x",
@@ -2343,7 +2390,8 @@ describe("rebuild_data_with_geom() cerebellar vertices-only branch", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("lobule", "lobule"),
-      label = c("left_lobule", "right_lobule")
+      label = c("left_lobule", "right_lobule"),
+      names = c("lobule", "lobule")
     )
     vertices <- data.frame(label = c("left_lobule", "right_lobule"))
     vertices$vertices <- list(1:3, 4:6)
@@ -2387,6 +2435,7 @@ describe("atlas_view_remove_small(scope = 'piece')", {
         hemi = "mid",
         region = "a",
         label = "a",
+        names = "a",
         stringsAsFactors = FALSE
       ),
       data = ggseg.formats::ggseg_data_subcortical(geom = geom)

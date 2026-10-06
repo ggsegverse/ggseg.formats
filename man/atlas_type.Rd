@@ -25,17 +25,19 @@ atlas_type(tracula())
 \seealso{
 \code{\link[=set_atlas_type]{set_atlas_type()}} to set the type.
 
-Other atlas accessors: 
-\code{\link{atlas_centerlines}()},
-\code{\link{atlas_geom}()},
-\code{\link{atlas_geometry_type}()},
-\code{\link{atlas_labels}()},
-\code{\link{atlas_meshes}()},
-\code{\link{atlas_palette}()},
-\code{\link{atlas_polygons}()},
-\code{\link{atlas_regions}()},
-\code{\link{atlas_sf}()},
-\code{\link{atlas_vertices}()},
-\code{\link{atlas_views}()}
+Other atlas accessors:
+\code{\link[=atlas_centerlines]{atlas_centerlines()}},
+\code{\link[=atlas_geom]{atlas_geom()}},
+\code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
+\code{\link[=atlas_labels]{atlas_labels()}},
+\code{\link[=atlas_meshes]{atlas_meshes()}},
+\code{\link[=atlas_names]{atlas_names()}},
+\code{\link[=atlas_palette]{atlas_palette()}},
+\code{\link[=atlas_polygons]{atlas_polygons()}},
+\code{\link[=atlas_regions]{atlas_regions()}},
+\code{\link[=atlas_sf]{atlas_sf()}},
+\code{\link[=atlas_vertices]{atlas_vertices()}},
+\code{\link[=atlas_views]{atlas_views()}},
+\code{\link[=legacy_region_map]{legacy_region_map()}}
 }
 \concept{atlas accessors}

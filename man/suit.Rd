@@ -32,6 +32,18 @@ Surface lobules carry vertex indices into the shared SUIT cerebellar mesh
 2D geometry is stored in the sf-optional polygon (\code{geom}) representation, so
 the atlas renders with ggseg without requiring sf installed.
 }
+\section{Core columns}{
+
+\code{core} carries one row per atlas region with the columns \code{hemi}, \code{region},
+\code{label} and \code{names}, plus the atlas's own grouping column. \code{label} is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; \code{region} is a short, hemisphere-free key derived from it; \code{names} is the
+curated long-form display name, spelled out to read well in a figure legend.
+
+\code{region} held the long-form name until version 0.1.0. \code{names} is not a record
+of those old values -- use \code{\link[=legacy_region_map]{legacy_region_map()}} to translate them.
+}
+
 \examples{
 suit()
 atlas_regions(suit())
@@ -49,10 +61,10 @@ NeuroImage, 46(1):39-46.
 \code{\link[=tracula]{tracula()}} for white-matter tracts,
 \code{\link[=ggseg_atlas]{ggseg_atlas()}} for the atlas class constructor
 
-Other ggseg_atlases: 
-\code{\link{aseg}()},
-\code{\link{dk}()},
-\code{\link{tracula}()}
+Other ggseg_atlases:
+\code{\link[=aseg]{aseg()}},
+\code{\link[=dk]{dk()}},
+\code{\link[=tracula]{tracula()}}
 }
 \concept{cerebellar_atlases}
 \concept{ggseg_atlases}

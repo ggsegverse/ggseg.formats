@@ -1,7 +1,11 @@
-#' Extract unique region names from an atlas
+#' Extract the region column of an atlas
 #'
 #' @param x brain atlas
-#' @return Character vector of region names
+#' @return The `region` column of `core`, unchanged: one element per `core`
+#'   row, in `core` row order, with repeats and `NA`s retained. It is therefore
+#'   row-aligned with [atlas_labels()] and [atlas_names()]. Use `unique()` for
+#'   the distinct set. A zero-length character vector when the atlas carries no
+#'   `region` column.
 #' @examples
 #' atlas_regions(dk())
 #' atlas_regions(aseg())
@@ -14,23 +18,27 @@ atlas_regions <- function(x) {
 
 #' @export
 atlas_regions.ggseg_atlas <- function(x) {
-  get_uniq(x$core, "region")
+  get_col(x$core, "region")
 }
 
 #' @export
 atlas_regions.brain_atlas <- function(x) {
-  get_uniq(x$core, "region")
+  get_col(x$core, "region")
 }
 
 #' @export
 atlas_regions.data.frame <- function(x) {
-  get_uniq(x, "region")
+  get_col(x, "region")
 }
 
-#' Extract unique labels from an atlas
+#' Extract the label column of an atlas
 #'
 #' @param x brain atlas
-#' @return Character vector of atlas region labels
+#' @return The `label` column of `core`, unchanged: one element per `core` row,
+#'   in `core` row order, with repeats and `NA`s retained. It is therefore
+#'   row-aligned with [atlas_regions()] and [atlas_names()]. Use `unique()` for
+#'   the distinct set. A zero-length character vector when the atlas carries no
+#'   `label` column.
 #' @examples
 #' atlas_labels(dk())
 #' atlas_labels(aseg())
@@ -43,12 +51,53 @@ atlas_labels <- function(x) {
 
 #' @export
 atlas_labels.ggseg_atlas <- function(x) {
-  get_uniq(x$core, "label")
+  get_col(x$core, "label")
 }
 
 #' @export
 atlas_labels.brain_atlas <- function(x) {
-  get_uniq(x$core, "label")
+  get_col(x$core, "label")
+}
+
+
+#' Extract the long-form region name column of an atlas
+#'
+#' The `names` column of `core` holds the long-form display name of each
+#' region, as against the short, hemisphere-free key in `region` and the atlas
+#' identifier in `label`. For the atlases bundled here it is also the `region`
+#' value shipped before the 0.1.0 re-keying, which is what makes that re-keying
+#' recoverable; see [legacy_region_map()].
+#'
+#' @param x brain atlas
+#' @return The `names` column of `core`, unchanged: one element per `core` row,
+#'   in `core` row order, with repeats and `NA`s retained. It is therefore
+#'   row-aligned with [atlas_regions()] and [atlas_labels()]. Use `unique()` for
+#'   the distinct set. A zero-length character vector when the atlas carries no
+#'   `names` column.
+#' @examples
+#' atlas_names(dk())
+#' atlas_names(aseg())
+#'
+#' @export
+#' @seealso [atlas_regions()], [atlas_labels()], [legacy_region_map()]
+#' @family atlas accessors
+atlas_names <- function(x) {
+  UseMethod("atlas_names")
+}
+
+#' @export
+atlas_names.ggseg_atlas <- function(x) {
+  get_col(x$core, "names")
+}
+
+#' @export
+atlas_names.brain_atlas <- function(x) {
+  get_col(x$core, "names")
+}
+
+#' @export
+atlas_names.data.frame <- function(x) {
+  get_col(x, "names")
 }
 
 
@@ -178,7 +227,7 @@ atlas_region_remove <- function(
   # pattern that hits neither has done nothing.
   geom <- geom_from_data(atlas$data)
   if (all(keep_mask) && !any(geom_matches_pattern(geom, pattern))) {
-    warn_no_region_match(pattern, "Nothing was removed.")
+    warn_no_region_match(pattern, "Nothing was removed.", atlas)
     return(atlas)
   }
 
@@ -225,7 +274,7 @@ atlas_region_contextual <- function(
   keep_mask[is.na(match_col)] <- TRUE
 
   if (all(keep_mask)) {
-    warn_no_region_match(pattern, "No region was made contextual.")
+    warn_no_region_match(pattern, "No region was made contextual.", atlas)
     return(atlas)
   }
 
@@ -428,7 +477,11 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("region", "label")) {
   if (!any(keep_mask)) {
     # Unlike its siblings this one cannot no-op: keeping nothing is an atlas
     # with no regions left, which is worth saying out loud.
-    warn_no_region_match(pattern, "The atlas has been left with no regions.")
+    warn_no_region_match(
+      pattern,
+      "The atlas has been left with no regions.",
+      atlas
+    )
   }
 
   labels_to_keep <- atlas$core$label[keep_mask]
@@ -841,24 +894,69 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
 warn_no_region_match <- function(
   pattern,
   consequence,
+  atlas = NULL,
   call = rlang::caller_env()
 ) {
   cli::cli_warn(
     c(
       "No regions matched {.val {pattern}}.",
-      "i" = consequence
+      "i" = consequence,
+      legacy_region_hint(atlas, pattern)
     ),
     call = call
   )
 }
 
 
+#' Hint that a pattern looks like a pre-0.1.0 region name
+#'
+#' `region` was re-keyed to short, hemisphere-free identifiers in 0.1.0, so a
+#' pattern carried over from older code matches nothing. Without this the only
+#' symptom is a blank figure. Matched against the recorded 0.0.4 region names
+#' rather than against `names`, which is the curated display name and need not
+#' resemble what 0.0.4 shipped.
 #' @noRd
-get_uniq <- function(x, type) {
-  type <- match.arg(type, c("label", "region"))
-  x <- unique(x[[type]])
-  x <- x[!is.na(x)]
-  sort(x)
+legacy_region_hint <- function(atlas, pattern) {
+  if (is.null(atlas) || length(atlas$atlas) != 1 || is.na(atlas$atlas)) {
+    return(character(0))
+  }
+  legacy <- .legacy_regions[[atlas$atlas]] # nolint: object_usage_linter.
+  if (is.null(legacy)) {
+    return(character(0))
+  }
+  hit <- grepl(pattern, legacy$legacy_region, ignore.case = TRUE)
+  if (!any(hit)) {
+    return(character(0))
+  }
+  # nolint start: object_usage_linter. Used in the cli template below.
+  matched <- utils::head(unique(legacy$legacy_region[hit]), 3)
+  current <- utils::head(
+    stats::na.omit(unique(
+      atlas$core$region[match(legacy$label[hit], atlas$core$label)]
+    )),
+    3
+  )
+  # nolint end
+  c(
+    "!" = cli::format_inline(
+      "It matches the long-form {.field region} {.val {matched}}, which this
+       atlas used before ggseg.formats 0.1.0, where {.field region} is now
+       {.val {current}}."
+    ),
+    "i" = cli::format_inline(
+      "Use {.fn legacy_region_map} for the full mapping."
+    )
+  )
+}
+
+
+#' @noRd
+get_col <- function(x, type) {
+  type <- match.arg(type, c("label", "region", "names"))
+  if (!type %in% names(x)) {
+    return(character(0))
+  }
+  x[[type]]
 }
 
 #' @noRd
@@ -993,8 +1091,8 @@ add_op_region_meta <- function(core, palette, into, colour) {
     core_row <- core[1, , drop = FALSE]
     core_row[] <- NA
     core_row$label <- into
-    if ("region" %in% names(core_row)) {
-      core_row$region <- into
+    for (col in intersect(c("region", "names"), names(core_row))) {
+      core_row[[col]] <- into
     }
     core <- rbind(core, core_row)
   }

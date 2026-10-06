@@ -31,7 +31,12 @@ describe("atlas_geometry_type", {
   })
 
   it("errors when the atlas has no recognised 2D geometry", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -99,7 +104,9 @@ describe("atlas_sf", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
-      label = c("lh_frontal", "rh_frontal")
+      label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
+      names = c("frontal", "frontal")
     )
     palette <- c(lh_frontal = "#FF0000", rh_frontal = "#00FF00")
 
@@ -133,7 +140,8 @@ describe("atlas_sf", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
 
     atlas <- ggseg_atlas(
@@ -162,7 +170,8 @@ describe("atlas_sf", {
     core <- data.frame(
       hemi = "left",
       region = c("zzz", "aaa"),
-      label = c("lh_zzz", "lh_aaa")
+      label = c("lh_zzz", "lh_aaa"),
+      names = c("zzz", "aaa")
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -203,7 +212,9 @@ describe("atlas_vertices", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
-      label = c("lh_frontal", "rh_frontal")
+      label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
+      names = c("frontal", "frontal")
     )
     vertices <- data.frame(label = c("lh_frontal", "rh_frontal"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -232,7 +243,12 @@ describe("atlas_vertices", {
       vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
       faces = data.frame(i = 1:3, j = 2:4, k = 3:5)
     ))
-    core <- data.frame(hemi = NA, region = "hippocampus", label = "hippocampus")
+    core <- data.frame(
+      hemi = NA,
+      region = "hippocampus",
+      label = "hippocampus",
+      names = "hippocampus"
+    )
 
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -248,7 +264,9 @@ describe("atlas_vertices", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
-      label = c("lh_frontal", "rh_frontal")
+      label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
+      names = c("frontal", "frontal")
     )
     vertices <- data.frame(label = c("lh_frontal", "rh_frontal"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -290,7 +308,8 @@ describe("atlas_centerlines", {
       core = data.frame(
         hemi = c("left", "right"),
         region = c("af", "af"),
-        label = c("lh_af", "rh_af")
+        label = c("lh_af", "rh_af"),
+        names = c("af", "af")
       ),
       data = ggseg_data_tract(centerlines = centerlines)
     )
@@ -338,7 +357,12 @@ describe("atlas_meshes", {
       vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
       faces = data.frame(i = 1:3, j = 2:4, k = 3:5)
     ))
-    core <- data.frame(hemi = NA, region = "hippocampus", label = "hippocampus")
+    core <- data.frame(
+      hemi = NA,
+      region = "hippocampus",
+      label = "hippocampus",
+      names = "hippocampus"
+    )
     palette <- c(hippocampus = "#FF0000")
 
     atlas <- ggseg_atlas(
@@ -357,7 +381,12 @@ describe("atlas_meshes", {
   })
 
   it("errors for atlas without meshes", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -377,7 +406,12 @@ describe("atlas_meshes", {
       vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
       faces = data.frame(i = 1:3, j = 2:4, k = 3:5)
     ))
-    core <- data.frame(hemi = NA, region = "hippocampus", label = "hippocampus")
+    core <- data.frame(
+      hemi = NA,
+      region = "hippocampus",
+      label = "hippocampus",
+      names = "hippocampus"
+    )
 
     atlas <- ggseg_atlas(
       atlas = "test",

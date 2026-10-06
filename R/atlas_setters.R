@@ -26,7 +26,7 @@ set_atlas_palette <- function(atlas, value) {
       "i" = "Names are the atlas region {.field label}s."
     ))
   }
-  absent <- setdiff(atlas_labels(atlas), names(value))
+  absent <- setdiff(unique(atlas_labels(atlas)), names(value))
   if (length(absent)) {
     cli::cli_warn(c(
       "Palette does not cover every atlas label.",

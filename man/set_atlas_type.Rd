@@ -39,7 +39,7 @@ atlas_type(a)
 \seealso{
 \code{\link[=atlas_type]{atlas_type()}} to read the type.
 
-Other atlas setters: 
-\code{\link{set_atlas_palette}()}
+Other atlas setters:
+\code{\link[=set_atlas_palette]{set_atlas_palette()}}
 }
 \concept{atlas setters}

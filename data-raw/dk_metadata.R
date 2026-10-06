@@ -3,7 +3,12 @@
 # One row per raw FreeSurfer aparc annotation label. The annotation names are
 # already clean and hemisphere-free, so `label` and `region` are identical and
 # there is no `hemi` column (hemisphere is assigned per annotation file when
-# the atlas is built). `names` is the spelled-out label; `lobe` groups regions.
+# the atlas is built). `lobe` groups regions.
+#
+# `names` holds the curated long-form display name. For this atlas it coincides
+# with the `region` value CRAN 0.0.4 shipped, because the annotation's
+# spelled-out names already read well; that is a coincidence, not the contract.
+# Migration from the old keys goes through `legacy_region_map()`.
 #
 # Based on: https://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation
 

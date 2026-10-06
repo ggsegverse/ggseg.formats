@@ -193,7 +193,12 @@ describe("validate_tract_metadata", {
 
 describe("validate_palette", {
   it("errors when palette is not a named character vector", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -210,7 +215,12 @@ describe("validate_palette", {
   })
 
   it("warns about unknown labels in palette", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -230,7 +240,12 @@ describe("validate_palette", {
 
 describe("validate_data_labels", {
   it("allows context-only labels in vertices (not in core)", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = c("lh_frontal", "lh_unknown"))
     vertices$vertices <- list(1L:3L, 4L:6L)
 
@@ -256,7 +271,8 @@ describe("validate_data_labels", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
 
     expect_no_warning(
@@ -281,7 +297,12 @@ describe("validate_data_labels", {
         faces = data.frame(i = 1:3, j = 2:4, k = 3:5)
       )
     )
-    core <- data.frame(hemi = NA, region = "hippocampus", label = "hippocampus")
+    core <- data.frame(
+      hemi = NA,
+      region = "hippocampus",
+      label = "hippocampus",
+      names = "hippocampus"
+    )
 
     expect_no_warning(
       ggseg_atlas(
@@ -297,7 +318,9 @@ describe("validate_data_labels", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
-      label = c("lh_frontal", "rh_frontal")
+      label = c("lh_frontal", "rh_frontal"),
+      names = c("frontal", "frontal"),
+      names = c("frontal", "frontal")
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -339,7 +362,8 @@ describe("validate_data_labels", {
     core <- data.frame(
       hemi = rep("left", 5),
       region = c("frontal", "parietal", "temporal", "occipital", "insula"),
-      label = labels
+      label = labels,
+      names = c("frontal", "parietal", "temporal", "occipital", "insula")
     )
 
     expect_warning(
@@ -382,7 +406,8 @@ describe("validate_data_labels", {
     core <- data.frame(
       hemi = rep("left", 10),
       region = gsub("lh_", "", labels, fixed = TRUE),
-      label = labels
+      label = labels,
+      names = gsub("lh_", "", labels, fixed = TRUE)
     )
 
     expect_error(

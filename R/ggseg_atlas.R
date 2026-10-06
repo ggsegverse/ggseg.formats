@@ -300,11 +300,18 @@ is_atlas_class <- function(x) {
 }
 
 
+#' Structurally revalidate an atlas, without signalling
+#'
+#' Re-runs the `ggseg_atlas()` constructor on the parts of `x` and reports only
+#' whether it succeeded. Every class predicate (`is_ggseg_atlas()` and friends)
+#' goes through here, and renderers call those predicates in their control flow,
+#' so this must stay silent: the constructor's schema nudges are for the atlas
+#' author at build time, not for the user of a published atlas.
 #' @keywords internal
 #' @noRd
 validate_ggseg_atlas <- function(x) {
   tryCatch(
-    {
+    suppressMessages(suppressWarnings({
       ggseg_atlas(
         atlas = x$atlas,
         type = x$type,
@@ -313,7 +320,7 @@ validate_ggseg_atlas <- function(x) {
         palette = x$palette
       )
       TRUE
-    },
+    })),
     error = function(e) FALSE
   )
 }
@@ -690,6 +697,9 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
     )
   }
 
+  validate_core_names(core, atlas)
+  validate_core_label_unique(core, atlas)
+
   if (
     !inherits(data, "ggseg_atlas_data") &&
       !inherits(data, "brain_atlas_data")
@@ -712,6 +722,80 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
 
   invisible()
 }
+
+#' Warn when `core$label` is not unique
+#'
+#' `label` is the key the palette and every geometry slot are joined on, so a
+#' duplicated label fans one geometry row into several: the same parcel is
+#' drawn more than once, which in 3D also breaks semi-transparent compositing.
+#' The bundled `aseg` carried such alias rows until 0.1.0. This cannot be an
+#' error -- published atlas packages may carry them and would stop loading --
+#' so it warns once per atlas per session. Unlike a missing `names` column this
+#' is a data defect rather than schema incompleteness, so it stays a warning.
+#' @noRd
+#' @keywords internal
+validate_core_label_unique <- function(core, atlas) {
+  dupes <- unique(core$label[duplicated(core$label)]) # nolint
+  if (length(dupes) == 0) {
+    return(invisible())
+  }
+  rlang::warn(
+    cli::format_message(c(
+      "!" = "{.arg core$label} is not unique in {.val {atlas}}:
+             {.val {utils::head(dupes, 3)}}.",
+      "i" = "{.field label} is the key the palette and geometry join on, so a
+             duplicate draws the same region more than once.",
+      "i" = "Keep one row per {.field label} and move any alias name into
+             {.field names}."
+    )),
+    class = "ggseg.formats_duplicate_labels",
+    .frequency = "once",
+    .frequency_id = paste0("ggseg.formats-core-label-unique-", atlas)
+  )
+  invisible()
+}
+
+
+#' Enforce the `names` column of `core`
+#'
+#' `names` holds the curated long-form display name and is part of the `core`
+#' schema. It arrived after roughly twenty atlas packages had already been
+#' published against the schema without it, so a hard requirement would break
+#' every one of them on load. The policy is therefore: required and strictly
+#' validated when present -- a malformed `names` is an error, because a
+#' half-filled column is worse than none -- and, when absent, a message once per
+#' atlas per session. Only the atlas author can add the column, so the signal is
+#' raised on construction, where an author stands, and muffled by
+#' `validate_ggseg_atlas()`, which every class predicate and renderer reaches.
+#' @noRd
+#' @keywords internal
+validate_core_names <- function(core, atlas) {
+  if (!"names" %in% names(core)) {
+    rlang::inform(
+      cli::format_message(c(
+        "i" = "{.arg core} has no {.field names} column.",
+        "i" = "{.field names} holds the long-form display name and is part of
+               the {.arg core} schema; add it when rebuilding
+               {.val {atlas}}.",
+        "i" = "See {.fn atlas_names}."
+      )),
+      class = "ggseg.formats_missing_names",
+      .frequency = "once",
+      .frequency_id = paste0("ggseg.formats-core-names-", atlas)
+    )
+    return(invisible())
+  }
+
+  if (!is.character(core$names)) {
+    cli::cli_abort(
+      "{.arg core$names} must be a character vector, not
+       {.cls {class(core$names)[1]}}."
+    )
+  }
+
+  invisible()
+}
+
 
 #' Print the header and summary block for a ggseg atlas
 #'

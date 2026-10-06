@@ -16,7 +16,8 @@ describe("gather/reorder layout is representation-independent", {
   core <- data.frame(
     hemi = c("left", "right"),
     region = c("a", "a"),
-    label = c("lh_a", "rh_a")
+    label = c("lh_a", "rh_a"),
+    names = c("a", "a")
   )
   mk_atlas <- function(geom) {
     ggseg_atlas(

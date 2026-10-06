@@ -94,7 +94,8 @@ describe("is_*_atlas helpers", {
       core = data.frame(
         hemi = "left",
         region = "I-IV",
-        label = "left_I-IV"
+        label = "left_I-IV",
+        names = "lobules I-IV"
       ),
       data = ggseg_data_cerebellar(geom = sf_geom)
     )
@@ -140,7 +141,8 @@ describe("cerebellar atlas construction and data.frame conversion", {
       core = data.frame(
         hemi = c("left", "vermis", "right"),
         region = c("I-IV", "VI", "Crus-I"),
-        label = c("left_I-IV", "vermis_VI", "right_Crus-I")
+        label = c("left_I-IV", "vermis_VI", "right_Crus-I"),
+        names = c("lobules I-IV", "vermis VI", "Crus I")
       ),
       data = ggseg_data_cerebellar(geom = sf_geom)
     )
@@ -177,7 +179,8 @@ describe("cerebellar atlas construction and data.frame conversion", {
       core = data.frame(
         hemi = NA_character_,
         region = "dentate",
-        label = "midline_dentate"
+        label = "midline_dentate",
+        names = "dentate nucleus"
       ),
       data = ggseg_data_cerebellar(geom = sf_geom)
     )
@@ -196,7 +199,8 @@ describe("cerebellar atlas construction and data.frame conversion", {
         core = data.frame(
           hemi = "left",
           region = "frontal",
-          label = "lh_frontal"
+          label = "lh_frontal",
+          names = "frontal"
         ),
         data = ggseg_data_cortical(vertices = vertices)
       ),
@@ -208,7 +212,12 @@ describe("cerebellar atlas construction and data.frame conversion", {
 
 describe("ggseg_atlas constructor validation", {
   it("errors when atlas is not a single string", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -240,7 +249,12 @@ describe("ggseg_atlas constructor validation", {
   })
 
   it("errors when data is not ggseg_atlas_data", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     expect_error(
       ggseg_atlas(
         atlas = "test",
@@ -253,7 +267,12 @@ describe("ggseg_atlas constructor validation", {
   })
 
   it("errors when data type mismatches atlas type", {
-    core <- data.frame(hemi = NA, region = "hippocampus", label = "hippocampus")
+    core <- data.frame(
+      hemi = NA,
+      region = "hippocampus",
+      label = "hippocampus",
+      names = "hippocampus"
+    )
     meshes <- data.frame(label = "hippocampus")
     meshes$mesh <- list(list(
       vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
@@ -274,7 +293,12 @@ describe("ggseg_atlas constructor validation", {
 
 describe("deprecated wrappers", {
   it("brain_atlas() warns about deprecation", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
 
@@ -303,7 +327,8 @@ describe("as.data.frame.ggseg_atlas", {
     )
     core <- data.frame(
       region = c("frontal", "parietal"),
-      label = c("lh_frontal", "rh_parietal")
+      label = c("lh_frontal", "rh_parietal"),
+      names = c("frontal", "parietal")
     )
     vertices <- data.frame(label = c("lh_frontal", "rh_parietal"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -329,7 +354,8 @@ describe("as.data.frame.ggseg_atlas", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -347,7 +373,12 @@ describe("as.data.frame.ggseg_atlas", {
   })
 
   it("errors when atlas has no 2D geometry", {
-    core <- data.frame(hemi = "left", region = "frontal", label = "lh_frontal")
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
     atlas <- ggseg_atlas(
@@ -411,7 +442,8 @@ describe("plot.ggseg_atlas", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -443,7 +475,8 @@ describe("plot.ggseg_atlas", {
     core <- data.frame(
       hemi = c("left", "right"),
       region = c("frontal", "parietal"),
-      label = c("lh_frontal", "rh_parietal")
+      label = c("lh_frontal", "rh_parietal"),
+      names = c("frontal", "parietal")
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -480,7 +513,8 @@ describe("print.ggseg_atlas rendering branches", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -542,7 +576,8 @@ describe("ggseg_atlas constructor validation", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -576,7 +611,8 @@ describe("as.data.frame.ggseg_atlas edge cases", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -602,7 +638,8 @@ describe("as.data.frame.ggseg_atlas edge cases", {
     core <- data.frame(
       hemi = NA_character_,
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -624,7 +661,8 @@ describe("as.data.frame.ggseg_atlas edge cases", {
     core <- data.frame(
       hemi = c("left", NA_character_),
       region = c("frontal", "unknown"),
-      label = c("lh_frontal", "no_prefix")
+      label = c("lh_frontal", "no_prefix"),
+      names = c("frontal", "unknown")
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -671,7 +709,8 @@ describe("as.data.frame with legacy data structure", {
     core <- data.frame(
       hemi = "left",
       region = "frontal",
-      label = "lh_frontal"
+      label = "lh_frontal",
+      names = "frontal"
     )
     atlas <- structure(
       list(

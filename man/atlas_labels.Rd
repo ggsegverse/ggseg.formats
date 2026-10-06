@@ -3,7 +3,7 @@
 \name{atlas_labels}
 \alias{atlas_labels}
 \alias{brain_labels}
-\title{Extract unique labels from an atlas}
+\title{Extract the label column of an atlas}
 \usage{
 atlas_labels(x)
 
@@ -13,10 +13,14 @@ brain_labels(x)
 \item{x}{brain atlas}
 }
 \value{
-Character vector of atlas region labels
+The \code{label} column of \code{core}, unchanged: one element per \code{core} row,
+in \code{core} row order, with repeats and \code{NA}s retained. It is therefore
+row-aligned with \code{\link[=atlas_regions]{atlas_regions()}} and \code{\link[=atlas_names]{atlas_names()}}. Use \code{unique()} for
+the distinct set. A zero-length character vector when the atlas carries no
+\code{label} column.
 }
 \description{
-Extract unique labels from an atlas
+Extract the label column of an atlas
 }
 \examples{
 atlas_labels(dk())
@@ -24,17 +28,19 @@ atlas_labels(aseg())
 
 }
 \seealso{
-Other atlas accessors: 
-\code{\link{atlas_centerlines}()},
-\code{\link{atlas_geom}()},
-\code{\link{atlas_geometry_type}()},
-\code{\link{atlas_meshes}()},
-\code{\link{atlas_palette}()},
-\code{\link{atlas_polygons}()},
-\code{\link{atlas_regions}()},
-\code{\link{atlas_sf}()},
-\code{\link{atlas_type}()},
-\code{\link{atlas_vertices}()},
-\code{\link{atlas_views}()}
+Other atlas accessors:
+\code{\link[=atlas_centerlines]{atlas_centerlines()}},
+\code{\link[=atlas_geom]{atlas_geom()}},
+\code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
+\code{\link[=atlas_meshes]{atlas_meshes()}},
+\code{\link[=atlas_names]{atlas_names()}},
+\code{\link[=atlas_palette]{atlas_palette()}},
+\code{\link[=atlas_polygons]{atlas_polygons()}},
+\code{\link[=atlas_regions]{atlas_regions()}},
+\code{\link[=atlas_sf]{atlas_sf()}},
+\code{\link[=atlas_type]{atlas_type()}},
+\code{\link[=atlas_vertices]{atlas_vertices()}},
+\code{\link[=atlas_views]{atlas_views()}},
+\code{\link[=legacy_region_map]{legacy_region_map()}}
 }
 \concept{atlas accessors}

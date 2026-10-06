@@ -9,6 +9,7 @@
 #' The atlas works with both ggseg (2D polygon plots) and ggseg3d (3D mesh
 #' visualizations) from a single object.
 #'
+#' @template core
 #' @return A `ggseg_atlas` object with components:
 #' \describe{
 #'   \item{atlas}{Character. Atlas name ("dk")}
@@ -71,6 +72,7 @@ dk <- function() .dk_atlas # nolint [object_usage_linter]
 #' It works with both ggseg (2D slice views) and ggseg3d (3D mesh
 #' visualizations) from a single object.
 #'
+#' @template core
 #' @return A `ggseg_atlas` object with components:
 #' \describe{
 #'   \item{atlas}{Character. Atlas name ("aseg")}
@@ -137,6 +139,7 @@ aseg <- function() .aseg_atlas # nolint [object_usage_linter]
 #' MRI using FreeSurfer's TRACULA training data. It works with both ggseg
 #' (2D slice projections) and ggseg3d (3D tube mesh visualizations).
 #'
+#' @template core
 #' @return A `ggseg_atlas` object with components:
 #' \describe{
 #'   \item{atlas}{Character. Atlas name ("tracula")}
@@ -162,6 +165,13 @@ aseg <- function() .aseg_atlas # nolint [object_usage_linter]
 #' [aseg()] for subcortical structures,
 #' [ggseg_atlas()] for the atlas class constructor
 #'
+#' @section Tract labels:
+#' `label` is the name FreeSurfer's TRACULA writes its per-pathway outputs
+#' under, including the trailing `.bbr.prep` (for example `lh.af.bbr.prep`), so
+#' a table of TRACULA output joins to the atlas as it comes. `label_short` is
+#' the same identifier with the suffix stripped -- the name
+#' `FreeSurferColorLUT.txt` gives the pathway at ids 5100-5399.
+#'
 #' @family ggseg_atlases
 #' @family tract_atlases
 #' @export
@@ -183,6 +193,7 @@ tracula <- function() .tracula_atlas # nolint [object_usage_linter]
 #' 2D geometry is stored in the sf-optional polygon (`geom`) representation, so
 #' the atlas renders with ggseg without requiring sf installed.
 #'
+#' @template core
 #' @return A `ggseg_atlas` object with components:
 #' \describe{
 #'   \item{atlas}{Character. Atlas name ("suit")}

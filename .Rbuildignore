@@ -20,3 +20,6 @@
 \.DS_Store$
 Rplots\.pdf$
 \.impeccable$
+^revdep$
+^.*\.Rcheck$
+^.*\.tar\.gz$

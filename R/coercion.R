@@ -176,6 +176,13 @@ convert_legacy_brain_data <- function(x) {
 convert_legacy_structure <- function(x) {
   type <- x$type
 
+  core <- x$core
+  if (
+    !is.null(core) && !"names" %in% names(core) && "region" %in% names(core)
+  ) {
+    core$names <- core$region
+  }
+
   data <- switch(
     type,
     "cortical" = ggseg_data_cortical(geom = x$sf, vertices = x$vertices),
@@ -188,7 +195,7 @@ convert_legacy_structure <- function(x) {
     atlas = x$atlas,
     type = type,
     palette = x$palette,
-    core = x$core,
+    core = core,
     data = data
   )
 }
@@ -234,7 +241,7 @@ normalize_legacy_sf <- function(sf_data) {
 #' @noRd
 #' @keywords internal
 legacy_core_from_sf <- function(sf_data) {
-  df_distinct(
+  core <- df_distinct(
     sf::st_drop_geometry(sf_data[
       !is.na(sf_data$label),
       c("hemi", "region", "label"),
@@ -242,6 +249,11 @@ legacy_core_from_sf <- function(sf_data) {
     ]),
     c("hemi", "region", "label")
   )
+  # A legacy atlas's `region` is the long-form display name, which is what
+  # `names` holds in the current schema, so the converted atlas is complete
+  # rather than missing a required column.
+  core$names <- core$region
+  core
 }
 
 

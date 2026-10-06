@@ -22,6 +22,11 @@ Useful links:
 \author{
 \strong{Maintainer}: Athanasia Mo Mowinckel \email{a.m.mowinckel@psykologi.uio.no} (\href{https://orcid.org/0000-0002-5756-0223}{ORCID})
 
+Authors:
+\itemize{
+  \item Athanasia Mo Mowinckel \email{a.m.mowinckel@psykologi.uio.no} (\href{https://orcid.org/0000-0002-5756-0223}{ORCID})
+}
+
 Other contributors:
 \itemize{
   \item Center for Lifespan Changes in Brain and Cognition (LCBC), University of Oslo [copyright holder]

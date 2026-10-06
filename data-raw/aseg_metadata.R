@@ -3,7 +3,13 @@
 # One row per raw FreeSurfer aseg label. `label` is the untouched atlas
 # identifier; `hemi` and `region` are derived mechanically from it (hemisphere
 # stripped into `hemi`, the remainder lowercased with separators spaced);
-# `names` is the fully spelled-out label; `structure` groups regions.
+# `structure` groups regions.
+#
+# `names` holds the curated long-form display name: fully spelled out, chosen
+# to read well as a figure label or legend entry. It is deliberately NOT the
+# `region` value the CRAN 0.0.4 release shipped -- several of those were
+# mechanically derived and read poorly. Migration from the old keys goes
+# through data-raw/legacy_regions.R and `legacy_region_map()` instead.
 #
 # Based on: # nolint start: line_length_linter.
 # https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/AnatomicalROI/FreeSurferColorLUT

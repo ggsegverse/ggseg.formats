@@ -37,6 +37,16 @@ suit_env <- new.env()
 load(suit_src, envir = suit_env)
 .suit_atlas <- as_polygon_atlas(suit_env$.suit)
 
+# ggsegSUIT ships the parcel keys only, so the long-form `names` column comes
+# from suit_metadata.R.
+source("data-raw/suit_metadata.R")
+hit <- match(.suit_atlas$core$region, suit_metadata$region)
+stopifnot("every SUIT region must have a metadata row" = !anyNA(hit))
+.suit_atlas$core$names <- suit_metadata$names[hit]
+.suit_atlas$core <- .suit_atlas$core[,
+  c("hemi", "region", "label", "names")
+]
+
 usethis::use_data(
   brain_mesh_inflated,
   cerebellar_mesh_suit,
