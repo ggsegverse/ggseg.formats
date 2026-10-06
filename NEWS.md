@@ -15,7 +15,7 @@
 
 - `atlas_regions()`, `atlas_labels()` and `atlas_names()` return their `core`
   column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
-  instead of a sorted, de-duplicated set, so the three are now row-aligned.
+  instead of a sorted set of unique values, so the three are now row-aligned.
   `sort(unique(x))` recovers the old value. `atlas_views()` is unchanged.
 - `names` is part of the `core` schema, read by the new `atlas_names()`, and
   `suit()` gains it. A non-character `names` is an error; a missing one only

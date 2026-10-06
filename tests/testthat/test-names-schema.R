@@ -454,20 +454,6 @@ describe("legacy region no-match hint", {
 })
 
 
-missing_names_signals <- function(expr) {
-  signals <- character()
-  withCallingHandlers(
-    try(force(expr), silent = TRUE),
-    condition = function(cnd) {
-      if (inherits(cnd, "ggseg.formats_missing_names")) {
-        signals <<- c(signals, class(cnd)[1])
-      }
-      NULL
-    }
-  )
-  signals
-}
-
 aseg_without_names <- function() {
   stripped <- aseg()
   stripped$core$names <- NULL
@@ -483,9 +469,9 @@ aseg_without_names <- function() {
 describe("a missing names column is silent outside construction", {
   it("says nothing when the atlas is plotted", {
     atlas <- aseg_without_names()
-    expect_identical(
-      missing_names_signals(print(plot(atlas))),
-      character()
+    expect_no_condition(
+      print(plot(atlas)),
+      class = "ggseg.formats_missing_names"
     )
     expect_no_warning(suppressMessages(print(plot(atlas))))
   })
