@@ -13,7 +13,7 @@ pallidum, hippocampus, amygdala, accumbens, and ventricles."><meta property="og:
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,7 +26,7 @@ pallidum, hippocampus, amygdala, accumbens, and ventricles."><meta property="og:
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/atlas-manipulation.html">Customising brain atlases</a></li>
     <li><a class="dropdown-item" href="../articles/ggseg.formats.html">The ggseg_atlas object</a></li>
-    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlas packages to sf-optional</a></li>
+    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlases and code</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -88,6 +88,18 @@ pallidum, hippocampus, amygdala, accumbens, and ventricles.</p>
     <p>This atlas is derived from FreeSurfer's <code>aseg.mgz</code> volumetric segmentation.
 It works with both ggseg (2D slice views) and ggseg3d (3D mesh
 visualizations) from a single object.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="core-columns">Core columns<a class="anchor" aria-label="anchor" href="#core-columns"></a></h2>
+
+
+<p><code>core</code> carries one row per atlas region with the columns <code>hemi</code>, <code>region</code>,
+<code>label</code> and <code>names</code>, plus the atlas's own grouping column. <code>label</code> is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; <code>region</code> is a short, hemisphere-free key derived from it; <code>names</code> is the
+curated long-form display name, spelled out to read well in a figure legend.</p>
+<p><code>region</code> held the long-form name until version 0.1.0. <code>names</code> is not a record
+of those old values – use <code><a href="legacy_region_map.html">legacy_region_map()</a></code> to translate them.</p>
     </div>
     <div class="section level2">
     <h2 id="structures">Structures<a class="anchor" aria-label="anchor" href="#structures"></a></h2>
@@ -165,12 +177,16 @@ Neuron, 33(3):341-355.
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">aseg</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="aseg-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="fu">aseg</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "accumbens area"    "amygdala"          "brain stem"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "caudate"           "cc anterior"       "cc central"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "cc mid anterior"   "cc mid posterior"  "cc posterior"     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "cerebellum cortex" "choroid plexus"    "hippocampus"      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "optic chiasm"      "pallidum"          "putamen"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "thalamus"          "ventraldc"         "vessel"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "cerebellum cortex" "thalamus"          "caudate"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "putamen"           "pallidum"          "brain stem"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "hippocampus"       "amygdala"          "accumbens area"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "ventraldc"         "vessel"            "choroid plexus"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "cerebellum cortex" "thalamus"          "caudate"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "putamen"           "pallidum"          "hippocampus"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "amygdala"          "accumbens area"    "ventraldc"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [22] "vessel"            "choroid plexus"    "optic chiasm"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "cc posterior"      "cc mid posterior"  "cc central"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [28] "cc mid anterior"   "cc anterior"      </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

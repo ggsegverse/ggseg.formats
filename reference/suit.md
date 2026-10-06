@@ -51,6 +51,20 @@ deep nuclei carry individual 3D meshes. The 2D geometry is stored in the
 sf-optional polygon (`geom`) representation, so the atlas renders with
 ggseg without requiring sf installed.
 
+## Core columns
+
+`core` carries one row per atlas region with the columns `hemi`,
+`region`, `label` and `names`, plus the atlas's own grouping column.
+`label` is the stable atlas identifier and the key the palette and the
+geometry are keyed on; `region` is a short, hemisphere-free key derived
+from it; `names` is the curated long-form display name, spelled out to
+read well in a figure legend.
+
+`region` held the long-form name until version 0.1.0. `names` is not a
+record of those old values – use
+[`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
+to translate them.
+
 ## References
 
 Diedrichsen J, Balsters JH, Flavell J, et al. (2009). A probabilistic MR
@@ -87,22 +101,26 @@ suit()
 #> Rendering: ✔ ggseg
 #> ✔ ggseg3d (meshes)
 #> ────────────────────────────────────────────────────────────────────────────────
-#>      hemi region        label
-#> 1    left   I_IV    left_I_IV
-#> 2   right   I_IV   right_I_IV
-#> 3    left      V       left_V
-#> 4   right      V      right_V
-#> 5    left     VI      left_VI
-#> 6  vermis     VI    vermis_VI
-#> 7   right     VI     right_VI
-#> 8    left  CrusI   left_CrusI
-#> 9  vermis  CrusI vermis_CrusI
-#> 10  right  CrusI  right_CrusI
+#>      hemi region        label        names
+#> 1    left   I_IV    left_I_IV lobules I-IV
+#> 2   right   I_IV   right_I_IV lobules I-IV
+#> 3    left      V       left_V     lobule V
+#> 4   right      V      right_V     lobule V
+#> 5    left     VI      left_VI    lobule VI
+#> 6  vermis     VI    vermis_VI    lobule VI
+#> 7   right     VI     right_VI    lobule VI
+#> 8    left  CrusI   left_CrusI       Crus I
+#> 9  vermis  CrusI vermis_CrusI       Crus I
+#> 10  right  CrusI  right_CrusI       Crus I
 #> ... with 24 more rows
 atlas_regions(suit())
-#>  [1] "CrusI"      "CrusII"     "Dentate"    "Fastigial"  "IX"        
-#>  [6] "I_IV"       "Interposed" "V"          "VI"         "VIIIa"     
-#> [11] "VIIIb"      "VIIb"       "X"         
+#>  [1] "I_IV"       "I_IV"       "V"          "V"          "VI"        
+#>  [6] "VI"         "VI"         "CrusI"      "CrusI"      "CrusI"     
+#> [11] "CrusII"     "CrusII"     "CrusII"     "VIIb"       "VIIb"      
+#> [16] "VIIb"       "VIIIa"      "VIIIa"      "VIIIa"      "VIIIb"     
+#> [21] "VIIIb"      "VIIIb"      "IX"         "IX"         "IX"        
+#> [26] "X"          "X"          "X"          "Dentate"    "Dentate"   
+#> [31] "Interposed" "Interposed" "Fastigial"  "Fastigial" 
 atlas_geometry_type(suit())
 #> [1] "polygon"
 ```

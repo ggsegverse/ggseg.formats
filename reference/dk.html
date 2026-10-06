@@ -11,7 +11,7 @@ per hemisphere (68 total) on the cortical surface."><meta property="og:image" co
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,7 +24,7 @@ per hemisphere (68 total) on the cortical surface."><meta property="og:image" co
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/atlas-manipulation.html">Customising brain atlases</a></li>
     <li><a class="dropdown-item" href="../articles/ggseg.formats.html">The ggseg_atlas object</a></li>
-    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlas packages to sf-optional</a></li>
+    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlases and code</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -86,6 +86,18 @@ per hemisphere (68 total) on the cortical surface.</p>
 most widely used cortical parcellations in neuroimaging research.</p>
 <p>The atlas works with both ggseg (2D polygon plots) and ggseg3d (3D mesh
 visualizations) from a single object.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="core-columns">Core columns<a class="anchor" aria-label="anchor" href="#core-columns"></a></h2>
+
+
+<p><code>core</code> carries one row per atlas region with the columns <code>hemi</code>, <code>region</code>,
+<code>label</code> and <code>names</code>, plus the atlas's own grouping column. <code>label</code> is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; <code>region</code> is a short, hemisphere-free key derived from it; <code>names</code> is the
+curated long-form display name, spelled out to read well in a figure legend.</p>
+<p><code>region</code> held the long-form name until version 0.1.0. <code>names</code> is not a record
+of those old values – use <code><a href="legacy_region_map.html">legacy_region_map()</a></code> to translate them.</p>
     </div>
     <div class="section level2">
     <h2 id="regions">Regions<a class="anchor" aria-label="anchor" href="#regions"></a></h2>
@@ -166,57 +178,74 @@ Cerebral Cortex, 14(1):11-22.
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "bankssts"                 "caudalanteriorcingulate" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "caudalmiddlefrontal"      "corpuscallosum"          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "cuneus"                   "entorhinal"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "frontalpole"              "fusiform"                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "inferiorparietal"         "inferiortemporal"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "insula"                   "isthmuscingulate"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "lateraloccipital"         "lateralorbitofrontal"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "lingual"                  "medialorbitofrontal"     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "middletemporal"           "paracentral"             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "parahippocampal"          "parsopercularis"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "parsorbitalis"            "parstriangularis"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "pericalcarine"            "postcentral"             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "posteriorcingulate"       "precentral"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "precuneus"                "rostralanteriorcingulate"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [29] "rostralmiddlefrontal"     "superiorfrontal"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "superiorparietal"         "superiortemporal"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [33] "supramarginal"            "temporalpole"            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [35] "transversetemporal"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "fusiform"                 "inferiorparietal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "inferiortemporal"         "isthmuscingulate"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "lateraloccipital"         "lateralorbitofrontal"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "lingual"                  "medialorbitofrontal"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "middletemporal"           "parahippocampal"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "paracentral"              "parsopercularis"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "parsorbitalis"            "parstriangularis"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "pericalcarine"            "postcentral"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "posteriorcingulate"       "precentral"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "precuneus"                "rostralanteriorcingulate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "rostralmiddlefrontal"     "superiorfrontal"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [29] "superiorparietal"         "superiortemporal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "supramarginal"            "frontalpole"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [33] "temporalpole"             "transversetemporal"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [35] "insula"                   "bankssts"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [37] "caudalanteriorcingulate"  "caudalmiddlefrontal"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [39] "corpuscallosum"           "cuneus"                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [41] "entorhinal"               "fusiform"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [43] "inferiorparietal"         "inferiortemporal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [45] "isthmuscingulate"         "lateraloccipital"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [47] "lateralorbitofrontal"     "lingual"                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [49] "medialorbitofrontal"      "middletemporal"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [51] "parahippocampal"          "paracentral"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [53] "parsopercularis"          "parsorbitalis"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [55] "parstriangularis"         "pericalcarine"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [57] "postcentral"              "posteriorcingulate"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [59] "precentral"               "precuneus"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [61] "rostralanteriorcingulate" "rostralmiddlefrontal"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [63] "superiorfrontal"          "superiorparietal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [65] "superiortemporal"         "supramarginal"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [67] "frontalpole"              "temporalpole"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [69] "transversetemporal"       "insula"                  </span>
 <span class="r-in"><span><span class="fu"><a href="atlas_labels.html">atlas_labels</a></span><span class="op">(</span><span class="fu">dk</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "lh_bankssts"                 "lh_caudalanteriorcingulate" </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "lh_caudalmiddlefrontal"      "lh_corpuscallosum"          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "lh_cuneus"                   "lh_entorhinal"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "lh_frontalpole"              "lh_fusiform"                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "lh_inferiorparietal"         "lh_inferiortemporal"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "lh_insula"                   "lh_isthmuscingulate"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "lh_lateraloccipital"         "lh_lateralorbitofrontal"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "lh_lingual"                  "lh_medialorbitofrontal"     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "lh_middletemporal"           "lh_paracentral"             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "lh_parahippocampal"          "lh_parsopercularis"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "lh_parsorbitalis"            "lh_parstriangularis"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "lh_pericalcarine"            "lh_postcentral"             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "lh_posteriorcingulate"       "lh_precentral"              </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "lh_precuneus"                "lh_rostralanteriorcingulate"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [29] "lh_rostralmiddlefrontal"     "lh_superiorfrontal"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "lh_superiorparietal"         "lh_superiortemporal"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [33] "lh_supramarginal"            "lh_temporalpole"            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [35] "lh_transversetemporal"       "rh_bankssts"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "lh_fusiform"                 "lh_inferiorparietal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "lh_inferiortemporal"         "lh_isthmuscingulate"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "lh_lateraloccipital"         "lh_lateralorbitofrontal"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "lh_lingual"                  "lh_medialorbitofrontal"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "lh_middletemporal"           "lh_parahippocampal"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "lh_paracentral"              "lh_parsopercularis"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "lh_parsorbitalis"            "lh_parstriangularis"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "lh_pericalcarine"            "lh_postcentral"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "lh_posteriorcingulate"       "lh_precentral"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [25] "lh_precuneus"                "lh_rostralanteriorcingulate"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [27] "lh_rostralmiddlefrontal"     "lh_superiorfrontal"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [29] "lh_superiorparietal"         "lh_superiortemporal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "lh_supramarginal"            "lh_frontalpole"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [33] "lh_temporalpole"             "lh_transversetemporal"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [35] "lh_insula"                   "rh_bankssts"                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [37] "rh_caudalanteriorcingulate"  "rh_caudalmiddlefrontal"     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [39] "rh_corpuscallosum"           "rh_cuneus"                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [41] "rh_entorhinal"               "rh_frontalpole"             </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [43] "rh_fusiform"                 "rh_inferiorparietal"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [45] "rh_inferiortemporal"         "rh_insula"                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [47] "rh_isthmuscingulate"         "rh_lateraloccipital"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [49] "rh_lateralorbitofrontal"     "rh_lingual"                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [51] "rh_medialorbitofrontal"      "rh_middletemporal"          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [53] "rh_paracentral"              "rh_parahippocampal"         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [55] "rh_parsopercularis"          "rh_parsorbitalis"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [57] "rh_parstriangularis"         "rh_pericalcarine"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [59] "rh_postcentral"              "rh_posteriorcingulate"      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [61] "rh_precentral"               "rh_precuneus"               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [63] "rh_rostralanteriorcingulate" "rh_rostralmiddlefrontal"    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [65] "rh_superiorfrontal"          "rh_superiorparietal"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [67] "rh_superiortemporal"         "rh_supramarginal"           </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [69] "rh_temporalpole"             "rh_transversetemporal"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [41] "rh_entorhinal"               "rh_fusiform"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [43] "rh_inferiorparietal"         "rh_inferiortemporal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [45] "rh_isthmuscingulate"         "rh_lateraloccipital"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [47] "rh_lateralorbitofrontal"     "rh_lingual"                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [49] "rh_medialorbitofrontal"      "rh_middletemporal"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [51] "rh_parahippocampal"          "rh_paracentral"             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [53] "rh_parsopercularis"          "rh_parsorbitalis"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [55] "rh_parstriangularis"         "rh_pericalcarine"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [57] "rh_postcentral"              "rh_posteriorcingulate"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [59] "rh_precentral"               "rh_precuneus"               </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [61] "rh_rostralanteriorcingulate" "rh_rostralmiddlefrontal"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [63] "rh_superiorfrontal"          "rh_superiorparietal"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [65] "rh_superiortemporal"         "rh_supramarginal"           </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [67] "rh_frontalpole"              "rh_temporalpole"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [69] "rh_transversetemporal"       "rh_insula"                  </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

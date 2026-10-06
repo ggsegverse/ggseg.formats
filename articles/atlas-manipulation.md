@@ -40,6 +40,9 @@ so partial matches work:
 no_cc <- atlas_region_remove(dk(), "corpus callosum")
 #> Warning in atlas_region_remove(dk(), "corpus callosum"): No regions matched "corpus callosum".
 #> ℹ Nothing was removed.
+#> ! It matches the long-form region "corpus callosum", which this atlas used
+#>   before ggseg.formats 0.1.0, where region is now "corpuscallosum".
+#> ℹ Use `legacy_region_map()` for the full mapping.
 "corpus callosum" %in% atlas_regions(no_cc)
 #> [1] FALSE
 ```
@@ -52,9 +55,9 @@ continuity, but non-matching regions leave core and palette):
 ``` r
 
 frontal <- atlas_region_keep(dk(), "frontal")
-atlas_regions(frontal)
-#> [1] "caudalmiddlefrontal"  "frontalpole"          "lateralorbitofrontal"
-#> [4] "medialorbitofrontal"  "rostralmiddlefrontal" "superiorfrontal"
+unique(atlas_regions(frontal))
+#> [1] "caudalmiddlefrontal"  "lateralorbitofrontal" "medialorbitofrontal" 
+#> [4] "rostralmiddlefrontal" "superiorfrontal"      "frontalpole"
 ```
 
 Both functions accept a `match_on` argument to choose whether the
@@ -114,7 +117,7 @@ Or pass a function for programmatic renaming:
 ``` r
 
 upper <- atlas_region_rename(dk(), ".*", toupper)
-head(atlas_regions(upper))
+head(unique(atlas_regions(upper)))
 #> [1] "BANKSSTS"                "CAUDALANTERIORCINGULATE"
 #> [3] "CAUDALMIDDLEFRONTAL"     "CORPUSCALLOSUM"         
 #> [5] "CUNEUS"                  "ENTORHINAL"

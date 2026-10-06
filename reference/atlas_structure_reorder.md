@@ -66,7 +66,8 @@ which moves whole views around the canvas rather than structures within
 them.
 
 Other atlas manipulations:
-[`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
+[`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md)
 
 ## Examples
 

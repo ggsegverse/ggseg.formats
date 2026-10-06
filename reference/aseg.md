@@ -44,6 +44,20 @@ This atlas is derived from FreeSurfer's `aseg.mgz` volumetric
 segmentation. It works with both ggseg (2D slice views) and ggseg3d (3D
 mesh visualizations) from a single object.
 
+## Core columns
+
+`core` carries one row per atlas region with the columns `hemi`,
+`region`, `label` and `names`, plus the atlas's own grouping column.
+`label` is the stable atlas identifier and the key the palette and the
+geometry are keyed on; `region` is a short, hemisphere-free key derived
+from it; `names` is the curated long-form display name, spelled out to
+read well in a figure legend.
+
+`region` held the long-form name until version 0.1.0. `names` is not a
+record of those old values – use
+[`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
+to translate them.
+
 ## Structures
 
 The atlas contains bilateral structures:
@@ -137,10 +151,14 @@ aseg()
 plot(aseg())
 
 atlas_regions(aseg())
-#>  [1] "accumbens area"    "amygdala"          "brain stem"       
-#>  [4] "caudate"           "cc anterior"       "cc central"       
-#>  [7] "cc mid anterior"   "cc mid posterior"  "cc posterior"     
-#> [10] "cerebellum cortex" "choroid plexus"    "hippocampus"      
-#> [13] "optic chiasm"      "pallidum"          "putamen"          
-#> [16] "thalamus"          "ventraldc"         "vessel"           
+#>  [1] "cerebellum cortex" "thalamus"          "caudate"          
+#>  [4] "putamen"           "pallidum"          "brain stem"       
+#>  [7] "hippocampus"       "amygdala"          "accumbens area"   
+#> [10] "ventraldc"         "vessel"            "choroid plexus"   
+#> [13] "cerebellum cortex" "thalamus"          "caudate"          
+#> [16] "putamen"           "pallidum"          "hippocampus"      
+#> [19] "amygdala"          "accumbens area"    "ventraldc"        
+#> [22] "vessel"            "choroid plexus"    "optic chiasm"     
+#> [25] "cc posterior"      "cc mid posterior"  "cc central"       
+#> [28] "cc mid anterior"   "cc anterior"      
 ```

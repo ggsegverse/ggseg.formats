@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Migrating atlas packages to sf-optional • ggseg.formats</title>
+<title>Migrating atlases and code • ggseg.formats</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <link href="../deps/Montserrat-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Migrating atlas packages to sf-optional">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Migrating atlases and code">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/atlas-manipulation.html">Customising brain atlases</a></li>
     <li><a class="dropdown-item" href="../articles/ggseg.formats.html">The ggseg_atlas object</a></li>
-    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlas packages to sf-optional</a></li>
+    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlases and code</a></li>
   </ul>
 </li>
       </ul>
@@ -74,7 +74,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Migrating atlas packages to sf-optional</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Migrating atlases and code</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/ggsegverse/ggseg.formats/blob/main/vignettes/migrating-atlases.Rmd" class="external-link"><code>vignettes/migrating-atlases.Rmd</code></a></small>
@@ -85,6 +85,104 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/ggsegverse/ggseg.formats" class="external-link">ggseg.formats</a></span><span class="op">)</span></span></code></pre></div>
+<p>This vignette covers the two migrations ggseg.formats has asked of
+its users: re-keying <code>region</code> in your own data tables, and
+rewriting an atlas package’s geometry into the sf-optional format.</p>
+<div class="section level2">
+<h2 id="migrating-code-to-the-0-1-0-region-keys">Migrating code to the 0.1.0 region keys<a class="anchor" aria-label="anchor" href="#migrating-code-to-the-0-1-0-region-keys"></a>
+</h2>
+<p>Before 0.1.0 the <code>region</code> column of the bundled atlases
+held a long-form display name
+(<code>"banks of superior temporal sulcus"</code>). From 0.1.0 it holds
+a short, hemisphere-free key derived from <code>label</code>
+(<code>"bankssts"</code>), and the long-form name lives in the new
+<code>names</code> column. <code>label</code> never changed and remains
+the stable join key.</p>
+<p>Nothing errors when this bites. <code>merge(all.x = TRUE)</code> and
+the ggseg fill scale both yield <code>NA</code> for an unmatched region,
+which draws as a blank parcel — so the only symptom is a figure with
+holes in it.</p>
+<p><code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> translates a table of old values
+mechanically:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">map</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/legacy_region_map.html">legacy_region_map</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">my_data</span><span class="op">$</span><span class="va">region</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="va">map</span><span class="op">[</span><span class="va">my_data</span><span class="op">$</span><span class="va">region</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>Every pre-0.1.0 <code>region</code> value of all four bundled atlases
+translates: <code>dk</code> 35/35, <code>aseg</code> 19/19,
+<code>tracula</code> 26/26 and <code>suit</code> 13/13, whose keys never
+changed, so its map is the identity. <code>aseg</code>’s
+<code>"Thalamus Proper"</code> translates too, to
+<code>"thalamus"</code>, even though the alias row it lived on is gone
+from <code>core</code>. For any other atlas the map is zero-length,
+because only the bundled four were re-keyed.</p>
+<div class="section level3">
+<h3 id="do-not-use-names-for-this">Do not use <code>names</code> for this<a class="anchor" aria-label="anchor" href="#do-not-use-names-for-this"></a>
+</h3>
+<p><code>names</code> is the curated display name, spelled to read well
+in a legend, and for several regions it deliberately differs from what
+0.0.4 shipped as <code>region</code>: <code>aseg</code> has
+<code>names</code> <code>"ventral diencephalon"</code> where 0.0.4 had
+<code>region</code> <code>"ventraldc"</code>, and
+<code>"corpus callosum posterior"</code> where 0.0.4 had
+<code>"cc posterior"</code>. <code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> reads a
+recorded table of the 0.0.4 values instead, so it stays correct however
+<code>names</code> is later improved.</p>
+<p>If a pattern you pass to <code><a href="../reference/atlas_manipulation.html">atlas_region_remove()</a></code>,
+<code><a href="../reference/atlas_manipulation.html">atlas_region_keep()</a></code> or
+<code><a href="../reference/atlas_manipulation.html">atlas_region_contextual()</a></code> matches nothing, they now warn
+and, where the pattern looks like a pre-0.1.0 name, say which key to use
+instead.</p>
+</div>
+<div class="section level3">
+<h3 id="the-accessors-return-rows-not-a-set">The accessors return rows, not a set<a class="anchor" aria-label="anchor" href="#the-accessors-return-rows-not-a-set"></a>
+</h3>
+<p><code><a href="../reference/atlas_regions.html">atlas_regions()</a></code>, <code><a href="../reference/atlas_labels.html">atlas_labels()</a></code> and
+<code><a href="../reference/atlas_names.html">atlas_names()</a></code> used to return a sorted set of unique,
+non-<code>NA</code> values, so the three disagreed on length for the
+same atlas and could not be zipped. Each now returns its
+<code>core</code> column unchanged: one element per <code>core</code>
+row, in row order, repeats and <code>NA</code>s retained. So
+<code>atlas_labels(a)[i]</code>, <code>atlas_regions(a)[i]</code> and
+<code>atlas_names(a)[i]</code> describe the same row.</p>
+<p>In practice <code><a href="../reference/atlas_regions.html">atlas_regions()</a></code> and
+<code><a href="../reference/atlas_names.html">atlas_names()</a></code> now repeat values, once per hemisphere or
+view row, and none of the three is sorted any more. Code that indexed
+the old output by position, or relied on it being a set, wants
+<code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> — and <code>sort(unique(x))</code> reproduces the
+old value exactly. <code><a href="../reference/atlas_views.html">atlas_views()</a></code> is unchanged: views are a
+separate axis, not a <code>core</code> column.</p>
+</div>
+<div class="section level3">
+<h3 id="adding-names-to-your-own-atlas">Adding <code>names</code> to your own atlas<a class="anchor" aria-label="anchor" href="#adding-names-to-your-own-atlas"></a>
+</h3>
+<p><code>names</code> is part of the <code>core</code> schema from
+0.1.0, but it arrived after about twenty atlas packages had been
+published without it, so it cannot be required. The policy is
+asymmetric:</p>
+<ul>
+<li>a <code>names</code> column that is not a character vector is an
+error, because a half-filled column is worse than none;</li>
+<li>a missing <code>names</code> column is reported once per atlas per
+session, as a message, by <code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code> only.</li>
+</ul>
+<p>Only the atlas author can add the column, so only the atlas author
+hears about it. Constructing or rebuilding an atlas is where that
+message appears. Plotting one, reading it through
+<code><a href="../reference/atlas_regions.html">atlas_regions()</a></code>, <code><a href="../reference/atlas_labels.html">atlas_labels()</a></code>,
+<code><a href="../reference/atlas_names.html">atlas_names()</a></code> or <code><a href="../reference/atlas_palette.html">atlas_palette()</a></code>, and
+class-checking it with <code><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas()</a></code> are all silent —
+<code><a href="../reference/atlas_names.html">atlas_names()</a></code> simply returns <code>character(0)</code> when
+the column is absent.</p>
+<p>To add it, give <code>core</code> one long-form display name per row,
+in <code>core</code> row order, before calling
+<code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code>. Spell it to read well in a legend; it is not
+the pre-0.1.0 <code>region</code> key, which
+<code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> records separately.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="migrating-an-atlas-package-to-sf-optional">Migrating an atlas package to sf-optional<a class="anchor" aria-label="anchor" href="#migrating-an-atlas-package-to-sf-optional"></a>
+</h2>
 <p>Since the <strong>sf-optional</strong> milestone (ggseg 2.2), a
 <code>ggseg_atlas</code> stores its 2D geometry in a single
 <code>geom</code> slot that can hold either an <code>sf</code> table or
@@ -100,11 +198,11 @@ atlases keep working on wasm builds and air-gapped installs where sf
 <code>.rda</code> files under <code>data/</code>. Migrating means
 rewriting those files once so the geometry is stored as polygons, then
 dropping sf from your <code>DESCRIPTION</code>.</p>
-<div class="section level2">
-<h2 id="the-recipe">The recipe<a class="anchor" aria-label="anchor" href="#the-recipe"></a>
-</h2>
+<div class="section level3">
+<h3 id="the-recipe">The recipe<a class="anchor" aria-label="anchor" href="#the-recipe"></a>
+</h3>
 <p>From the root of your atlas package, run:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. rewrite every atlas in data/ into the polygon format</span></span>
 <span><span class="fu">ggseg.formats</span><span class="fu">::</span><span class="fu"><a href="../reference/migrate_atlas_files.html">migrate_atlas_files</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
 <span></span>
@@ -116,16 +214,16 @@ dropping sf from your <code>DESCRIPTION</code>.</p>
 <p>That is the whole migration. Commit the rewritten
 <code>data/*.rda</code>, push, and release.</p>
 </div>
-<div class="section level2">
-<h2 id="what-migrate_atlas_files-does">What <code>migrate_atlas_files()</code> does<a class="anchor" aria-label="anchor" href="#what-migrate_atlas_files-does"></a>
-</h2>
+<div class="section level3">
+<h3 id="what-migrate_atlas_files-does">What <code>migrate_atlas_files()</code> does<a class="anchor" aria-label="anchor" href="#what-migrate_atlas_files-does"></a>
+</h3>
 <p>It walks the directory, loads each <code>.rda</code>, finds every
 atlas object inside, converts its <code>geom</code> to
 <code>brain_polygons</code>, drops any legacy
 <code>sf</code>/<code>polygons</code> slots, and saves the file back
 with <code>xz</code> compression. Files with nothing to migrate are left
 untouched, and it reports what it changed:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggseg.formats</span><span class="fu">::</span><span class="fu"><a href="../reference/migrate_atlas_files.html">migrate_atlas_files</a></span><span class="op">(</span><span class="st">"data"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; ✔ Migrated `dk.rda`.</span></span>
 <span><span class="co">#&gt; ✔ Migrated `aseg.rda`.</span></span>
@@ -136,25 +234,25 @@ maintainer step; the published package no longer needs sf.</p>
 <p>It is idempotent — running it twice is a no-op on already-migrated
 files, so it is safe to wire into a <code>data-raw/</code> build
 script.</p>
-<div class="section level3">
-<h3 id="keeping-sf-instead">Keeping sf instead<a class="anchor" aria-label="anchor" href="#keeping-sf-instead"></a>
-</h3>
+<div class="section level4">
+<h4 id="keeping-sf-instead">Keeping sf instead<a class="anchor" aria-label="anchor" href="#keeping-sf-instead"></a>
+</h4>
 <p>If your atlas package genuinely needs sf geometry (for example it
 exposes geometric operations), pass <code>keep_sf = TRUE</code> to
 normalise everything into the single <code>geom</code> slot as sf rather
 than polygons:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ggseg.formats</span><span class="fu">::</span><span class="fu"><a href="../reference/migrate_atlas_files.html">migrate_atlas_files</a></span><span class="op">(</span><span class="st">"data"</span>, keep_sf <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
-<div class="section level2">
-<h2 id="verifying-the-result">Verifying the result<a class="anchor" aria-label="anchor" href="#verifying-the-result"></a>
-</h2>
+<div class="section level3">
+<h3 id="verifying-the-result">Verifying the result<a class="anchor" aria-label="anchor" href="#verifying-the-result"></a>
+</h3>
 <p>After migrating, the geometry is sf-optional and round-trips
 losslessly. You can rehydrate sf on demand with
 <code><a href="../reference/as_sf_atlas.html">as_sf_atlas()</a></code>, and go back with
 <code><a href="../reference/as_polygon_atlas.html">as_polygon_atlas()</a></code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">poly</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_polygon_atlas.html">as_polygon_atlas</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/atlas_geometry_type.html">is_atlas_polygon</a></span><span class="op">(</span><span class="va">poly</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
@@ -170,6 +268,7 @@ lite-only install meets an atlas that is <em>still</em> sf-backed,
 available, and otherwise aborts with a message naming
 <code><a href="../reference/migrate_atlas_files.html">migrate_atlas_files()</a></code> — the signal that the atlas package
 itself needs the one-time migration above.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -1,9 +1,121 @@
-# Migrating atlas packages to sf-optional
+# Migrating atlases and code
 
 ``` r
 
 library(ggseg.formats)
 ```
+
+This vignette covers the two migrations ggseg.formats has asked of its
+users: re-keying `region` in your own data tables, and rewriting an
+atlas package’s geometry into the sf-optional format.
+
+## Migrating code to the 0.1.0 region keys
+
+Before 0.1.0 the `region` column of the bundled atlases held a long-form
+display name (`"banks of superior temporal sulcus"`). From 0.1.0 it
+holds a short, hemisphere-free key derived from `label` (`"bankssts"`),
+and the long-form name lives in the new `names` column. `label` never
+changed and remains the stable join key.
+
+Nothing errors when this bites. `merge(all.x = TRUE)` and the ggseg fill
+scale both yield `NA` for an unmatched region, which draws as a blank
+parcel — so the only symptom is a figure with holes in it.
+
+[`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
+translates a table of old values mechanically:
+
+``` r
+
+map <- legacy_region_map(dk())
+my_data$region <- unname(map[my_data$region])
+```
+
+Every pre-0.1.0 `region` value of all four bundled atlases translates:
+`dk` 35/35, `aseg` 19/19, `tracula` 26/26 and `suit` 13/13, whose keys
+never changed, so its map is the identity. `aseg`’s `"Thalamus Proper"`
+translates too, to `"thalamus"`, even though the alias row it lived on
+is gone from `core`. For any other atlas the map is zero-length, because
+only the bundled four were re-keyed.
+
+### Do not use `names` for this
+
+`names` is the curated display name, spelled to read well in a legend,
+and for several regions it deliberately differs from what 0.0.4 shipped
+as `region`: `aseg` has `names` `"ventral diencephalon"` where 0.0.4 had
+`region` `"ventraldc"`, and `"corpus callosum posterior"` where 0.0.4
+had `"cc posterior"`.
+[`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
+reads a recorded table of the 0.0.4 values instead, so it stays correct
+however `names` is later improved.
+
+If a pattern you pass to
+[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
+[`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+or
+[`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+matches nothing, they now warn and, where the pattern looks like a
+pre-0.1.0 name, say which key to use instead.
+
+### The accessors return rows, not a set
+
+[`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),
+[`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
+and
+[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+used to return a sorted set of unique, non-`NA` values, so the three
+disagreed on length for the same atlas and could not be zipped. Each now
+returns its `core` column unchanged: one element per `core` row, in row
+order, repeats and `NA`s retained. So `atlas_labels(a)[i]`,
+`atlas_regions(a)[i]` and `atlas_names(a)[i]` describe the same row.
+
+In practice
+[`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
+and
+[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+now repeat values, once per hemisphere or view row, and none of the
+three is sorted any more. Code that indexed the old output by position,
+or relied on it being a set, wants
+[`unique()`](https://rdrr.io/r/base/unique.html) — and `sort(unique(x))`
+reproduces the old value exactly.
+[`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
+is unchanged: views are a separate axis, not a `core` column.
+
+### Adding `names` to your own atlas
+
+`names` is part of the `core` schema from 0.1.0, but it arrived after
+about twenty atlas packages had been published without it, so it cannot
+be required. The policy is asymmetric:
+
+- a `names` column that is not a character vector is an error, because a
+  half-filled column is worse than none;
+- a missing `names` column is reported once per atlas per session, as a
+  message, by
+  [`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
+  only.
+
+Only the atlas author can add the column, so only the atlas author hears
+about it. Constructing or rebuilding an atlas is where that message
+appears. Plotting one, reading it through
+[`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),
+[`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md),
+[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+or
+[`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md),
+and class-checking it with
+[`is_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
+are all silent —
+[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+simply returns `character(0)` when the column is absent.
+
+To add it, give `core` one long-form display name per row, in `core` row
+order, before calling
+[`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md).
+Spell it to read well in a legend; it is not the pre-0.1.0 `region` key,
+which
+[`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
+records separately.
+
+## Migrating an atlas package to sf-optional
 
 Since the **sf-optional** milestone (ggseg 2.2), a `ggseg_atlas` stores
 its 2D geometry in a single `geom` slot that can hold either an `sf`
@@ -19,7 +131,7 @@ ships `brain_atlas`/`ggseg_atlas` objects as `.rda` files under `data/`.
 Migrating means rewriting those files once so the geometry is stored as
 polygons, then dropping sf from your `DESCRIPTION`.
 
-## The recipe
+### The recipe
 
 From the root of your atlas package, run:
 
@@ -38,7 +150,7 @@ devtools::document()
 That is the whole migration. Commit the rewritten `data/*.rda`, push,
 and release.
 
-## What `migrate_atlas_files()` does
+### What `migrate_atlas_files()` does
 
 It walks the directory, loads each `.rda`, finds every atlas object
 inside, converts its `geom` to `brain_polygons`, drops any legacy
@@ -61,7 +173,7 @@ step; the published package no longer needs sf.
 It is idempotent — running it twice is a no-op on already-migrated
 files, so it is safe to wire into a `data-raw/` build script.
 
-### Keeping sf instead
+#### Keeping sf instead
 
 If your atlas package genuinely needs sf geometry (for example it
 exposes geometric operations), pass `keep_sf = TRUE` to normalise
@@ -72,7 +184,7 @@ everything into the single `geom` slot as sf rather than polygons:
 ggseg.formats::migrate_atlas_files("data", keep_sf = TRUE)
 ```
 
-## Verifying the result
+### Verifying the result
 
 After migrating, the geometry is sf-optional and round-trips losslessly.
 You can rehydrate sf on demand with

@@ -13,7 +13,7 @@ cerebellar cortex split into anatomical lobules plus the deep nuclei
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,7 +26,7 @@ cerebellar cortex split into anatomical lobules plus the deep nuclei
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/atlas-manipulation.html">Customising brain atlases</a></li>
     <li><a class="dropdown-item" href="../articles/ggseg.formats.html">The ggseg_atlas object</a></li>
-    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlas packages to sf-optional</a></li>
+    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlases and code</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -94,6 +94,18 @@ cerebellar cortex split into anatomical lobules plus the deep nuclei
 the atlas renders with ggseg without requiring sf installed.</p>
     </div>
     <div class="section level2">
+    <h2 id="core-columns">Core columns<a class="anchor" aria-label="anchor" href="#core-columns"></a></h2>
+
+
+<p><code>core</code> carries one row per atlas region with the columns <code>hemi</code>, <code>region</code>,
+<code>label</code> and <code>names</code>, plus the atlas's own grouping column. <code>label</code> is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; <code>region</code> is a short, hemisphere-free key derived from it; <code>names</code> is the
+curated long-form display name, spelled out to read well in a figure legend.</p>
+<p><code>region</code> held the long-form name until version 0.1.0. <code>names</code> is not a record
+of those old values – use <code><a href="legacy_region_map.html">legacy_region_map()</a></code> to translate them.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Diedrichsen J, Balsters JH, Flavell J, et al. (2009).
 A probabilistic MR atlas of the human cerebellum.
@@ -125,22 +137,26 @@ NeuroImage, 46(1):39-46.
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Rendering:</span> <span style="color: #00BB00;">✔</span> ggseg</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> ggseg3d (meshes)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────────────────────────────────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>      hemi region        label</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    left   I_IV    left_I_IV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   right   I_IV   right_I_IV</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3    left      V       left_V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   right      V      right_V</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5    left     VI      left_VI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  vermis     VI    vermis_VI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   right     VI     right_VI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8    left  CrusI   left_CrusI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  vermis  CrusI vermis_CrusI</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  right  CrusI  right_CrusI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      hemi region        label        names</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    left   I_IV    left_I_IV lobules I-IV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   right   I_IV   right_I_IV lobules I-IV</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    left      V       left_V     lobule V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   right      V      right_V     lobule V</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    left     VI      left_VI    lobule VI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  vermis     VI    vermis_VI    lobule VI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   right     VI     right_VI    lobule VI</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8    left  CrusI   left_CrusI       Crus I</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  vermis  CrusI vermis_CrusI       Crus I</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  right  CrusI  right_CrusI       Crus I</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">... with 24 more rows</span></span>
 <span class="r-in"><span><span class="fu"><a href="atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="fu">suit</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "CrusI"      "CrusII"     "Dentate"    "Fastigial"  "IX"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "I_IV"       "Interposed" "V"          "VI"         "VIIIa"     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "VIIIb"      "VIIb"       "X"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "I_IV"       "I_IV"       "V"          "V"          "VI"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "VI"         "VI"         "CrusI"      "CrusI"      "CrusI"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "CrusII"     "CrusII"     "CrusII"     "VIIb"       "VIIb"      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "VIIb"       "VIIIa"      "VIIIa"      "VIIIa"      "VIIIb"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "VIIIb"      "VIIIb"      "IX"         "IX"         "IX"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "X"          "X"          "X"          "Dentate"    "Dentate"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "Interposed" "Interposed" "Fastigial"  "Fastigial" </span>
 <span class="r-in"><span><span class="fu"><a href="atlas_geometry_type.html">atlas_geometry_type</a></span><span class="op">(</span><span class="fu">suit</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "polygon"</span>
 </code></pre></div>

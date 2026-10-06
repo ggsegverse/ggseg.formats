@@ -21,6 +21,11 @@ Useful links:
 **Maintainer**: Athanasia Mo Mowinckel <a.m.mowinckel@psykologi.uio.no>
 ([ORCID](https://orcid.org/0000-0002-5756-0223))
 
+Authors:
+
+- Athanasia Mo Mowinckel <a.m.mowinckel@psykologi.uio.no>
+  ([ORCID](https://orcid.org/0000-0002-5756-0223))
+
 Other contributors:
 
 - Center for Lifespan Changes in Brain and Cognition (LCBC), University

@@ -176,9 +176,10 @@ The `$core` data frame is the single source of truth for what regions an
 atlas contains. Every manipulation function updates core first and then
 propagates changes to geometry and palette.
 
-The required columns are `region` (a human-readable name) and `label` (a
-unique identifier that links core to geometry). Most atlases also carry
-`hemi`:
+The required columns are `region` (a short, hemisphere-free key),
+`label` (a unique identifier that links core to geometry and palette)
+and `names` (the curated long-form display name). Most atlases also
+carry `hemi`:
 
 ``` r
 
@@ -210,34 +211,40 @@ You can add your own metadata with
 A set of accessor functions lets you pull information out without
 reaching into slots directly.
 
+Each of these returns one element per `core` row, in `core` row order,
+so they are row-aligned with each other: `atlas_labels(a)[i]`,
+`atlas_regions(a)[i]` and `atlas_names(a)[i]` all describe the same row.
+Wrap a call in [`unique()`](https://rdrr.io/r/base/unique.html) when you
+want the distinct set instead.
+
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
-returns the sorted unique region names:
+returns the region keys:
 
 ``` r
 
-atlas_regions(dk())
+unique(atlas_regions(dk()))
 #>  [1] "bankssts"                 "caudalanteriorcingulate" 
 #>  [3] "caudalmiddlefrontal"      "corpuscallosum"          
 #>  [5] "cuneus"                   "entorhinal"              
-#>  [7] "frontalpole"              "fusiform"                
-#>  [9] "inferiorparietal"         "inferiortemporal"        
-#> [11] "insula"                   "isthmuscingulate"        
-#> [13] "lateraloccipital"         "lateralorbitofrontal"    
-#> [15] "lingual"                  "medialorbitofrontal"     
-#> [17] "middletemporal"           "paracentral"             
-#> [19] "parahippocampal"          "parsopercularis"         
-#> [21] "parsorbitalis"            "parstriangularis"        
-#> [23] "pericalcarine"            "postcentral"             
-#> [25] "posteriorcingulate"       "precentral"              
-#> [27] "precuneus"                "rostralanteriorcingulate"
-#> [29] "rostralmiddlefrontal"     "superiorfrontal"         
-#> [31] "superiorparietal"         "superiortemporal"        
-#> [33] "supramarginal"            "temporalpole"            
-#> [35] "transversetemporal"
+#>  [7] "fusiform"                 "inferiorparietal"        
+#>  [9] "inferiortemporal"         "isthmuscingulate"        
+#> [11] "lateraloccipital"         "lateralorbitofrontal"    
+#> [13] "lingual"                  "medialorbitofrontal"     
+#> [15] "middletemporal"           "parahippocampal"         
+#> [17] "paracentral"              "parsopercularis"         
+#> [19] "parsorbitalis"            "parstriangularis"        
+#> [21] "pericalcarine"            "postcentral"             
+#> [23] "posteriorcingulate"       "precentral"              
+#> [25] "precuneus"                "rostralanteriorcingulate"
+#> [27] "rostralmiddlefrontal"     "superiorfrontal"         
+#> [29] "superiorparietal"         "superiortemporal"        
+#> [31] "supramarginal"            "frontalpole"             
+#> [33] "temporalpole"             "transversetemporal"      
+#> [35] "insula"
 ```
 
 [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
-returns the unique labels (the identifiers used to join geometry):
+returns the labels (the identifiers used to join geometry):
 
 ``` r
 
@@ -245,6 +252,33 @@ head(atlas_labels(dk()))
 #> [1] "lh_bankssts"                "lh_caudalanteriorcingulate"
 #> [3] "lh_caudalmiddlefrontal"     "lh_corpuscallosum"         
 #> [5] "lh_cuneus"                  "lh_entorhinal"
+```
+
+[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+returns the curated long-form display names — what you want for a figure
+legend:
+
+``` r
+
+head(atlas_names(aseg()))
+#> [1] "cerebellum cortex" "thalamus"          "caudate"          
+#> [4] "putamen"           "pallidum"          "brain stem"
+```
+
+`region` held long-form names itself until version 0.1.0.
+[`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
+translates those old values to the current keys, which is what you need
+to fix a table or script written against an earlier release. It reads a
+recorded table of what each bundled atlas shipped at 0.0.4, so it is not
+the same thing as `names`:
+
+``` r
+
+head(legacy_region_map(aseg()))
+#>         Brain Stem        cc anterior         cc central    cc mid anterior 
+#>       "brain stem"      "cc anterior"       "cc central"  "cc mid anterior" 
+#>   cc mid posterior       cc posterior 
+#> "cc mid posterior"     "cc posterior"
 ```
 
 [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)

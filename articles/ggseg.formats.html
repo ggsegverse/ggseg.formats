@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -45,7 +45,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/atlas-manipulation.html">Customising brain atlases</a></li>
     <li><a class="dropdown-item" href="../articles/ggseg.formats.html">The ggseg_atlas object</a></li>
-    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlas packages to sf-optional</a></li>
+    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlases and code</a></li>
   </ul>
 </li>
       </ul>
@@ -232,9 +232,10 @@ type-specific component (vertices, meshes, or centerlines) drives
 <p>The <code>$core</code> data frame is the single source of truth for
 what regions an atlas contains. Every manipulation function updates core
 first and then propagates changes to geometry and palette.</p>
-<p>The required columns are <code>region</code> (a human-readable name)
-and <code>label</code> (a unique identifier that links core to
-geometry). Most atlases also carry <code>hemi</code>:</p>
+<p>The required columns are <code>region</code> (a short,
+hemisphere-free key), <code>label</code> (a unique identifier that links
+core to geometry and palette) and <code>names</code> (the curated
+long-form display name). Most atlases also carry <code>hemi</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">core</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    70 obs. of  5 variables:</span></span>
@@ -257,37 +258,59 @@ atlas, for instance, has <code>lobe</code>:</p>
 </h2>
 <p>A set of accessor functions lets you pull information out without
 reaching into slots directly.</p>
-<p><code><a href="../reference/atlas_regions.html">atlas_regions()</a></code> returns the sorted unique region
-names:</p>
+<p>Each of these returns one element per <code>core</code> row, in
+<code>core</code> row order, so they are row-aligned with each other:
+<code>atlas_labels(a)[i]</code>, <code>atlas_regions(a)[i]</code> and
+<code>atlas_names(a)[i]</code> all describe the same row. Wrap a call in
+<code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> when you want the distinct set instead.</p>
+<p><code><a href="../reference/atlas_regions.html">atlas_regions()</a></code> returns the region keys:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "bankssts"                 "caudalanteriorcingulate" </span></span>
 <span><span class="co">#&gt;  [3] "caudalmiddlefrontal"      "corpuscallosum"          </span></span>
 <span><span class="co">#&gt;  [5] "cuneus"                   "entorhinal"              </span></span>
-<span><span class="co">#&gt;  [7] "frontalpole"              "fusiform"                </span></span>
-<span><span class="co">#&gt;  [9] "inferiorparietal"         "inferiortemporal"        </span></span>
-<span><span class="co">#&gt; [11] "insula"                   "isthmuscingulate"        </span></span>
-<span><span class="co">#&gt; [13] "lateraloccipital"         "lateralorbitofrontal"    </span></span>
-<span><span class="co">#&gt; [15] "lingual"                  "medialorbitofrontal"     </span></span>
-<span><span class="co">#&gt; [17] "middletemporal"           "paracentral"             </span></span>
-<span><span class="co">#&gt; [19] "parahippocampal"          "parsopercularis"         </span></span>
-<span><span class="co">#&gt; [21] "parsorbitalis"            "parstriangularis"        </span></span>
-<span><span class="co">#&gt; [23] "pericalcarine"            "postcentral"             </span></span>
-<span><span class="co">#&gt; [25] "posteriorcingulate"       "precentral"              </span></span>
-<span><span class="co">#&gt; [27] "precuneus"                "rostralanteriorcingulate"</span></span>
-<span><span class="co">#&gt; [29] "rostralmiddlefrontal"     "superiorfrontal"         </span></span>
-<span><span class="co">#&gt; [31] "superiorparietal"         "superiortemporal"        </span></span>
-<span><span class="co">#&gt; [33] "supramarginal"            "temporalpole"            </span></span>
-<span><span class="co">#&gt; [35] "transversetemporal"</span></span></code></pre></div>
-<p><code><a href="../reference/atlas_labels.html">atlas_labels()</a></code> returns the unique labels (the
-identifiers used to join geometry):</p>
+<span><span class="co">#&gt;  [7] "fusiform"                 "inferiorparietal"        </span></span>
+<span><span class="co">#&gt;  [9] "inferiortemporal"         "isthmuscingulate"        </span></span>
+<span><span class="co">#&gt; [11] "lateraloccipital"         "lateralorbitofrontal"    </span></span>
+<span><span class="co">#&gt; [13] "lingual"                  "medialorbitofrontal"     </span></span>
+<span><span class="co">#&gt; [15] "middletemporal"           "parahippocampal"         </span></span>
+<span><span class="co">#&gt; [17] "paracentral"              "parsopercularis"         </span></span>
+<span><span class="co">#&gt; [19] "parsorbitalis"            "parstriangularis"        </span></span>
+<span><span class="co">#&gt; [21] "pericalcarine"            "postcentral"             </span></span>
+<span><span class="co">#&gt; [23] "posteriorcingulate"       "precentral"              </span></span>
+<span><span class="co">#&gt; [25] "precuneus"                "rostralanteriorcingulate"</span></span>
+<span><span class="co">#&gt; [27] "rostralmiddlefrontal"     "superiorfrontal"         </span></span>
+<span><span class="co">#&gt; [29] "superiorparietal"         "superiortemporal"        </span></span>
+<span><span class="co">#&gt; [31] "supramarginal"            "frontalpole"             </span></span>
+<span><span class="co">#&gt; [33] "temporalpole"             "transversetemporal"      </span></span>
+<span><span class="co">#&gt; [35] "insula"</span></span></code></pre></div>
+<p><code><a href="../reference/atlas_labels.html">atlas_labels()</a></code> returns the labels (the identifiers used
+to join geometry):</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_labels.html">atlas_labels</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "lh_bankssts"                "lh_caudalanteriorcingulate"</span></span>
 <span><span class="co">#&gt; [3] "lh_caudalmiddlefrontal"     "lh_corpuscallosum"         </span></span>
 <span><span class="co">#&gt; [5] "lh_cuneus"                  "lh_entorhinal"</span></span></code></pre></div>
-<p><code><a href="../reference/atlas_views.html">atlas_views()</a></code> returns the available 2D views:</p>
+<p><code><a href="../reference/atlas_names.html">atlas_names()</a></code> returns the curated long-form display
+names — what you want for a figure legend:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_names.html">atlas_names</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "cerebellum cortex" "thalamus"          "caudate"          </span></span>
+<span><span class="co">#&gt; [4] "putamen"           "pallidum"          "brain stem"</span></span></code></pre></div>
+<p><code>region</code> held long-form names itself until version 0.1.0.
+<code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> translates those old values to the
+current keys, which is what you need to fix a table or script written
+against an earlier release. It reads a recorded table of what each
+bundled atlas shipped at 0.0.4, so it is not the same thing as
+<code>names</code>:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/legacy_region_map.html">legacy_region_map</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;         Brain Stem        cc anterior         cc central    cc mid anterior </span></span>
+<span><span class="co">#&gt;       "brain stem"      "cc anterior"       "cc central"  "cc mid anterior" </span></span>
+<span><span class="co">#&gt;   cc mid posterior       cc posterior </span></span>
+<span><span class="co">#&gt; "cc mid posterior"     "cc posterior"</span></span></code></pre></div>
+<p><code><a href="../reference/atlas_views.html">atlas_views()</a></code> returns the available 2D views:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "inferior" "lateral"  "medial"   "superior"</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -297,7 +320,7 @@ identifiers used to join geometry):</p>
 <span><span class="co">#&gt; [1] "coronal"        "inferior_axial" "mid_axial"      "sagittal"      </span></span>
 <span><span class="co">#&gt; [5] "superior_axial"</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_type.html">atlas_type()</a></code> returns the type string:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_type.html">atlas_type</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "cortical"</span></span>
 <span><span class="fu"><a href="../reference/atlas_type.html">atlas_type</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -306,7 +329,7 @@ identifiers used to join geometry):</p>
 <span><span class="co">#&gt; [1] "tract"</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_palette.html">atlas_palette()</a></code> retrieves the colour palette from an
 atlas object:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_palette.html">atlas_palette</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                lh_bankssts lh_caudalanteriorcingulate </span></span>
 <span><span class="co">#&gt;                  "#196428"                  "#7D64A0" </span></span>
@@ -324,7 +347,7 @@ palette colours onto the raw geometry so you get a single, ready-to-use
 table.</p>
 <p><code><a href="../reference/atlas_sf.html">atlas_sf()</a></code> returns an sf data frame for 2D
 rendering:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sf_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_sf.html">atlas_sf</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">sf_data</span></span>
 <span><span class="co">#&gt; ── <span style="color: #0000BB;">&lt;ggseg_sf&gt;</span> data: 185 × 8 ────────────────────────────────────────────────────</span></span>
@@ -359,7 +382,7 @@ rendering:</p>
 <span><span class="co">#&gt; 4   MULTIPOLYGON (((804.4479 56... #3C14DC</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_vertices.html">atlas_vertices()</a></code> returns the vertex data for cortical 3D
 rendering:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">vert_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_vertices.html">atlas_vertices</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">vert_data</span></span>
 <span><span class="co">#&gt; ── <span style="color: #0000BB;">&lt;ggseg_vertices&gt;</span> data: 70 × 7 ───────────────────────────────────────────────</span></span>
@@ -389,7 +412,7 @@ rendering:</p>
 <span><span class="co">#&gt; <span style="font-style: italic;">... with 60 more rows</span></span></span></code></pre></div>
 <p><code><a href="../reference/atlas_meshes.html">atlas_meshes()</a></code> returns mesh data for subcortical or
 tract 3D rendering:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">mesh_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_meshes.html">atlas_meshes</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">mesh_data</span></span>
 <span><span class="co">#&gt; ── <span style="color: #0000BB;">&lt;ggseg_meshes&gt;</span> data: 29 × 7 ─────────────────────────────────────────────────</span></span>
@@ -409,7 +432,7 @@ tract 3D rendering:</p>
 merged sf data frame similar to <code><a href="../reference/atlas_sf.html">atlas_sf()</a></code> but with
 atlas-level columns (<code>atlas</code>, <code>type</code>)
 attached:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "label"    "view"     "hemi"     "region"   "names"    "lobe"    </span></span>
@@ -420,14 +443,14 @@ attached:</p>
 </h2>
 <p><code><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas()</a></code> tests whether an object has the right
 class:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="fu"><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas</a></span><span class="op">(</span><span class="va">mtcars</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
 <p><code><a href="../reference/as_ggseg_atlas.html">as_ggseg_atlas()</a></code> coerces lists with the right structure
 into a proper <code>ggseg_atlas</code>:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">atlas_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">recovered</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/as_ggseg_atlas.html">as_ggseg_atlas</a></span><span class="op">(</span><span class="va">atlas_list</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas</a></span><span class="op">(</span><span class="va">recovered</span><span class="op">)</span></span>

@@ -11,7 +11,7 @@ bundle atlas in MNI space."><meta property="og:image" content="https://ggsegvers
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9007</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,7 +24,7 @@ bundle atlas in MNI space."><meta property="og:image" content="https://ggsegvers
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/atlas-manipulation.html">Customising brain atlases</a></li>
     <li><a class="dropdown-item" href="../articles/ggseg.formats.html">The ggseg_atlas object</a></li>
-    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlas packages to sf-optional</a></li>
+    <li><a class="dropdown-item" href="../articles/migrating-atlases.html">Migrating atlases and code</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -87,6 +87,28 @@ MRI using FreeSurfer's TRACULA training data. It works with both ggseg
 (2D slice projections) and ggseg3d (3D tube mesh visualizations).</p>
     </div>
     <div class="section level2">
+    <h2 id="core-columns">Core columns<a class="anchor" aria-label="anchor" href="#core-columns"></a></h2>
+
+
+<p><code>core</code> carries one row per atlas region with the columns <code>hemi</code>, <code>region</code>,
+<code>label</code> and <code>names</code>, plus the atlas's own grouping column. <code>label</code> is the
+stable atlas identifier and the key the palette and the geometry are keyed
+on; <code>region</code> is a short, hemisphere-free key derived from it; <code>names</code> is the
+curated long-form display name, spelled out to read well in a figure legend.</p>
+<p><code>region</code> held the long-form name until version 0.1.0. <code>names</code> is not a record
+of those old values – use <code><a href="legacy_region_map.html">legacy_region_map()</a></code> to translate them.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="tract-labels">Tract labels<a class="anchor" aria-label="anchor" href="#tract-labels"></a></h2>
+
+
+<p><code>label</code> is the name FreeSurfer's TRACULA writes its per-pathway outputs
+under, including the trailing <code>.bbr.prep</code> (for example <code>lh.af.bbr.prep</code>), so
+a table of TRACULA output joins to the atlas as it comes. <code>label_short</code> is
+the same identifier with the suffix stripped – the name
+<code>FreeSurferColorLUT.txt</code> gives the pathway at ids 5100-5399.</p>
+    </div>
+    <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
     <p>Yendiki A, Panneck P, Srinivasan P, et al. (2011).
 Automated probabilistic reconstruction of white-matter pathways in
@@ -118,38 +140,41 @@ Frontiers in Neuroinformatics, 5:23.
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-weight: bold;">Rendering:</span> <span style="color: #00BB00;">✔</span> ggseg</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> ggseg3d (centerlines)</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> ────────────────────────────────────────────────────────────────────────────────</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       hemi      region       label                           names</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1  midline       acomm       acomm             anterior commissure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  midline    cc bodyc    cc.bodyc    corpus callosum body central</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  midline    cc bodyp    cc.bodyp   corpus callosum body parietal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  midline   cc bodypf   cc.bodypf corpus callosum body prefrontal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  midline   cc bodypm   cc.bodypm   corpus callosum body premotor</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  midline    cc bodyt    cc.bodyt   corpus callosum body temporal</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  midline     cc genu     cc.genu            corpus callosum genu</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  midline  cc rostrum  cc.rostrum         corpus callosum rostrum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  midline cc splenium cc.splenium        corpus callosum splenium</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10    left          af       lh.af              arcuate fasciculus</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>              group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       commissure</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9  corpus callosum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10     association</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       hemi      region                label label_short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  midline       acomm       acomm.bbr.prep       acomm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  midline    cc bodyc    cc.bodyc.bbr.prep    cc.bodyc</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  midline    cc bodyp    cc.bodyp.bbr.prep    cc.bodyp</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  midline   cc bodypf   cc.bodypf.bbr.prep   cc.bodypf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  midline   cc bodypm   cc.bodypm.bbr.prep   cc.bodypm</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  midline    cc bodyt    cc.bodyt.bbr.prep    cc.bodyt</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  midline     cc genu     cc.genu.bbr.prep     cc.genu</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  midline  cc rostrum  cc.rostrum.bbr.prep  cc.rostrum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  midline cc splenium cc.splenium.bbr.prep cc.splenium</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10    left          af       lh.af.bbr.prep       lh.af</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              names           group</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              anterior commissure      commissure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     corpus callosum body central corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    corpus callosum body parietal corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  corpus callosum body prefrontal corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5    corpus callosum body premotor corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6    corpus callosum body temporal corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7             corpus callosum genu corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8          corpus callosum rostrum corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9         corpus callosum splenium corpus callosum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10              arcuate fasciculus     association</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="font-style: italic;">... with 32 more rows</span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">tracula</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="tracula-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu"><a href="atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="fu">tracula</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "acomm"       "af"          "ar"          "atr"         "cbd"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "cbv"         "cc bodyc"    "cc bodyp"    "cc bodypf"   "cc bodypm"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "cc bodyt"    "cc genu"     "cc rostrum"  "cc splenium" "cst"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "emc"         "fat"         "fx"          "ilf"         "mcp"        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "mlf"         "or"          "slf1"        "slf2"        "slf3"       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "uf"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "acomm"       "cc bodyc"    "cc bodyp"    "cc bodypf"   "cc bodypm"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "cc bodyt"    "cc genu"     "cc rostrum"  "cc splenium" "af"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "ar"          "atr"         "cbd"         "cbv"         "cst"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [16] "emc"         "fat"         "fx"          "ilf"         "mlf"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "or"          "slf1"        "slf2"        "slf3"        "uf"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [26] "mcp"         "af"          "ar"          "atr"         "cbd"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [31] "cbv"         "cst"         "emc"         "fat"         "fx"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [36] "ilf"         "mlf"         "or"          "slf1"        "slf2"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [41] "slf3"        "uf"         </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
