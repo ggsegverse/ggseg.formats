@@ -49,7 +49,7 @@ core_without_names <- function() {
 
 atlas_without_names <- function(name = "nameless") {
   parts <- core_without_names()
-  suppressWarnings(ggseg_atlas(
+  suppressMessages(ggseg_atlas(
     atlas = name,
     type = "cortical",
     core = parts$core,
@@ -82,17 +82,29 @@ describe("atlas_names", {
 })
 
 describe("core names validation", {
-  it("warns once when core has no names column", {
+  it("informs the atlas author once when core has no names column", {
     parts <- core_without_names()
-    expect_warning(
+    expect_message(
       ggseg_atlas(
-        atlas = "warns-once",
+        atlas = "informs-once",
         type = "cortical",
         core = parts$core,
         data = ggseg_data_cortical(vertices = parts$vertices)
       ),
       class = "ggseg.formats_missing_names"
     )
+  })
+
+  it("does not warn when core has no names column", {
+    parts <- core_without_names()
+    expect_no_warning(suppressMessages(
+      ggseg_atlas(
+        atlas = "no-warning",
+        type = "cortical",
+        core = parts$core,
+        data = ggseg_data_cortical(vertices = parts$vertices)
+      )
+    ))
   })
 
   it("does not error when core has no names column", {
@@ -438,5 +450,154 @@ describe("legacy region no-match hint", {
       warning = conditionMessage
     )
     expect_no_match(warning_text, "legacy_region_map", fixed = TRUE)
+  })
+})
+
+
+missing_names_signals <- function(expr) {
+  signals <- character()
+  withCallingHandlers(
+    try(force(expr), silent = TRUE),
+    condition = function(cnd) {
+      if (inherits(cnd, "ggseg.formats_missing_names")) {
+        signals <<- c(signals, class(cnd)[1])
+      }
+      NULL
+    }
+  )
+  signals
+}
+
+aseg_without_names <- function() {
+  stripped <- aseg()
+  stripped$core$names <- NULL
+  suppressMessages(ggseg_atlas(
+    atlas = "silent-aseg",
+    type = stripped$type,
+    core = stripped$core,
+    data = stripped$data,
+    palette = stripped$palette
+  ))
+}
+
+describe("a missing names column is silent outside construction", {
+  it("says nothing when the atlas is plotted", {
+    atlas <- aseg_without_names()
+    expect_identical(
+      missing_names_signals(print(plot(atlas))),
+      character()
+    )
+    expect_no_warning(suppressMessages(print(plot(atlas))))
+  })
+
+  it("says nothing through the core-column accessors", {
+    atlas <- atlas_without_names("silent-accessors")
+    expect_no_message(expect_no_warning({
+      atlas_regions(atlas)
+      atlas_labels(atlas)
+      atlas_names(atlas)
+      atlas_palette(atlas)
+    }))
+  })
+
+  it("returns character(0) from atlas_names()", {
+    expect_identical(atlas_names(atlas_without_names()), character(0))
+  })
+
+  it("says nothing through the class predicates", {
+    atlas <- atlas_without_names("silent-predicates")
+    expect_no_message(expect_no_warning({
+      expect_true(is_ggseg_atlas(atlas))
+      expect_true(is_cortical_atlas(atlas))
+      expect_false(is_subcortical_atlas(atlas))
+    }))
+  })
+
+  it("stays silent on a predicate for an atlas with duplicate core labels", {
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("a", "b"),
+      label = c("x", "x")
+    )
+    vertices <- data.frame(label = "x")
+    vertices$vertices <- list(1L:3L)
+    atlas <- suppressMessages(suppressWarnings(ggseg_atlas(
+      atlas = "dupes-predicate",
+      type = "cortical",
+      core = core,
+      data = ggseg_data_cortical(vertices = vertices)
+    )))
+    expect_no_message(expect_no_warning(is_ggseg_atlas(atlas)))
+  })
+
+  it("still reports a structurally invalid atlas as FALSE, silently", {
+    broken <- atlas_without_names("silent-invalid")
+    broken$core <- data.frame(hemi = "left")
+    expect_no_message(expect_no_warning(expect_false(is_ggseg_atlas(broken))))
+  })
+
+  it("keeps erroring on a strictly invalid atlas", {
+    parts <- core_without_names()
+    parts$core$label <- NULL
+    expect_error(
+      ggseg_atlas(
+        atlas = "strictly-invalid",
+        type = "cortical",
+        core = parts$core,
+        data = ggseg_data_cortical(vertices = parts$vertices)
+      ),
+      "must contain columns"
+    )
+  })
+
+  it("keeps warning on duplicate core labels at construction", {
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("a", "b"),
+      label = c("x", "x")
+    )
+    vertices <- data.frame(label = "x")
+    vertices$vertices <- list(1L:3L)
+    expect_warning(
+      suppressMessages(ggseg_atlas(
+        atlas = "still-warns-dupes",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(vertices = vertices)
+      )),
+      class = "ggseg.formats_duplicate_labels"
+    )
+  })
+})
+
+
+describe("legacy conversion back-fills names", {
+  it("copies the legacy long-form region into names", {
+    skip_if_not_installed("sf")
+    sf_geom <- sf::st_sf(
+      label = "lh_frontal",
+      view = "lateral",
+      geometry = sf::st_sfc(sf::st_polygon(list(
+        cbind(c(0, 1, 1, 0, 0), c(0, 0, 1, 1, 0))
+      )))
+    )
+    legacy <- structure(
+      list(
+        atlas = "legacy",
+        type = "cortical",
+        palette = c(lh_frontal = "#FF0000"),
+        core = data.frame(
+          hemi = "left",
+          region = "superior frontal gyrus",
+          label = "lh_frontal"
+        ),
+        data = ggseg_data_cortical(geom = sf_geom)
+      ),
+      class = "brain_atlas"
+    )
+    result <- suppressMessages(
+      convert_legacy_brain_atlas(atlas_2d = legacy)
+    )
+    expect_identical(atlas_names(result), "superior frontal gyrus")
   })
 })

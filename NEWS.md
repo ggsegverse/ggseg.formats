@@ -18,8 +18,9 @@
   instead of a sorted, de-duplicated set, so the three are now row-aligned.
   `sort(unique(x))` recovers the old value. `atlas_views()` is unchanged.
 - `names` is part of the `core` schema, read by the new `atlas_names()`, and
-  `suit()` gains it. A non-character `names` is an error; a missing one warns
-  once per atlas per session, so older atlas packages keep loading.
+  `suit()` gains it. A non-character `names` is an error; a missing one only
+  informs the atlas author once per session at construction, so plotting,
+  accessing or class-checking an older atlas package stays silent.
 - `ggseg_atlas()` warns when `core$label` is not unique, since the palette and
   every geometry slot are joined on it (ggseg3d#55).
 - `aseg()` drops its alias rows (`core` 47 to 29 rows, `"Thalamus Proper"` gone),

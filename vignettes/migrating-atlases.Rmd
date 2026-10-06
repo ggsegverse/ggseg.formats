@@ -80,6 +80,27 @@ indexed the old output positionally, or relied on it being a set, wants
 `unique()` — and `sort(unique(x))` reproduces the old value exactly.
 `atlas_views()` is unchanged: views are a separate axis, not a `core` column.
 
+### Adding `names` to your own atlas
+
+`names` is part of the `core` schema from 0.1.0, but it arrived after about
+twenty atlas packages had been published without it, so it cannot be required.
+The policy is asymmetric:
+
+- a `names` column that is not a character vector is an error, because a
+  half-filled column is worse than none;
+- a missing `names` column is reported once per atlas per session, as a message,
+  by `ggseg_atlas()` only.
+
+Only the atlas author can add the column, so only the atlas author hears about
+it. Constructing or rebuilding an atlas is where that message appears. Plotting
+one, reading it through `atlas_regions()`, `atlas_labels()`, `atlas_names()` or
+`atlas_palette()`, and class-checking it with `is_ggseg_atlas()` are all silent —
+`atlas_names()` simply returns `character(0)` when the column is absent.
+
+To add it, give `core` one long-form display name per row, in `core` row order,
+before calling `ggseg_atlas()`. Spell it to read well in a legend; it is not the
+pre-0.1.0 `region` key, which `legacy_region_map()` records separately.
+
 ## Migrating an atlas package to sf-optional
 
 Since the **sf-optional** milestone (ggseg 2.2), a `ggseg_atlas` stores its 2D
