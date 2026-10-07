@@ -182,12 +182,10 @@ atlas_type.brain_atlas <- function(x) {
 #' @param atlas A `ggseg_atlas` object
 #' @param pattern Character pattern to match. Uses
 #'   `grepl(..., ignore.case = TRUE)`.
-#' @param match_on Column to match against: `"label"` or `"region"`. The
-#'   verbs that select regions -- `atlas_region_remove()`,
-#'   `atlas_region_keep()` and `atlas_region_contextual()` -- default to
-#'   `"label"`, the identifier that is unique within an atlas and stable
-#'   across them. `atlas_region_rename()` defaults to `"region"`, because it
-#'   edits the text it matches and `region` is the column it writes.
+#' @param match_on Column to match against: `"label"`, the default, or
+#'   `"region"`. `label` is the identifier that is unique within an atlas and
+#'   stable across them, so every verb that takes a pattern matches it unless
+#'   told otherwise.
 #' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
 #'   Defaults to `TRUE` for backwards compatibility, but note that a context
 #'   pattern like `"Thalamus"` then also matches focus labels such as
@@ -424,11 +422,13 @@ atlas_context_remove <- function(atlas) {
 
 #' @describeIn atlas_manipulation Rename regions matching a pattern. Only
 #'   ever writes to the `region` column, never to `label`. `match_on` chooses
-#'   which column the pattern is matched and substituted against: the default
-#'   `"region"` rewrites the display names in place, while `"label"` derives
-#'   them from the source identifiers, so
-#'   `atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")` turns
-#'   label `ctx-lh-superiorfrontal` into region `superiorfrontal`. If
+#'   which column the pattern is matched and substituted against. The default
+#'   `"label"` derives the region from the label, so
+#'   `atlas_region_rename(atlas, "^ctx-lh-", "")` turns label
+#'   `ctx-lh-superiorfrontal` into region `superiorfrontal`, and a pattern
+#'   that spans the whole label, as in
+#'   `atlas_region_rename(atlas, "^Left-Thalamus$", "thalamus")`, sets the
+#'   region outright. `"region"` rewrites the existing region text in place. If
 #'   `replacement` is a function, it receives the matched values of that
 #'   column and returns the new region names.
 #' @export
@@ -437,7 +437,7 @@ atlas_region_rename <- function(
   atlas,
   pattern,
   replacement,
-  match_on = c("region", "label")
+  match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
 

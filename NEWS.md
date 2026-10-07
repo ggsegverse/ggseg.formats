@@ -13,15 +13,20 @@
   my_data$region <- unname(legacy_region_map(dk())[my_data$region])
   ```
 
-- `atlas_region_remove()`, `atlas_region_keep()` and
-  `atlas_region_contextual()` match their pattern against `label` by default,
-  not `region`. `label` is the identifier that is unique within an atlas and
-  stable across them, and it is what `atlas_region_op()`,
+- Every verb that takes a pattern matches it against `label` by default.
+  `atlas_region_remove()`, `atlas_region_keep()`, `atlas_region_contextual()`
+  and `atlas_region_rename()` matched `region`; `atlas_region_op()`,
   `atlas_view_remove_region()` and `atlas_structure_reorder()` already matched
-  on. A pattern written for a region name that differs from its label, such as
-  `"brain stem"` for `Brain-Stem`, now needs `match_on = "region"`.
-  `atlas_region_rename()` still defaults to `"region"`: it edits the text it
-  matches, and `region` is the column it writes.
+  `label`. `label` is the identifier that is unique within an atlas and stable
+  across them. A pattern written for a region spelling that differs from its
+  label, such as `"brain stem"` for `Brain-Stem`, now needs
+  `match_on = "region"`.
+
+  For `atlas_region_rename()` this also changes what is rewritten, since it
+  substitutes in the column it matches: by default the region is now derived
+  from the label, so anchor the pattern to the whole label to set a region
+  outright (`atlas_region_rename(atlas, "^Brain-Stem$", "brainstem")`), or
+  pass `match_on = "region"` to edit the region text in place as before.
 - `atlas_regions()`, `atlas_labels()` and `atlas_names()` return their `core`
   column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
   instead of a sorted set of unique values, so the three are now row-aligned.

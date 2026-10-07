@@ -99,23 +99,21 @@ polygons entirely, leaving gaps in the 2D slices.
 ## Renaming regions
 
 `atlas_region_rename()` changes the `region` column without touching `label`
-(so geometry links stay intact). Pass a fixed string:
+(so geometry links stay intact). Like the other verbs it matches `label`, so a
+pattern that spans the whole label sets the region for those rows:
 
 ```{r}
 #| label: region-rename
-renamed <- atlas_region_rename(
-  dk(),
-  "banks of superior temporal sulcus",
-  "STS banks"
-)
+renamed <- atlas_region_rename(dk(), "^[lr]h_bankssts$", "STS banks")
 "STS banks" %in% atlas_regions(renamed)
 ```
 
-Or pass a function for programmatic renaming:
+Pass `match_on = "region"` to rewrite the region text that is already there,
+with a string or with a function:
 
 ```{r}
 #| label: region-rename-func
-upper <- atlas_region_rename(dk(), ".*", toupper)
+upper <- atlas_region_rename(dk(), ".*", toupper, match_on = "region")
 head(unique(atlas_regions(upper)))
 ```
 

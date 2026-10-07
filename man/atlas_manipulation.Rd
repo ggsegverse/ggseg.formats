@@ -43,7 +43,7 @@ atlas_region_rename(
   atlas,
   pattern,
   replacement,
-  match_on = c("region", "label")
+  match_on = c("label", "region")
 )
 
 atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
@@ -82,12 +82,10 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 \item{pattern}{Character pattern to match. Uses
 \code{grepl(..., ignore.case = TRUE)}.}
 
-\item{match_on}{Column to match against: \code{"label"} or \code{"region"}. The
-verbs that select regions -- \code{atlas_region_remove()},
-\code{atlas_region_keep()} and \code{atlas_region_contextual()} -- default to
-\code{"label"}, the identifier that is unique within an atlas and stable
-across them. \code{atlas_region_rename()} defaults to \code{"region"}, because it
-edits the text it matches and \code{region} is the column it writes.}
+\item{match_on}{Column to match against: \code{"label"}, the default, or
+\code{"region"}. \code{label} is the identifier that is unique within an atlas and
+stable across them, so every verb that takes a pattern matches it unless
+told otherwise.}
 
 \item{ignore.case}{For \code{atlas_region_contextual()}: passed to \code{\link[=grepl]{grepl()}}.
 Defaults to \code{TRUE} for backwards compatibility, but note that a context
@@ -208,11 +206,13 @@ labelled regions.
 
 \item \code{atlas_region_rename()}: Rename regions matching a pattern. Only
 ever writes to the \code{region} column, never to \code{label}. \code{match_on} chooses
-which column the pattern is matched and substituted against: the default
-\code{"region"} rewrites the display names in place, while \code{"label"} derives
-them from the source identifiers, so
-\code{atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")} turns
-label \code{ctx-lh-superiorfrontal} into region \code{superiorfrontal}. If
+which column the pattern is matched and substituted against. The default
+\code{"label"} derives the region from the label, so
+\code{atlas_region_rename(atlas, "^ctx-lh-", "")} turns label
+\code{ctx-lh-superiorfrontal} into region \code{superiorfrontal}, and a pattern
+that spans the whole label, as in
+\code{atlas_region_rename(atlas, "^Left-Thalamus$", "thalamus")}, sets the
+region outright. \code{"region"} rewrites the existing region text in place. If
 \code{replacement} is a function, it receives the matched values of that
 column and returns the new region names.
 

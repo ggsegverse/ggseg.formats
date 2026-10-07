@@ -782,14 +782,19 @@ describe("atlas_region_op", {
 describe("atlas_region_rename", {
   it("renames matching regions with string replacement", {
     atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, "frontal", "prefrontal")
+    result <- atlas_region_rename(
+      atlas,
+      "frontal",
+      "prefrontal",
+      match_on = "region"
+    )
     non_parietal <- result$core$region != "parietal"
     expect_true(all(result$core$region[non_parietal] == "prefrontal"))
   })
 
   it("renames matching regions with function", {
     atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, ".*", toupper)
+    result <- atlas_region_rename(atlas, ".*", toupper, match_on = "region")
     expect_true(all(result$core$region %in% c("FRONTAL", "PARIETAL")))
   })
 
@@ -802,7 +807,12 @@ describe("atlas_region_rename", {
   it("preserves NA regions", {
     atlas <- make_test_atlas()
     atlas$core$region[1] <- NA
-    result <- atlas_region_rename(atlas, "parietal", "PARIETAL")
+    result <- atlas_region_rename(
+      atlas,
+      "parietal",
+      "PARIETAL",
+      match_on = "region"
+    )
     expect_true(is.na(result$core$region[1]))
   })
 
@@ -1749,8 +1759,23 @@ describe("region verbs match on label by default", {
     expect_identical(kept$core$label, "Brain-Stem")
   })
 
-  it("leaves atlas_region_rename() matching region, the column it writes", {
-    renamed <- atlas_region_rename(aseg(), "brain stem", "brainstem")
+  it("renames by label too: a pattern spanning the label sets the region", {
+    renamed <- atlas_region_rename(aseg(), "^Brain-Stem$", "brainstem")
+
+    expect_identical(
+      renamed$core$region[renamed$core$label == "Brain-Stem"],
+      "brainstem"
+    )
+    expect_identical(renamed$core$label, aseg()$core$label)
+  })
+
+  it("rewrites the region text in place when asked to match region", {
+    renamed <- atlas_region_rename(
+      aseg(),
+      "brain stem",
+      "brainstem",
+      match_on = "region"
+    )
 
     expect_identical(
       renamed$core$region[renamed$core$label == "Brain-Stem"],
