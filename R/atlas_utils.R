@@ -182,7 +182,12 @@ atlas_type.brain_atlas <- function(x) {
 #' @param atlas A `ggseg_atlas` object
 #' @param pattern Character pattern to match. Uses
 #'   `grepl(..., ignore.case = TRUE)`.
-#' @param match_on Column to match against: `"region"` or `"label"`.
+#' @param match_on Column to match against: `"label"` or `"region"`. The
+#'   verbs that select regions -- `atlas_region_remove()`,
+#'   `atlas_region_keep()` and `atlas_region_contextual()` -- default to
+#'   `"label"`, the identifier that is unique within an atlas and stable
+#'   across them. `atlas_region_rename()` defaults to `"region"`, because it
+#'   edits the text it matches and `region` is the column it writes.
 #' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
 #'   Defaults to `TRUE` for backwards compatibility, but note that a context
 #'   pattern like `"Thalamus"` then also matches focus labels such as
@@ -206,7 +211,7 @@ atlas_type.brain_atlas <- function(x) {
 #' @examples
 #' dk() |>
 #'   atlas_region_remove("bankssts") |>
-#'   atlas_region_keep("frontal", match_on = "region")
+#'   atlas_region_keep("frontal")
 #'
 #' @name atlas_manipulation
 #' @export
@@ -214,7 +219,7 @@ atlas_type.brain_atlas <- function(x) {
 atlas_region_remove <- function(
   atlas,
   pattern,
-  match_on = c("region", "label")
+  match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
 
@@ -264,7 +269,7 @@ atlas_region_remove <- function(
 atlas_region_contextual <- function(
   atlas,
   pattern,
-  match_on = c("region", "label"),
+  match_on = c("label", "region"),
   ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
@@ -467,7 +472,7 @@ atlas_region_rename <- function(
 #'   is preserved for surface continuity.
 #' @export
 #' @family atlas manipulations
-atlas_region_keep <- function(atlas, pattern, match_on = c("region", "label")) {
+atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
   match_on <- match.arg(match_on)
 
   match_col <- atlas$core[[match_on]]

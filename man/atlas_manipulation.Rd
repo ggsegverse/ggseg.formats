@@ -18,12 +18,12 @@
 \alias{atlas_view_reorder}
 \title{Manipulate brain atlas regions and views}
 \usage{
-atlas_region_remove(atlas, pattern, match_on = c("region", "label"))
+atlas_region_remove(atlas, pattern, match_on = c("label", "region"))
 
 atlas_region_contextual(
   atlas,
   pattern,
-  match_on = c("region", "label"),
+  match_on = c("label", "region"),
   ignore.case = TRUE
 )
 
@@ -46,7 +46,7 @@ atlas_region_rename(
   match_on = c("region", "label")
 )
 
-atlas_region_keep(atlas, pattern, match_on = c("region", "label"))
+atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
 
 atlas_core_add(atlas, data, by = "region")
 
@@ -82,7 +82,12 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 \item{pattern}{Character pattern to match. Uses
 \code{grepl(..., ignore.case = TRUE)}.}
 
-\item{match_on}{Column to match against: \code{"region"} or \code{"label"}.}
+\item{match_on}{Column to match against: \code{"label"} or \code{"region"}. The
+verbs that select regions -- \code{atlas_region_remove()},
+\code{atlas_region_keep()} and \code{atlas_region_contextual()} -- default to
+\code{"label"}, the identifier that is unique within an atlas and stable
+across them. \code{atlas_region_rename()} defaults to \code{"region"}, because it
+edits the text it matches and \code{region} is the column it writes.}
 
 \item{ignore.case}{For \code{atlas_region_contextual()}: passed to \code{\link[=grepl]{grepl()}}.
 Defaults to \code{TRUE} for backwards compatibility, but note that a context
@@ -271,7 +276,7 @@ in \code{order} are appended at end.
 \examples{
 dk() |>
   atlas_region_remove("bankssts") |>
-  atlas_region_keep("frontal", match_on = "region")
+  atlas_region_keep("frontal")
 
 }
 \seealso{

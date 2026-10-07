@@ -1719,6 +1719,47 @@ describe("rebuild_atlas_data", {
 })
 
 
+describe("region verbs match on label by default", {
+  it("selects by label, so a hemisphere prefix can be matched", {
+    left <- atlas_region_keep(aseg(), "^Left-")
+
+    expect_true(all(startsWith(left$core$label, "Left-")))
+    expect_gt(nrow(left$core), 0)
+  })
+
+  it("does not match a region spelling that differs from the label", {
+    expect_warning(
+      unchanged <- atlas_region_remove(aseg(), "brain stem"),
+      "Nothing was removed"
+    )
+    expect_true("Brain-Stem" %in% unchanged$core$label)
+  })
+
+  it("matches the region key when asked to", {
+    removed <- atlas_region_remove(aseg(), "brain stem", match_on = "region")
+    contextual <- atlas_region_contextual(
+      aseg(),
+      "brain stem",
+      match_on = "region"
+    )
+    kept <- atlas_region_keep(aseg(), "brain stem", match_on = "region")
+
+    expect_false("Brain-Stem" %in% removed$core$label)
+    expect_false("Brain-Stem" %in% contextual$core$label)
+    expect_identical(kept$core$label, "Brain-Stem")
+  })
+
+  it("leaves atlas_region_rename() matching region, the column it writes", {
+    renamed <- atlas_region_rename(aseg(), "brain stem", "brainstem")
+
+    expect_identical(
+      renamed$core$region[renamed$core$label == "Brain-Stem"],
+      "brainstem"
+    )
+  })
+})
+
+
 describe("atlas_region_remove with subcortical atlas", {
   it("removes matching regions from subcortical core, palette, and meshes", {
     result <- atlas_region_remove(aseg(), "Thalamus")

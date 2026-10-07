@@ -62,14 +62,22 @@ frontal <- atlas_region_keep(dk(), "frontal")
 unique(atlas_regions(frontal))
 ```
 
-Both functions accept a `match_on` argument to choose whether the pattern matches
-against `"region"` (the default, human-readable name) or `"label"` (the unique
-identifier):
+Both functions match the pattern against `label` by default: the identifier
+that is unique within an atlas and spelled the same way wherever the atlas is
+used. That is what makes a hemisphere prefix something you can select on:
 
 ```{r}
 #| label: region-keep-label
-lh_only <- atlas_region_keep(dk(), "^lh_", match_on = "label")
+lh_only <- atlas_region_keep(dk(), "^lh_")
 head(atlas_labels(lh_only))
+```
+
+Pass `match_on = "region"` to match the hemisphere-free region key instead:
+
+```{r}
+#| label: region-keep-region
+both_sides <- atlas_region_keep(dk(), "^precuneus$", match_on = "region")
+atlas_labels(both_sides)
 ```
 
 ## Context regions
