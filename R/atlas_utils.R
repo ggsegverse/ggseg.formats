@@ -556,22 +556,6 @@ atlas_views <- function(atlas) {
 }
 
 
-#' Read the view names off an atlas data object
-#'
-#' The payload half of [atlas_views()], split out so [guess_type()] can read
-#' views off a list that is not yet classed as an atlas.
-#' @noRd
-#' @keywords internal
-views_from_data <- function(data) {
-  if (!is.null(data_sf(data))) {
-    return(unique(data_sf(data)$view))
-  }
-  if (!is.null(data_poly(data))) {
-    return(unique(polygons_unnest(data_poly(data))$view))
-  }
-  NULL
-}
-
 #' @rdname atlas_views
 #' @export
 #' @family atlas accessors
@@ -582,43 +566,6 @@ brain_views <- function(atlas) {
     "atlas_views()"
   )
   atlas_views(atlas)
-}
-
-
-#' Warn about requested views that match nothing in the atlas
-#'
-#' The view verbs build one regex by `|`-joining `views`, so a request that is
-#' half wrong still matches overall: `c("coronal_3", "axial_3")` on an atlas
-#' with no `coronal_3` succeeds on `axial_3` alone and the invalid half goes
-#' unreported. Each element is therefore checked on its own, and elements that
-#' are themselves alternations are split first.
-#'
-#' @param views The user's requested views (character, possibly alternations).
-#' @param available The view names the atlas actually has.
-#' @param arg Name of the argument to blame in the warning.
-#' @return `invisible(NULL)`, called for the warning.
-#' @noRd
-#' @keywords internal
-warn_unmatched_views <- function(views, available, arg = "views") {
-  if (length(views) == 0 || length(available) == 0) {
-    return(invisible(NULL))
-  }
-  wanted <- unlist(strsplit(as.character(views), "|", fixed = TRUE))
-  wanted <- wanted[nzchar(wanted)]
-  matched <- vapply(
-    wanted,
-    function(w) any(grepl(w, available, ignore.case = TRUE)),
-    logical(1)
-  )
-  unmatched <- unique(wanted[!matched])
-  if (length(unmatched) == 0) {
-    return(invisible(NULL))
-  }
-  cli::cli_warn(c(
-    "{.arg {arg}} matched no view in this atlas: {.val {unmatched}}.",
-    "i" = "Available views: {.val {available}}."
-  ))
-  invisible(NULL)
 }
 
 
@@ -1465,6 +1412,60 @@ view_reorder_group_order <- function(sf_data, order, type) {
     )
     paste(hemis, v)
   }))
+}
+
+
+#' Read the view names off an atlas data object
+#'
+#' The payload half of [atlas_views()], split out so [guess_type()] can read
+#' views off a list that is not yet classed as an atlas.
+#' @noRd
+#' @keywords internal
+views_from_data <- function(data) {
+  if (!is.null(data_sf(data))) {
+    return(unique(data_sf(data)$view))
+  }
+  if (!is.null(data_poly(data))) {
+    return(unique(polygons_unnest(data_poly(data))$view))
+  }
+  NULL
+}
+
+
+#' Warn about requested views that match nothing in the atlas
+#'
+#' The view verbs build one regex by `|`-joining `views`, so a request that is
+#' half wrong still matches overall: `c("coronal_3", "axial_3")` on an atlas
+#' with no `coronal_3` succeeds on `axial_3` alone and the invalid half goes
+#' unreported. Each element is therefore checked on its own, and elements that
+#' are themselves alternations are split first.
+#'
+#' @param views The user's requested views (character, possibly alternations).
+#' @param available The view names the atlas actually has.
+#' @param arg Name of the argument to blame in the warning.
+#' @return `invisible(NULL)`, called for the warning.
+#' @noRd
+#' @keywords internal
+warn_unmatched_views <- function(views, available, arg = "views") {
+  if (length(views) == 0 || length(available) == 0) {
+    return(invisible(NULL))
+  }
+  wanted <- unlist(strsplit(as.character(views), "|", fixed = TRUE))
+  wanted <- wanted[nzchar(wanted)]
+  matched <- vapply(
+    wanted,
+    function(w) any(grepl(w, available, ignore.case = TRUE)),
+    logical(1)
+  )
+  unmatched <- unique(wanted[!matched])
+  if (length(unmatched) == 0) {
+    return(invisible(NULL))
+  }
+  cli::cli_warn(c(
+    "{.arg {arg}} matched no view in this atlas: {.val {unmatched}}.",
+    "i" = "Available views: {.val {available}}."
+  ))
+  invisible(NULL)
 }
 
 
