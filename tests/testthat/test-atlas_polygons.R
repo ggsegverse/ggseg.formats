@@ -1,5 +1,6 @@
 describe("sf_to_polygons()", {
   it("returns one row per label with a nested geometry list-column", {
+    skip_if_not_installed("sf")
     polys <- sf_to_polygons(dk_sf_geom())
 
     expect_s3_class(polys, "brain_polygons")
@@ -10,6 +11,7 @@ describe("sf_to_polygons()", {
   })
 
   it("nested geometry data.frams carry view, x, y, group, subgroup", {
+    skip_if_not_installed("sf")
     polys <- sf_to_polygons(dk_sf_geom())
     inner <- polys$geometry[[1]]
     expect_s3_class(inner, "tbl_df")
@@ -19,6 +21,7 @@ describe("sf_to_polygons()", {
   })
 
   it("preserves coordinate counts across the conversion", {
+    skip_if_not_installed("sf")
     sf0 <- dk_sf_geom()
     polys <- sf_to_polygons(sf0)
     n_sf <- sum(vapply(
@@ -33,6 +36,7 @@ describe("sf_to_polygons()", {
   })
 
   it("errors on non-sf input", {
+    skip_if_not_installed("sf")
     expect_error(sf_to_polygons(data.frame(a = 1)), "must inherit from class")
   })
 })
@@ -57,6 +61,7 @@ describe("print.brain_polygons()", {
 
 describe("sf_to_polygons() column validation", {
   it("errors when a required column is missing", {
+    skip_if_not_installed("sf")
     sf_bad <- sf::st_sf(
       label = "lh_x",
       geometry = sf::st_sfc(make_polygon())
@@ -88,6 +93,7 @@ describe("validate_geom()", {
 
 describe("resolve_geom()", {
   it("warns and ignores sf= when geom is also supplied", {
+    skip_if_not_installed("sf")
     polys <- sf_to_polygons(dk_sf_geom())
     sf0 <- dk_sf_geom()
     expect_warning(
@@ -122,6 +128,7 @@ describe("validate_polygon_geoms()", {
 
 describe("polygons_to_sf()", {
   it("round-trips dk geometry losslessly (areas equal)", {
+    skip_if_not_installed("sf")
     sf0 <- dk_sf_geom()
     polys <- sf_to_polygons(sf0)
     sf1 <- polygons_to_sf(polys)
@@ -139,6 +146,7 @@ describe("polygons_to_sf()", {
   })
 
   it("preserves holes through the round-trip", {
+    skip_if_not_installed("sf")
     outer <- matrix(c(0, 0, 10, 0, 10, 10, 0, 10, 0, 0), ncol = 2, byrow = TRUE)
     hole <- matrix(c(2, 2, 8, 2, 8, 8, 2, 8, 2, 2), ncol = 2, byrow = TRUE)
     holey_mp <- sf::st_multipolygon(list(list(outer, hole)))
@@ -190,6 +198,7 @@ describe("validate_polygons()", {
 
 describe("ggseg_data_cortical() geometry", {
   it("accepts polygons input as geom", {
+    skip_if_not_installed("sf")
     polys <- sf_to_polygons(dk_sf_geom())
     d <- ggseg_data_cortical(geom = polys)
     expect_s3_class(d$geom, "brain_polygons")
@@ -320,6 +329,7 @@ describe("sf_to_polygons() non-canonical columns", {
   })
 
   it("drops columns whose names the coordinate table reserves", {
+    skip_if_not_installed("sf")
     sf0 <- as.data.frame(dk_sf_geom())
     sf0$x <- 1
     sf0 <- sf::st_as_sf(sf0)

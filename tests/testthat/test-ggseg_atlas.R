@@ -1,4 +1,5 @@
 make_poly <- function(coords) {
+  testthat::skip_if_not_installed("sf")
   sf::st_polygon(list(matrix(coords, ncol = 2, byrow = TRUE)))
 }
 
@@ -14,6 +15,7 @@ describe("ggseg_atlas class", {
   })
 
   it("as.data.frame returns sf data", {
+    skip_if_not_installed("sf")
     df <- as.data.frame(dk())
     expect_s3_class(df, "data.frame")
     expect_true("geometry" %in% names(df))
@@ -51,6 +53,7 @@ describe("ggseg_atlas class", {
   })
 
   it("aseg atlas works", {
+    skip_if_not_installed("sf")
     expect_true(is_ggseg_atlas(aseg()))
     df <- as.data.frame(aseg())
     expect_s3_class(df, "data.frame")
@@ -81,6 +84,7 @@ describe("is_*_atlas helpers", {
   })
 
   it("is_cerebellar_atlas identifies cerebellar atlases", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "left_I-IV",
       view = "flatmap",
@@ -126,6 +130,7 @@ describe("is_*_atlas helpers", {
 
 describe("cerebellar atlas construction and data.frame conversion", {
   make_cerebellar_atlas <- function() {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("left_I-IV", "vermis_VI", "right_Crus-I"),
       view = "flatmap",
@@ -166,6 +171,7 @@ describe("cerebellar atlas construction and data.frame conversion", {
   })
 
   it("as.data.frame does not filter NA hemi for cerebellar", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "midline_dentate",
       view = "flatmap",
@@ -320,6 +326,7 @@ describe("deprecated wrappers", {
 
 describe("as.data.frame.ggseg_atlas", {
   it("infers hemi from label prefixes", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "rh_parietal"),
       view = c("lateral", "lateral"),
@@ -346,6 +353,7 @@ describe("as.data.frame.ggseg_atlas", {
   })
 
   it("places context geometry last in row order", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_medialwall", "lh_frontal"),
       view = c("lateral", "lateral"),
@@ -428,6 +436,7 @@ describe("plot.ggseg_atlas", {
   })
 
   it("draws polygons with holes via polypath", {
+    skip_if_not_installed("sf")
     theta <- seq(0, 2 * pi, length.out = 60)
     outer <- cbind(10 * cos(theta), 10 * sin(theta))
     outer[60, ] <- outer[1, ]
@@ -464,6 +473,7 @@ describe("plot.ggseg_atlas", {
   })
 
   it("plots an atlas with no palette using generated colours", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "rh_parietal"),
       view = c("lateral", "lateral"),
@@ -505,6 +515,7 @@ describe("print.ggseg_atlas rendering branches", {
   })
 
   it("prints an atlas with no 3D geometry as none", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -534,6 +545,7 @@ describe("print.ggseg_atlas rendering branches", {
 
 describe("as_sf_for_data_frame empty geometry", {
   it("errors when raw sf data has zero rows", {
+    skip_if_not_installed("sf")
     empty_sf <- sf::st_sf(
       label = character(0),
       view = character(0),
@@ -596,12 +608,14 @@ describe("ggseg_atlas constructor validation", {
 
 describe("as.data.frame.ggseg_atlas edge cases", {
   it("maps palette colours to result", {
+    skip_if_not_installed("sf")
     df <- as.data.frame(dk())
     expect_true("colour" %in% names(df))
     expect_false(all(is.na(df$colour)))
   })
 
   it("handles sf with hemi column via core merge", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", NA_character_),
       view = c("lateral", "lateral"),
@@ -629,6 +643,7 @@ describe("as.data.frame.ggseg_atlas edge cases", {
   })
 
   it("backfills sf hemi when core hemi is NA", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "context"),
       view = c("lateral", "lateral"),
@@ -653,6 +668,7 @@ describe("as.data.frame.ggseg_atlas edge cases", {
   })
 
   it("removes rows with missing hemi for cortical atlas", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "no_prefix"),
       view = c("lateral", "lateral"),
@@ -701,6 +717,7 @@ describe("ggseg_atlas constructor: non-data.frame core", {
 
 describe("as.data.frame with legacy data structure", {
   it("handles data as raw sf (not ggseg_atlas_data)", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -728,6 +745,7 @@ describe("as.data.frame with legacy data structure", {
   })
 
   it("handles NULL core", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",

@@ -174,8 +174,8 @@ ggseg_data_cerebellar <- function(
 #'     \item points: list-column of n x 3 matrices (centerline coordinates)
 #'     \item tangents: list-column of n x 3 matrices (for orientation coloring)
 #'   }
-#' @param meshes Deprecated. Use centerlines instead. If provided, will be
-#'   converted to centerlines format.
+#' @param meshes `r lifecycle::badge("deprecated")` Use `centerlines` instead.
+#'   If supplied, it is converted to the centerlines format.
 #' @param ... Captures a deprecated `sf` argument (converted to polygons) and
 #'   absorbs legacy fields (e.g. tube_radius, tube_segments) from old cached
 #'   atlas objects.
@@ -196,8 +196,17 @@ ggseg_data_tract <- function(
   meshes = NULL,
   ...
 ) {
-  if (!is.null(meshes) && is.null(centerlines)) {
-    centerlines <- meshes_to_centerlines(meshes)
+  if (!is.null(meshes)) {
+    lifecycle::deprecate_warn(
+      "0.1.0",
+      "ggseg_data_tract(meshes)",
+      "ggseg_data_tract(centerlines)",
+      details = "Tube meshes are converted to centerlines via
+                 `meshes_to_centerlines()`."
+    )
+    if (is.null(centerlines)) {
+      centerlines <- meshes_to_centerlines(meshes)
+    }
   }
 
   geom <- resolve_geom(geom, ..., .fn = "ggseg_data_tract")

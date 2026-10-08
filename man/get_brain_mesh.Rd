@@ -22,7 +22,12 @@ ggseg3d or a custom \code{brain_meshes} argument.}
 }
 \value{
 A list with \code{vertices} (data.frame with x, y, z) and \code{faces}
-(data.frame with i, j, k), or NULL if the mesh is not available.
+(data.frame with i, j, k), or NULL if the mesh is not available. The face
+indices of the bundled inflated surfaces are \strong{0-based} (0 to
+\code{nrow(vertices) - 1}), matching \code{\link[=get_cerebellar_mesh]{get_cerebellar_mesh()}}. Per-region
+subcortical meshes from \code{\link[=ggseg_data_subcortical]{ggseg_data_subcortical()}} are 1-based instead, and
+a user-supplied \code{brain_meshes} is returned exactly as given, so a consumer
+must not assume a single base across mesh sources.
 }
 \description{
 Retrieves a brain surface mesh for the specified hemisphere and surface type.

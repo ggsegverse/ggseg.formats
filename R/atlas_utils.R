@@ -347,12 +347,6 @@ atlas_region_op <- function(
 ) {
   action <- match.arg(action)
   match_on <- match.arg(match_on)
-  # Boolean geometry ops need a geometry engine (GEOS, via sf); there is no
-  # pure-polygon equivalent. A polygon-only atlas is rehydrated to sf for the
-  # operation and the result is converted back, so the atlas keeps its
-  # original 2D format.
-  require_sf("atlas_region_op()")
-
   if (is.null(into) || !is.character(into) || length(into) != 1) {
     cli::cli_abort("{.arg into} must be a single label for the result region.")
   }
@@ -363,6 +357,13 @@ atlas_region_op <- function(
 
   x_labels <- region_op_labels(x, atlas$core, sf_data, match_on)
   y_labels <- region_op_labels(y, atlas$core, sf_data, match_on)
+
+  # Boolean geometry ops need a geometry engine (GEOS, via sf); there is no
+  # pure-polygon equivalent. A polygon-only atlas is rehydrated to sf for the
+  # operation and the result is converted back, so the atlas keeps its
+  # original 2D format. Gated here rather than at entry so the argument and
+  # geometry checks above report their own problems without sf installed.
+  require_sf("atlas_region_op()")
 
   result <- region_op_result(sf_data, x_labels, y_labels, action, into)
   if (is.null(result) || nrow(result) == 0) {
@@ -548,14 +549,12 @@ atlas_core_add <- function(atlas, data, by = "region") {
 #' @export
 #' @family atlas accessors
 atlas_views <- function(atlas) {
-  if (!is.null(data_sf(atlas$data))) {
-    return(unique(data_sf(atlas$data)$view))
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
-  if (!is.null(data_poly(atlas$data))) {
-    return(unique(polygons_unnest(data_poly(atlas$data))$view))
-  }
-  NULL
+  views_from_data(atlas$data)
 }
+
 
 #' @rdname atlas_views
 #' @export
@@ -576,6 +575,7 @@ brain_views <- function(atlas) {
 #' @export
 #' @family atlas manipulations
 atlas_view_remove <- function(atlas, views) {
+  warn_unmatched_views(views, views_from_data(atlas$data))
   if (is.null(data_sf(atlas$data))) {
     if (is.null(data_poly(atlas$data))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
@@ -607,6 +607,7 @@ atlas_view_remove <- function(atlas, views) {
 #' @export
 #' @family atlas manipulations
 atlas_view_keep <- function(atlas, views) {
+  warn_unmatched_views(views, views_from_data(atlas$data))
   if (is.null(data_sf(atlas$data))) {
     if (is.null(data_poly(atlas$data))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to keep")
@@ -855,6 +856,14 @@ atlas_view_gather <- function(atlas, gap = 0.15) {
 #' @export
 #' @family atlas manipulations
 atlas_view_reorder <- function(atlas, order, gap = 0.15) {
+  available <- views_from_data(atlas$data)
+  unmatched <- setdiff(order, available)
+  if (length(unmatched) > 0 && length(available) > 0) {
+    cli::cli_warn(c(
+      "{.arg order} names no view in this atlas: {.val {unmatched}}.",
+      "i" = "Available views: {.val {available}}."
+    ))
+  }
   if (is.null(data_sf(atlas$data))) {
     return(view_reorder_poly(atlas, order, gap))
   }
@@ -994,7 +1003,7 @@ guess_type <- function(x) {
   # reads either. Fall back to the legacy bare `$sf` slot, then to a plain
   # data.frame's own `view` column.
   views <- if (inherits(x$data, "ggseg_atlas_data")) {
-    atlas_views(x)
+    views_from_data(x$data)
   } else if (!is.null(x$sf)) {
     x$sf$view
   } else if ("view" %in% names(x)) {
@@ -1403,6 +1412,60 @@ view_reorder_group_order <- function(sf_data, order, type) {
     )
     paste(hemis, v)
   }))
+}
+
+
+#' Read the view names off an atlas data object
+#'
+#' The payload half of [atlas_views()], split out so [guess_type()] can read
+#' views off a list that is not yet classed as an atlas.
+#' @noRd
+#' @keywords internal
+views_from_data <- function(data) {
+  if (!is.null(data_sf(data))) {
+    return(unique(data_sf(data)$view))
+  }
+  if (!is.null(data_poly(data))) {
+    return(unique(polygons_unnest(data_poly(data))$view))
+  }
+  NULL
+}
+
+
+#' Warn about requested views that match nothing in the atlas
+#'
+#' The view verbs build one regex by `|`-joining `views`, so a request that is
+#' half wrong still matches overall: `c("coronal_3", "axial_3")` on an atlas
+#' with no `coronal_3` succeeds on `axial_3` alone and the invalid half goes
+#' unreported. Each element is therefore checked on its own, and elements that
+#' are themselves alternations are split first.
+#'
+#' @param views The user's requested views (character, possibly alternations).
+#' @param available The view names the atlas actually has.
+#' @param arg Name of the argument to blame in the warning.
+#' @return `invisible(NULL)`, called for the warning.
+#' @noRd
+#' @keywords internal
+warn_unmatched_views <- function(views, available, arg = "views") {
+  if (length(views) == 0 || length(available) == 0) {
+    return(invisible(NULL))
+  }
+  wanted <- unlist(strsplit(as.character(views), "|", fixed = TRUE))
+  wanted <- wanted[nzchar(wanted)]
+  matched <- vapply(
+    wanted,
+    function(w) any(grepl(w, available, ignore.case = TRUE)),
+    logical(1)
+  )
+  unmatched <- unique(wanted[!matched])
+  if (length(unmatched) == 0) {
+    return(invisible(NULL))
+  }
+  cli::cli_warn(c(
+    "{.arg {arg}} matched no view in this atlas: {.val {unmatched}}.",
+    "i" = "Available views: {.val {available}}."
+  ))
+  invisible(NULL)
 }
 
 
