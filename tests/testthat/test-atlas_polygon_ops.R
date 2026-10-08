@@ -188,3 +188,19 @@ describe("order_cells_spatially()", {
     expect_identical(order_cells_spatially(cell, x), c(2L, 1L))
   })
 })
+
+
+describe("polygons_renest()", {
+  it("keeps non-canonical columns and puts the canonical ones first", {
+    sf0 <- dk_sf_geom()
+    sf0$myannot <- paste0("ann_", seq_len(nrow(sf0)))
+    polys <- sf_to_polygons(sf0)
+
+    kept <- polygons_filter_view(polys, "lateral", keep = TRUE)
+
+    expect_named(
+      kept$geometry[[1]],
+      c("view", "x", "y", "group", "subgroup", "myannot")
+    )
+  })
+})

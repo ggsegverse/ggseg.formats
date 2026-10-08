@@ -39,7 +39,7 @@ as_ggseg_atlas.ggseg_atlas <- function(x) {
 #' @export
 as_ggseg_atlas.brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     I("Converting legacy `brain_atlas` objects"),
     I("`ggseg_atlas()` (use `as_ggseg_atlas()`)"),
     always = TRUE
@@ -71,7 +71,7 @@ as_ggseg_atlas.brain_atlas <- function(x) {
 #' @export
 as_ggseg_atlas.ggseg3d_atlas <- function(x) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     I("Converting legacy `ggseg3d_atlas` objects"),
     I("`ggseg_atlas()` (use `as_ggseg_atlas()`)"),
     always = TRUE
@@ -111,7 +111,7 @@ as_ggseg_atlas.list <- function(x) {
 #' @export
 as_brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "as_brain_atlas()",
     "as_ggseg_atlas()"
   )

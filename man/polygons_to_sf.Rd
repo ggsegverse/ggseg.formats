@@ -13,8 +13,9 @@ polygons_to_sf(polygons)
 of data.frames containing \code{view}, \code{x}, \code{y}, \code{group}, \code{subgroup}.}
 }
 \value{
-An sf-class data frame with columns \code{label}, \code{view}, \code{geometry}
-(one row per label×view, geometry is MULTIPOLYGON).
+An sf-class data frame with columns \code{label}, \code{view}, any extra
+nested columns, and \code{geometry} (one row per label×view, geometry is
+MULTIPOLYGON).
 
 Internal conversion primitive. For the atlas-level public API use
 \code{\link[=as_sf_atlas]{as_sf_atlas()}} / \code{\link[=atlas_sf]{atlas_sf()}}.
@@ -25,5 +26,11 @@ MULTIPOLYGON geometries — sfheaders is pure Rcpp and has no GDAL/GEOS/PROJ
 system dependencies, so the conversion itself does not require a full sf
 installation. The returned object is an sf-class data frame, which downstream
 users would manipulate using sf.
+}
+\details{
+Nested columns beyond \code{x}, \code{y}, \code{group} and \code{subgroup} become attribute
+columns of the result. An sf row covers a whole label×view feature, so such
+a column takes its first value within that feature; a column that varies
+inside one feature loses the variation.
 }
 \keyword{internal}

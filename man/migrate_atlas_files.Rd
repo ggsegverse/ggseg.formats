@@ -4,7 +4,12 @@
 \alias{migrate_atlas_files}
 \title{Migrate atlas \code{.rda} files to the sf-optional polygon format}
 \usage{
-migrate_atlas_files(path = "data", keep_sf = FALSE, quiet = FALSE)
+migrate_atlas_files(
+  path = "data",
+  keep_sf = FALSE,
+  quiet = FALSE,
+  force = FALSE
+)
 }
 \arguments{
 \item{path}{Directory containing \code{.rda} files to migrate. Defaults to
@@ -14,6 +19,10 @@ migrate_atlas_files(path = "data", keep_sf = FALSE, quiet = FALSE)
 \code{FALSE} — the geometry is stored as \code{brain_polygons} (sf-optional).}
 
 \item{quiet}{If \code{TRUE}, suppress per-file status messages.}
+
+\item{force}{If \code{TRUE}, migrate even when the conversion cannot carry every
+geometry column across. The default \code{FALSE} aborts instead, naming the
+columns and the file, because the files are rewritten in place.}
 }
 \value{
 Invisibly, a character vector of paths to the files that were

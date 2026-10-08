@@ -252,6 +252,18 @@ describe("atlas_labels", {
     expect_identical(result, c("lh_frontal", "lh_parietal", "rh_frontal"))
   })
 
+  it("works with data.frame", {
+    df <- data.frame(label = c("lh_frontal", "rh_frontal"))
+    expect_identical(atlas_labels(df), c("lh_frontal", "rh_frontal"))
+  })
+
+  it("dispatches on data.frame like the rest of the trio", {
+    df <- data.frame(label = "a", region = "b", names = "c")
+    expect_identical(atlas_labels(df), "a")
+    expect_identical(atlas_regions(df), "b")
+    expect_identical(atlas_names(df), "c")
+  })
+
   it("is row-aligned with atlas_regions() and atlas_names()", {
     atlas <- make_test_atlas()
     expect_length(atlas_labels(atlas), nrow(atlas$core))
@@ -1202,6 +1214,15 @@ describe("atlas_view_select", {
       atlas_view_select(atlas, weights = c(coronal = 2)),
       "Unknown view"
     )
+  })
+
+  it("warns and returns the atlas unchanged when there is no 2D geometry", {
+    atlas <- make_view_select_atlas()
+    atlas$data$geom <- NULL
+    atlas$data$sf <- NULL
+
+    expect_warning(result <- atlas_view_select(atlas), "no 2D geometry")
+    expect_identical(result, atlas)
   })
 })
 

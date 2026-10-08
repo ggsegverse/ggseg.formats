@@ -59,6 +59,11 @@ atlas_labels.brain_atlas <- function(x) {
   get_col(x$core, "label")
 }
 
+#' @export
+atlas_labels.data.frame <- function(x) {
+  get_col(x, "label")
+}
+
 
 #' Extract the long-form region name column of an atlas
 #'
@@ -794,11 +799,11 @@ atlas_view_select <- function(
 ) {
   check_select_threshold(threshold)
 
-  polygons <- atlas_polygons(atlas)
-  if (is.null(polygons)) {
+  if (is.null(geom_from_data(atlas$data))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to select")
     return(atlas)
   }
+  polygons <- atlas_polygons(atlas)
 
   flat <- polygons_unnest(polygons)
   flat <- flat[flat$label %in% atlas$core$label, , drop = FALSE]
