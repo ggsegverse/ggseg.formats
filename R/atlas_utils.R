@@ -466,22 +466,6 @@ atlas_region_rename <- function(
 }
 
 
-#' @noRd
-warn_rename_changed_nothing <- function(regions, renamed, pattern, match_on) {
-  unchanged <- identical(regions, renamed)
-  if (length(regions) == 0 || !unchanged) {
-    return(invisible())
-  }
-  cli::cli_warn(c(
-    "No region was renamed.",
-    "i" = "{.val {pattern}} matches {length(regions)} row{?s} on
-      {.field {match_on}}, but none of their regions contain it.",
-    "i" = "Pass a function as {.arg replacement} to set those regions
-      outright, or {.code match_on = \"region\"} to match the region text."
-  ))
-}
-
-
 #' @describeIn atlas_manipulation Keep only matching regions. Non-matching
 #'   regions are removed from core, palette, and 3D data but sf geometry
 #'   is preserved for surface continuity.
@@ -898,6 +882,22 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
   )
   new_data <- rebuild_atlas_data(atlas, new_sf)
   rebuild_atlas(atlas, new_data)
+}
+
+
+#' @noRd
+warn_rename_changed_nothing <- function(regions, renamed, pattern, match_on) {
+  unchanged <- identical(regions, renamed)
+  if (length(regions) == 0 || !unchanged) {
+    return(invisible())
+  }
+  cli::cli_warn(c(
+    "No region was renamed.",
+    "i" = "{.val {pattern}} matches {length(regions)} row{?s} on
+      {.field {match_on}}, but none of their regions contain it.",
+    "i" = "Pass a function as {.arg replacement} to set those regions
+      outright, or {.code match_on = \"region\"} to match the region text."
+  ))
 }
 
 
