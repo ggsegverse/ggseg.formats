@@ -257,7 +257,11 @@ resolve_geom <- function(geom = NULL, ..., .fn) {
       sprintf("%s(geom)", .fn),
       details = "sf input is converted to polygons via `sf_to_polygons()`."
     )
-    geom <- sf_to_polygons(validate_sf(dots$sf))
+    # Forced in two steps: as a nested call R's lazy evaluation enters
+    # `sf_to_polygons()` first, so a malformed `sf` on an install without sf
+    # reported the missing dependency instead of what was wrong with the input.
+    checked <- validate_sf(dots$sf)
+    geom <- sf_to_polygons(checked)
   }
   if (is.null(geom)) {
     return(NULL)

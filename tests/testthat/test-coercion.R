@@ -35,6 +35,7 @@ describe("as_ggseg_atlas", {
 
 describe("as_ggseg_atlas.ggseg_atlas", {
   it("converts legacy structure with separate sf/vertices fields", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "rh_frontal"),
       view = c("lateral", "lateral"),
@@ -132,6 +133,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
   })
 
   it("auto-converts old brain_atlas with sf-in-data to ggseg_atlas", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
@@ -167,6 +169,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
 
 describe("as_ggseg_atlas.list", {
   it("converts legacy list with separate sf field", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -228,6 +231,7 @@ describe("convert_legacy_brain_data", {
   })
 
   it("converts legacy atlas without core", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
@@ -259,6 +263,7 @@ describe("convert_legacy_brain_data", {
   })
 
   it("renames side column to view", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
@@ -287,6 +292,7 @@ describe("convert_legacy_brain_data", {
   })
 
   it("handles legacy atlas without colour column", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = "left",
       region = "frontal",
@@ -340,6 +346,7 @@ describe("as_brain_atlas (deprecated)", {
 
 describe("as_ggseg_atlas.brain_atlas legacy paths", {
   it("converts brain_atlas with core and data.frame data", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = "left",
       region = "frontal",
@@ -368,6 +375,7 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
   })
 
   it("converts brain_atlas with separate sf field", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",

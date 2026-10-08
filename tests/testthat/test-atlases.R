@@ -94,6 +94,7 @@ describe("suit atlas", {
   })
 
   it("renders to sf on demand via atlas_sf()", {
+    skip_if_not_installed("sf")
     expect_s3_class(atlas_sf(suit()), "sf")
   })
 })

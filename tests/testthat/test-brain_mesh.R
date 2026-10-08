@@ -106,3 +106,25 @@ describe("get_cerebellar_mesh", {
     expect_identical(min(mesh$faces$i), 0L)
   })
 })
+
+
+describe("mesh face index bases", {
+  it("documents get_brain_mesh() as 0-based for both hemispheres", {
+    for (hemi in c("lh", "rh")) {
+      mesh <- get_brain_mesh(hemi)
+      idx <- unlist(mesh$faces[c("i", "j", "k")], use.names = FALSE)
+      expect_identical(min(idx), 0L)
+      expect_identical(max(idx), nrow(mesh$vertices) - 1L)
+    }
+  })
+
+  it("returns a user-supplied mesh unchanged, whatever its base", {
+    custom <- list(
+      lh = list(
+        vertices = data.frame(x = 1:3, y = 1:3, z = 1:3),
+        faces = data.frame(i = 1L, j = 2L, k = 3L)
+      )
+    )
+    expect_identical(get_brain_mesh("lh", brain_meshes = custom), custom$lh)
+  })
+})

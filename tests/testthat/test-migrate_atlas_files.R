@@ -102,6 +102,7 @@ describe("migrate_atlas_object()", {
 
 describe("migrate_atlas_files() column-loss guard", {
   it("aborts when a conversion to polygons would lose columns", {
+    skip_if_not_installed("sf")
     dir <- withr::local_tempdir()
     atlas <- dk_sf_atlas()
     geom <- as.data.frame(atlas_geom(atlas))
@@ -116,6 +117,7 @@ describe("migrate_atlas_files() column-loss guard", {
   })
 
   it("leaves the file untouched when it aborts", {
+    skip_if_not_installed("sf")
     dir <- withr::local_tempdir()
     atlas <- dk_sf_atlas()
     geom <- as.data.frame(atlas_geom(atlas))
@@ -130,6 +132,7 @@ describe("migrate_atlas_files() column-loss guard", {
   })
 
   it("migrates with a warning when force = TRUE", {
+    skip_if_not_installed("sf")
     dir <- withr::local_tempdir()
     atlas <- dk_sf_atlas()
     geom <- as.data.frame(atlas_geom(atlas))

@@ -26,6 +26,7 @@ describe("validate_sf", {
   })
 
   it("stores sfc-backed sf geometry as the geom slot", {
+    skip_if_not_installed("sf")
     geom <- sf::st_sfc(
       make_polygon()
     )
@@ -37,6 +38,7 @@ describe("validate_sf", {
   })
 
   it("coerces a data.frame with sfc geometry to sf", {
+    skip_if_not_installed("sf")
     geom <- sf::st_sfc(make_polygon())
     df <- as.data.frame(
       sf::st_sf(label = "test", view = "lateral", geometry = geom)
@@ -49,6 +51,7 @@ describe("validate_sf", {
   })
 
   it("errors when geometry is empty", {
+    skip_if_not_installed("sf")
     withr::local_options(lifecycle_verbosity = "quiet")
     sf_bad <- sf::st_sf(
       label = c("region1", "region2"),
@@ -179,6 +182,7 @@ describe("validate_meshes", {
 
 describe("validate_tract_metadata", {
   it("errors when mesh metadata is not a list", {
+    withr::local_options(lifecycle_verbosity = "quiet")
     meshes <- data.frame(label = "cst_left")
     meshes$mesh <- list(list(
       vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
@@ -260,6 +264,7 @@ describe("validate_data_labels", {
   })
 
   it("allows context-only labels in sf (not in core)", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "lh_medialwall"),
       view = c("lateral", "lateral"),
@@ -337,6 +342,7 @@ describe("validate_data_labels", {
   })
 
   it("accepts partial sf coverage when vertices are complete", {
+    skip_if_not_installed("sf")
     labels <- paste0(
       "lh_",
       c(
@@ -379,6 +385,7 @@ describe("validate_data_labels", {
   })
 
   it("errors when sf coverage is below 80%", {
+    skip_if_not_installed("sf")
     labels <- paste0(
       "lh_",
       c(
