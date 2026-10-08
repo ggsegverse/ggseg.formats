@@ -341,7 +341,7 @@ describe("validate_data_labels", {
     )
   })
 
-  it("accepts partial sf coverage when vertices are complete", {
+  it("warns, and stays valid, on partial sf coverage", {
     skip_if_not_installed("sf")
     labels <- paste0(
       "lh_",
@@ -379,13 +379,13 @@ describe("validate_data_labels", {
         core = core,
         data = ggseg_data_cortical(geom = sf_geom, vertices = vertices)
       ),
-      "sf covers only 80%"
+      class = "ggseg.formats_partial_2d_coverage"
     )
     expect_s3_class(atlas, "ggseg_atlas")
+    expect_true(is_ggseg_atlas(atlas))
   })
 
-  it("errors when sf coverage is below 80%", {
-    skip_if_not_installed("sf")
+  it("no longer gates construction on a 2D coverage percentage", {
     labels <- paste0(
       "lh_",
       c(
@@ -401,11 +401,9 @@ describe("validate_data_labels", {
         "fusiform"
       )
     )
-    sf_geom <- sf::st_sf(
-      label = labels[1],
-      view = "lateral",
-      geometry = sf::st_sfc(make_polygon())
-    )
+    geom <- rings_as_polygons(list(
+      ring_square(labels[1], "lateral", 0, 0)
+    ))
     vertices <- data.frame(label = labels)
     vertices$vertices <- lapply(seq_along(labels), function(i) {
       as.integer((i * 3 - 2):(i * 3))
@@ -417,14 +415,39 @@ describe("validate_data_labels", {
       names = gsub("lh_", "", labels, fixed = TRUE)
     )
 
-    expect_error(
+    expect_warning(
+      atlas <- ggseg_atlas(
+        atlas = "test",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(geom = geom, vertices = vertices)
+      ),
+      class = "ggseg.formats_partial_2d_coverage"
+    )
+    expect_true(is_ggseg_atlas(atlas))
+  })
+
+  it("is silent on complete 2D coverage", {
+    geom <- rings_as_polygons(list(
+      ring_square("lh_a", "lateral", 0, 0),
+      ring_square("lh_b", "lateral", 2, 0)
+    ))
+    vertices <- data.frame(label = c("lh_a", "lh_b"))
+    vertices$vertices <- list(1:3, 4:6)
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("a", "b"),
+      label = c("lh_a", "lh_b"),
+      names = c("a", "b")
+    )
+    expect_no_condition(
       ggseg_atlas(
         atlas = "test",
         type = "cortical",
         core = core,
-        data = ggseg_data_cortical(geom = sf_geom, vertices = vertices)
+        data = ggseg_data_cortical(geom = geom, vertices = vertices)
       ),
-      "minimum 80%"
+      class = "ggseg.formats_partial_2d_coverage"
     )
   })
 })
@@ -466,5 +489,24 @@ describe("validate_meshes calls validate_tract_metadata", {
 
     result <- validate_meshes(meshes, tract = TRUE)
     expect_identical(nrow(result), 1L)
+  })
+})
+
+
+describe("single-view atlases", {
+  it("stay valid and plottable for every view of aseg()", {
+    local_null_pdf()
+    full <- suppressWarnings(aseg())
+    for (view in atlas_views(full)) {
+      sub <- suppressWarnings(atlas_view_keep(full, view))
+      expect_true(is_ggseg_atlas(sub), info = view)
+      expect_true(is_subcortical_atlas(sub), info = view)
+      expect_identical(
+        sort(unique(sub$core$label)),
+        sort(unique(full$core$label)),
+        info = view
+      )
+      expect_silent(plot(sub))
+    }
   })
 })

@@ -140,7 +140,7 @@ describe("core names validation", {
 })
 
 describe("core label uniqueness", {
-  it("warns when two core rows share a label", {
+  it("errors when two core rows share a label, naming them", {
     core <- data.frame(
       hemi = c("left", "left"),
       region = c("thalamus", "thalamus proper"),
@@ -149,7 +149,7 @@ describe("core label uniqueness", {
     )
     vertices <- data.frame(label = "Left-Thalamus")
     vertices$vertices <- list(1L:3L)
-    expect_warning(
+    expect_error(
       ggseg_atlas(
         atlas = "dupe-labels",
         type = "cortical",
@@ -158,9 +158,18 @@ describe("core label uniqueness", {
       ),
       class = "ggseg.formats_duplicate_labels"
     )
+    expect_error(
+      ggseg_atlas(
+        atlas = "dupe-labels",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(vertices = vertices)
+      ),
+      "Left-Thalamus"
+    )
   })
 
-  it("does not error on duplicate labels", {
+  it("errors from the deprecated brain_atlas() wrapper too", {
     core <- data.frame(
       hemi = c("left", "left"),
       region = c("a", "b"),
@@ -169,13 +178,15 @@ describe("core label uniqueness", {
     )
     vertices <- data.frame(label = "x")
     vertices$vertices <- list(1L:3L)
-    atlas <- suppressWarnings(ggseg_atlas(
-      atlas = "dupe-no-error",
-      type = "cortical",
-      core = core,
-      data = ggseg_data_cortical(vertices = vertices)
-    ))
-    expect_s3_class(atlas, "ggseg_atlas")
+    expect_error(
+      suppressWarnings(brain_atlas(
+        atlas = "dupe-no-error",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(vertices = vertices)
+      )),
+      class = "ggseg.formats_duplicate_labels"
+    )
   })
 
   it("gives every bundled atlas unique core labels", {
@@ -500,20 +511,12 @@ describe("a missing names column is silent outside construction", {
   })
 
   it("stays silent on a predicate for an atlas with duplicate core labels", {
-    core <- data.frame(
-      hemi = c("left", "left"),
-      region = c("a", "b"),
-      label = c("x", "x")
-    )
-    vertices <- data.frame(label = "x")
-    vertices$vertices <- list(1L:3L)
-    atlas <- suppressMessages(suppressWarnings(ggseg_atlas(
-      atlas = "dupes-predicate",
-      type = "cortical",
-      core = core,
-      data = ggseg_data_cortical(vertices = vertices)
-    )))
-    expect_no_message(expect_no_warning(is_ggseg_atlas(atlas)))
+    # Such an atlas can no longer be constructed, but a published one may
+    # already carry alias rows. The predicate must report FALSE without
+    # signalling, so renderers can branch on it.
+    atlas <- atlas_without_names("dupes-predicate")
+    atlas$core <- rbind(atlas$core, atlas$core[1, , drop = FALSE])
+    expect_no_message(expect_no_warning(expect_false(is_ggseg_atlas(atlas))))
   })
 
   it("still reports a structurally invalid atlas as FALSE, silently", {
@@ -536,7 +539,7 @@ describe("a missing names column is silent outside construction", {
     )
   })
 
-  it("keeps warning on duplicate core labels at construction", {
+  it("errors on duplicate core labels at construction", {
     core <- data.frame(
       hemi = c("left", "left"),
       region = c("a", "b"),
@@ -544,9 +547,9 @@ describe("a missing names column is silent outside construction", {
     )
     vertices <- data.frame(label = "x")
     vertices$vertices <- list(1L:3L)
-    expect_warning(
+    expect_error(
       suppressMessages(ggseg_atlas(
-        atlas = "still-warns-dupes",
+        atlas = "errors-on-dupes",
         type = "cortical",
         core = core,
         data = ggseg_data_cortical(vertices = vertices)

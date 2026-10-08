@@ -301,7 +301,7 @@ atlas_region_contextual <- function(
     keep_row = function(label) !label %in% labels_to_remove
   )
 
-  validate_data_labels(new_data, new_core, check_sf = FALSE)
+  validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
 
   structure(
     list(
@@ -383,7 +383,7 @@ atlas_region_op <- function(
   # original representation (the op rehydrates to sf only for the GEOS engine).
   new_geom <- if (was_polygon_only) sf_to_polygons(new_sf) else new_sf
   new_data <- rebuild_data_with_geom(atlas$data, new_geom)
-  validate_data_labels(new_data, new_core, check_sf = FALSE)
+  validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
   structure(
     list(
       atlas = atlas$atlas,
@@ -1260,7 +1260,7 @@ set_atlas_polygons <- function(atlas, new_polygons) {
 #' @noRd
 #' @keywords internal
 rebuild_atlas <- function(atlas, new_data) {
-  validate_data_labels(new_data, atlas$core, check_sf = FALSE)
+  validate_data_labels(new_data, atlas$core, report_2d_coverage = FALSE)
 
   structure(
     list(
