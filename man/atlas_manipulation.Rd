@@ -82,10 +82,10 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 \item{pattern}{Character pattern to match. Uses
 \code{grepl(..., ignore.case = TRUE)}.}
 
-\item{match_on}{Column to match against: \code{"label"}, the default, or
-\code{"region"}. \code{label} is the identifier that is unique within an atlas and
-stable across them, so every verb that takes a pattern matches it unless
-told otherwise.}
+\item{match_on}{Column of \code{core} to match against: \code{"label"}, the default,
+or \code{"region"}. \code{label} is the identifier that is unique within an atlas
+and stable across them, so every verb that selects rows by name or
+pattern reads it unless told otherwise.}
 
 \item{ignore.case}{For \code{atlas_region_contextual()}: passed to \code{\link[=grepl]{grepl()}}.
 Defaults to \code{TRUE} for backwards compatibility, but note that a context

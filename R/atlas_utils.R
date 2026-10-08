@@ -182,10 +182,7 @@ atlas_type.brain_atlas <- function(x) {
 #' @param atlas A `ggseg_atlas` object
 #' @param pattern Character pattern to match. Uses
 #'   `grepl(..., ignore.case = TRUE)`.
-#' @param match_on Column to match against: `"label"`, the default, or
-#'   `"region"`. `label` is the identifier that is unique within an atlas and
-#'   stable across them, so every verb that takes a pattern matches it unless
-#'   told otherwise.
+#' @template match_on
 #' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
 #'   Defaults to `TRUE` for backwards compatibility, but note that a context
 #'   pattern like `"Thalamus"` then also matches focus labels such as

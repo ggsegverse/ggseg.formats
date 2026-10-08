@@ -25,8 +25,7 @@
 #'   here.
 #' @param .before,.after One structure to move `structures` next to. Give at
 #'   most one of the two.
-#' @param match_on Column of `core` that `structures`, `.before` and `.after`
-#'   name; `"label"` (the default) or `"region"`.
+#' @template match_on
 #'
 #' @return The `ggseg_atlas`, with its geometry rows in the new order.
 #' @family atlas manipulations
