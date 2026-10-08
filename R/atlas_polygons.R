@@ -22,13 +22,19 @@ print.brain_polygons <- function(x, n = 10, ...) {
 #' containing the per-view, per-ring point coordinates needed to render with
 #' [graphics::polypath()] (using the `subgroup` ring index for holes).
 #'
+#' Columns beyond `label`, `view` and `geometry` are carried into the nested
+#' table, repeated down the rows of the feature they came from. Only columns
+#' whose names collide with the nested coordinate columns (`x`, `y`, `group`,
+#' `subgroup`) cannot be carried; those are dropped with a warning.
+#'
 #' @param sf_data An sf-class data.frame with columns `label`, `view`,
 #'   `geometry` (sfc of MULTIPOLYGON).
 #'
 #' @return A data.frame with one row per `label` and a `geometry` list-column.
 #'   Each nested element is a data.frame with columns `view`, `x`, `y`,
 #'   `group` (disjoint polygon piece within a label/view), `subgroup`
-#'   (ring within a piece; first = exterior, rest = holes).
+#'   (ring within a piece; first = exterior, rest = holes), plus any extra
+#'   columns carried over from `sf_data`.
 #'
 #' Internal conversion primitive. For the atlas-level public API use
 #' [as_polygon_atlas()] / [atlas_polygons()].
@@ -45,17 +51,34 @@ sf_to_polygons <- function(sf_data) {
     cli::cli_abort("{.arg sf_data} missing columns: {.field {miss}}.")
   }
 
+  dropped <- reserved_coord_columns(sf_data)
+  if (length(dropped)) {
+    cli::cli_warn(
+      c(
+        "Dropping column{?s} {.field {dropped}} from {.arg sf_data}.",
+        "i" = "The nested {.field geometry} table reserves
+               {.field {polygon_coord_columns()}}."
+      ),
+      class = "ggseg_dropped_columns"
+    )
+  }
+  carried <- setdiff(names(sf_data), c(required, dropped))
+
   per_row <- lapply(seq_len(nrow(sf_data)), function(i) {
     geom <- sf_data$geometry[[i]]
     co <- sf::st_coordinates(geom)
-    as_tbl(data.frame(
+    row <- data.frame(
       label = unname(sf_data$label[i]),
       view = unname(sf_data$view[i]),
       x = unname(co[, "X"]),
       y = unname(co[, "Y"]),
       group = as.integer(co[, "L2"]),
       subgroup = as.integer(co[, "L1"])
-    ))
+    )
+    for (nm in carried) {
+      row[[nm]] <- rep(unname(sf_data[[nm]][i]), nrow(row))
+    }
+    as_tbl(row)
   })
 
   combined <- df_bind_rows(per_row)
@@ -72,13 +95,19 @@ sf_to_polygons <- function(sf_data) {
 #' installation. The returned object is an sf-class data frame, which downstream
 #' users would manipulate using sf.
 #'
+#' Nested columns beyond `x`, `y`, `group` and `subgroup` become attribute
+#' columns of the result. An sf row covers a whole label×view feature, so such
+#' a column takes its first value within that feature; a column that varies
+#' inside one feature loses the variation.
+#'
 #' @param polygons A `brain_polygons` data.frame produced by
 #'   [sf_to_polygons()] or constructed directly: one row per `label`, with a
 #'   `geometry` list-column
 #'   of data.frames containing `view`, `x`, `y`, `group`, `subgroup`.
 #'
-#' @return An sf-class data frame with columns `label`, `view`, `geometry`
-#'   (one row per label×view, geometry is MULTIPOLYGON).
+#' @return An sf-class data frame with columns `label`, `view`, any extra
+#'   nested columns, and `geometry` (one row per label×view, geometry is
+#'   MULTIPOLYGON).
 #'
 #' Internal conversion primitive. For the atlas-level public API use
 #' [as_sf_atlas()] / [atlas_sf()].
@@ -90,26 +119,60 @@ polygons_to_sf <- function(polygons) {
   flat <- df_unnest(polygons, "geometry")
 
   feature_key <- paste(flat$label, flat$view, sep = "\x1f")
-  flat$.feature_id <- as.integer(factor(
+  feature_id <- as.integer(factor(
     feature_key,
     levels = unique(feature_key)
   ))
 
+  coords <- data.frame(
+    .feature_id = feature_id,
+    group = flat$group,
+    subgroup = flat$subgroup,
+    x = flat$x,
+    y = flat$y
+  )
+
   out <- sfheaders::sf_multipolygon(
-    as.data.frame(flat),
+    coords,
     x = "x",
     y = "y",
     multipolygon_id = ".feature_id",
     polygon_id = "group",
     linestring_id = "subgroup",
-    keep = TRUE
+    keep = FALSE
   )
 
+  # Attributes are attached here rather than via sfheaders `keep = TRUE`, which
+  # refuses list-columns.
+  attr_cols <- setdiff(names(flat), polygon_coord_columns())
+  src <- match(out$.feature_id, feature_id)
+  for (nm in attr_cols) {
+    out[[nm]] <- flat[[nm]][src]
+  }
   out$.feature_id <- NULL
 
-  cols <- c("label", "view", "geometry")
+  cols <- unique(c("label", "view", attr_cols, "geometry"))
   out <- out[, cols, drop = FALSE]
+  # Column subsetting drops `sf_column` when sf is not installed to register
+  # `[.sf`, which leaves an sf object its own methods cannot modify.
+  attr(out, "sf_column") <- "geometry"
   out
+}
+
+
+#' Column names the nested polygon coordinate table reserves
+#' @noRd
+#' @keywords internal
+polygon_coord_columns <- function() {
+  c("x", "y", "group", "subgroup")
+}
+
+
+#' Columns of an sf table that collide with the nested coordinate columns
+#' @noRd
+#' @keywords internal
+reserved_coord_columns <- function(sf_data) {
+  intersect(names(sf_data), polygon_coord_columns())
 }
 
 

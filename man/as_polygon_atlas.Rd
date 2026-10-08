@@ -19,9 +19,11 @@ converting from sf if needed. The result renders identically via the
 machinery in \verb{$data} — useful for wasm builds and air-gapped installs.
 }
 \details{
-Conversion is lossless, so a single representation is kept (no redundant
-sf alongside polygons). To rehydrate sf for geometric operations later,
-use \code{\link[=as_sf_atlas]{as_sf_atlas()}}.
+A single representation is kept (no redundant sf alongside polygons). To
+rehydrate sf for geometric operations later, use \code{\link[=as_sf_atlas]{as_sf_atlas()}}. Extra
+geometry columns are carried over; only columns named \code{x}, \code{y}, \code{group} or
+\code{subgroup} cannot be, since the nested coordinate table reserves those
+names, and they are dropped with a warning.
 
 This doubles as the backward-compatible path for sf-optional installs: a
 lite-only ggseg that meets a still-sf-backed atlas converts it on the fly

@@ -7,9 +7,11 @@
 #' `geom_polygon`-based path in ggseg, but no longer depends on the sf class
 #' machinery in `$data` — useful for wasm builds and air-gapped installs.
 #'
-#' Conversion is lossless, so a single representation is kept (no redundant
-#' sf alongside polygons). To rehydrate sf for geometric operations later,
-#' use [as_sf_atlas()].
+#' A single representation is kept (no redundant sf alongside polygons). To
+#' rehydrate sf for geometric operations later, use [as_sf_atlas()]. Extra
+#' geometry columns are carried over; only columns named `x`, `y`, `group` or
+#' `subgroup` cannot be, since the nested coordinate table reserves those
+#' names, and they are dropped with a warning.
 #'
 #' This doubles as the backward-compatible path for sf-optional installs: a
 #' lite-only ggseg that meets a still-sf-backed atlas converts it on the fly
@@ -70,8 +72,10 @@ as_polygon_atlas <- function(atlas) {
 #' you want to run sf operations (buffers, intersections, CRS transforms) on
 #' atlas geometry; those sf operations themselves still require sf.
 #'
-#' Conversion is lossless, so a single representation is kept (no redundant
-#' polygons alongside sf).
+#' A single representation is kept (no redundant polygons alongside sf). Extra
+#' geometry columns are carried over; because an sf row covers a whole
+#' label×view feature, a column that varies within one feature keeps only its
+#' first value there.
 #'
 #' @param atlas A `ggseg_atlas` (or legacy `brain_atlas`) object.
 #'

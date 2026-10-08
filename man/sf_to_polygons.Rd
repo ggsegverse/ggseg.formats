@@ -14,7 +14,8 @@ sf_to_polygons(sf_data)
 A data.frame with one row per \code{label} and a \code{geometry} list-column.
 Each nested element is a data.frame with columns \code{view}, \code{x}, \code{y},
 \code{group} (disjoint polygon piece within a label/view), \code{subgroup}
-(ring within a piece; first = exterior, rest = holes).
+(ring within a piece; first = exterior, rest = holes), plus any extra
+columns carried over from \code{sf_data}.
 
 Internal conversion primitive. For the atlas-level public API use
 \code{\link[=as_polygon_atlas]{as_polygon_atlas()}} / \code{\link[=atlas_polygons]{atlas_polygons()}}.
@@ -24,5 +25,11 @@ Extracts coordinates from an sf-backed atlas geometry table and returns a
 nested data.frame keyed by \code{label}. Each row carries a \code{geometry} list-column
 containing the per-view, per-ring point coordinates needed to render with
 \code{\link[graphics:polypath]{graphics::polypath()}} (using the \code{subgroup} ring index for holes).
+}
+\details{
+Columns beyond \code{label}, \code{view} and \code{geometry} are carried into the nested
+table, repeated down the rows of the feature they came from. Only columns
+whose names collide with the nested coordinate columns (\code{x}, \code{y}, \code{group},
+\code{subgroup}) cannot be carried; those are dropped with a warning.
 }
 \keyword{internal}
