@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9009</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -133,16 +133,22 @@ and palette):</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">frontal</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "caudalmiddlefrontal"  "lateralorbitofrontal" "medialorbitofrontal" </span></span>
 <span><span class="co">#&gt; [4] "rostralmiddlefrontal" "superiorfrontal"      "frontalpole"</span></span></code></pre></div>
-<p>Both functions accept a <code>match_on</code> argument to choose
-whether the pattern matches against <code>"region"</code> (the default,
-human-readable name) or <code>"label"</code> (the unique
-identifier):</p>
+<p>Both functions match the pattern against <code>label</code> by
+default: the identifier that is unique within an atlas and spelled the
+same way wherever the atlas is used. That is what makes a hemisphere
+prefix something you can select on:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">lh_only</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_keep</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"^lh_"</span>, match_on <span class="op">=</span> <span class="st">"label"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">lh_only</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_keep</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"^lh_"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_labels.html">atlas_labels</a></span><span class="op">(</span><span class="va">lh_only</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "lh_bankssts"                "lh_caudalanteriorcingulate"</span></span>
 <span><span class="co">#&gt; [3] "lh_caudalmiddlefrontal"     "lh_corpuscallosum"         </span></span>
 <span><span class="co">#&gt; [5] "lh_cuneus"                  "lh_entorhinal"</span></span></code></pre></div>
+<p>Pass <code>match_on = "region"</code> to match the hemisphere-free
+region key instead:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">both_sides</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_keep</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"^precuneus$"</span>, match_on <span class="op">=</span> <span class="st">"region"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/atlas_labels.html">atlas_labels</a></span><span class="op">(</span><span class="va">both_sides</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "lh_precuneus" "rh_precuneus"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="context-regions">Context regions<a class="anchor" aria-label="anchor" href="#context-regions"></a>
@@ -151,7 +157,7 @@ identifier):</p>
 grey) but not appear in the legend or carry data. This is what
 <code><a href="../reference/atlas_manipulation.html">atlas_region_contextual()</a></code> does. It removes the region from
 core, palette, and 3D data but leaves the sf geometry in place:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ctx</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_contextual</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"ventricle"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning in atlas_region_contextual(aseg(), "ventricle"): No regions matched <span style="color: #0000BB;">"ventricle"</span>.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> No region was made contextual.</span></span>
@@ -166,18 +172,28 @@ slices.</p>
 </h2>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_region_rename()</a></code> changes the <code>region</code>
 column without touching <code>label</code> (so geometry links stay
-intact). Pass a fixed string:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">renamed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_rename</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  <span class="st">"banks of superior temporal sulcus"</span>,</span>
-<span>  <span class="st">"STS banks"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="st">"STS banks"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">renamed</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] FALSE</span></span></code></pre></div>
-<p>Or pass a function for programmatic renaming:</p>
+intact). Like the other verbs it picks its rows by <code>label</code>,
+and it edits the region those rows already have. A string is substituted
+for the pattern wherever the region contains it:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">upper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_rename</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">".*"</span>, <span class="va">toupper</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">renamed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_rename</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"bankssts"</span>, <span class="st">"STS banks"</span><span class="op">)</span></span>
+<span><span class="st">"STS banks"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">renamed</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>A function receives the regions of the matching rows and returns the
+new ones. That is the way to set a region outright for a label, whatever
+it was called before:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">outright</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_rename</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="st">"^[lr]h_bankssts$"</span>,</span>
+<span>  \<span class="op">(</span><span class="va">region</span><span class="op">)</span> <span class="st">"STS banks"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="st">"STS banks"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">outright</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>Pass <code>match_on = "region"</code> to pick the rows by their
+region text instead:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">upper</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_rename</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">".*"</span>, <span class="va">toupper</span>, match_on <span class="op">=</span> <span class="st">"region"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="va">upper</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "BANKSSTS"                "CAUDALANTERIORCINGULATE"</span></span>
 <span><span class="co">#&gt; [3] "CAUDALMIDDLEFRONTAL"     "CORPUSCALLOSUM"         </span></span>
@@ -187,18 +203,18 @@ intact). Pass a fixed string:</p>
 <h2 id="managing-views">Managing views<a class="anchor" aria-label="anchor" href="#managing-views"></a>
 </h2>
 <p><code><a href="../reference/atlas_views.html">atlas_views()</a></code> tells you what 2D views an atlas has:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "axial_3"   "axial_4"   "axial_5"   "axial_6"   "coronal_1" "coronal_2"</span></span>
 <span><span class="co">#&gt; [7] "sagittal"</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_view_keep()</a></code> and <code><a href="../reference/atlas_manipulation.html">atlas_view_remove()</a></code>
 filter views by pattern. If you only want the sagittal slice:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"sagittal"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="va">sag</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "sagittal"</span></span></code></pre></div>
 <p>Or remove several views at once by passing a vector:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fewer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"axial_3"</span>, <span class="st">"coronal_2"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="va">fewer</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "axial_4"   "axial_5"   "axial_6"   "coronal_1" "sagittal"</span></span></code></pre></div>
@@ -211,11 +227,11 @@ over—tiny slivers where a region just barely crossed a slice plane.
 <code><a href="../reference/atlas_manipulation.html">atlas_view_remove_small()</a></code> removes region polygons below a
 minimum area threshold. Context polygons (those not in core) are never
 removed:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, min_area <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 14 geometries below area 50</span></span></code></pre></div>
 <p>You can scope the removal to specific views:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cleaned_sag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min_area <span class="op">=</span> <span class="fl">50</span>,</span>
@@ -226,7 +242,7 @@ removed:</p>
 sf geometry without touching core, palette, or 3D data. This is useful
 when a region’s 2D projection is misleading but you still want it in
 3D:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">no_stem_sf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove_region</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="st">"brain stem"</span>,</span>
@@ -240,7 +256,7 @@ when a region’s 2D projection is misleading but you still want it in
 coordinates, which can leave awkward gaps.
 <code><a href="../reference/atlas_manipulation.html">atlas_view_gather()</a></code> repositions views side-by-side with a
 configurable gap:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trimmed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sagittal"</span>, <span class="st">"coronal_3"</span>, <span class="st">"axial_3"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_gather</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -249,7 +265,7 @@ configurable gap:</p>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_view_reorder()</a></code> lets you choose the left-to-right
 order and repositions at the same time. Views not mentioned in
 <code>order</code> are appended at the end:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">reordered</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sagittal"</span>, <span class="st">"coronal_3"</span>, <span class="st">"axial_3"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_reorder</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"axial_3"</span>, <span class="st">"sagittal"</span>, <span class="st">"coronal_3"</span><span class="op">)</span><span class="op">)</span></span>
@@ -263,7 +279,7 @@ order and repositions at the same time. Views not mentioned in
 table. This is useful for attaching grouping variables, statistical
 results, or any other per-region information. Here we add a custom
 network column to a handful of regions:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">network_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  region <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"superior frontal"</span>,</span>
@@ -286,7 +302,7 @@ you can join on any shared column.</p>
 </h2>
 <p>Here is a realistic pipeline that prepares the <code>aseg</code>
 atlas for a compact two-view figure of deep grey matter structures:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">publication_aseg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sagittal"</span>, <span class="st">"coronal_3"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_contextual</a></span><span class="op">(</span><span class="st">"ventricle|choroid|white|cc"</span><span class="op">)</span> <span class="op">|&gt;</span></span>

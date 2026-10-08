@@ -19,7 +19,7 @@ brain can still overlap on the page."><meta property="og:image" content="https:/
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9008</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9009</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -95,8 +95,10 @@ most one of the two.</p></dd>
 
 
 <dt id="arg-match-on">match_on<a class="anchor" aria-label="anchor" href="#arg-match-on"></a></dt>
-<dd><p>Column of <code>core</code> that <code>structures</code>, <code>.before</code> and <code>.after</code>
-name; <code>"label"</code> (the default) or <code>"region"</code>.</p></dd>
+<dd><p>Column of <code>core</code> to match against: <code>"label"</code>, the default,
+or <code>"region"</code>. <code>label</code> is the identifier that is unique within an atlas
+and stable across them, so every verb that selects rows by name or
+pattern reads it unless told otherwise.</p></dd>
 
 </dl></div>
     <div class="section level2">
