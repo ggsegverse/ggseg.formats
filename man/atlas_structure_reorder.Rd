@@ -22,8 +22,10 @@ here.}
 \item{.before, .after}{One structure to move \code{structures} next to. Give at
 most one of the two.}
 
-\item{match_on}{Column of \code{core} that \code{structures}, \code{.before} and \code{.after}
-name; \code{"label"} (the default) or \code{"region"}.}
+\item{match_on}{Column of \code{core} to match against: \code{"label"}, the default,
+or \code{"region"}. \code{label} is the identifier that is unique within an atlas
+and stable across them, so every verb that selects rows by name or
+pattern reads it unless told otherwise.}
 }
 \value{
 The \code{ggseg_atlas}, with its geometry rows in the new order.

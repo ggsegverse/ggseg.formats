@@ -62,14 +62,22 @@ frontal <- atlas_region_keep(dk(), "frontal")
 unique(atlas_regions(frontal))
 ```
 
-Both functions accept a `match_on` argument to choose whether the pattern matches
-against `"region"` (the default, human-readable name) or `"label"` (the unique
-identifier):
+Both functions match the pattern against `label` by default: the identifier
+that is unique within an atlas and spelled the same way wherever the atlas is
+used. That is what makes a hemisphere prefix something you can select on:
 
 ```{r}
 #| label: region-keep-label
-lh_only <- atlas_region_keep(dk(), "^lh_", match_on = "label")
+lh_only <- atlas_region_keep(dk(), "^lh_")
 head(atlas_labels(lh_only))
+```
+
+Pass `match_on = "region"` to match the hemisphere-free region key instead:
+
+```{r}
+#| label: region-keep-region
+both_sides <- atlas_region_keep(dk(), "^precuneus$", match_on = "region")
+atlas_labels(both_sides)
 ```
 
 ## Context regions
@@ -91,23 +99,35 @@ polygons entirely, leaving gaps in the 2D slices.
 ## Renaming regions
 
 `atlas_region_rename()` changes the `region` column without touching `label`
-(so geometry links stay intact). Pass a fixed string:
+(so geometry links stay intact). Like the other verbs it picks its rows by
+`label`, and it edits the region those rows already have. A string is
+substituted for the pattern wherever the region contains it:
 
 ```{r}
 #| label: region-rename
-renamed <- atlas_region_rename(
-  dk(),
-  "banks of superior temporal sulcus",
-  "STS banks"
-)
+renamed <- atlas_region_rename(dk(), "bankssts", "STS banks")
 "STS banks" %in% atlas_regions(renamed)
 ```
 
-Or pass a function for programmatic renaming:
+A function receives the regions of the matching rows and returns the new ones.
+That is the way to set a region outright for a label, whatever it was called
+before:
 
 ```{r}
 #| label: region-rename-func
-upper <- atlas_region_rename(dk(), ".*", toupper)
+outright <- atlas_region_rename(
+  dk(),
+  "^[lr]h_bankssts$",
+  \(region) "STS banks"
+)
+"STS banks" %in% atlas_regions(outright)
+```
+
+Pass `match_on = "region"` to pick the rows by their region text instead:
+
+```{r}
+#| label: region-rename-region
+upper <- atlas_region_rename(dk(), ".*", toupper, match_on = "region")
 head(unique(atlas_regions(upper)))
 ```
 

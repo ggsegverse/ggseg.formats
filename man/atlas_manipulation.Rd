@@ -18,12 +18,12 @@
 \alias{atlas_view_reorder}
 \title{Manipulate brain atlas regions and views}
 \usage{
-atlas_region_remove(atlas, pattern, match_on = c("region", "label"))
+atlas_region_remove(atlas, pattern, match_on = c("label", "region"))
 
 atlas_region_contextual(
   atlas,
   pattern,
-  match_on = c("region", "label"),
+  match_on = c("label", "region"),
   ignore.case = TRUE
 )
 
@@ -43,10 +43,10 @@ atlas_region_rename(
   atlas,
   pattern,
   replacement,
-  match_on = c("region", "label")
+  match_on = c("label", "region")
 )
 
-atlas_region_keep(atlas, pattern, match_on = c("region", "label"))
+atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
 
 atlas_core_add(atlas, data, by = "region")
 
@@ -82,7 +82,10 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 \item{pattern}{Character pattern to match. Uses
 \code{grepl(..., ignore.case = TRUE)}.}
 
-\item{match_on}{Column to match against: \code{"region"} or \code{"label"}.}
+\item{match_on}{Column of \code{core} to match against: \code{"label"}, the default,
+or \code{"region"}. \code{label} is the identifier that is unique within an atlas
+and stable across them, so every verb that selects rows by name or
+pattern reads it unless told otherwise.}
 
 \item{ignore.case}{For \code{atlas_region_contextual()}: passed to \code{\link[=grepl]{grepl()}}.
 Defaults to \code{TRUE} for backwards compatibility, but note that a context
@@ -203,13 +206,16 @@ labelled regions.
 
 \item \code{atlas_region_rename()}: Rename regions matching a pattern. Only
 ever writes to the \code{region} column, never to \code{label}. \code{match_on} chooses
-which column the pattern is matched and substituted against: the default
-\code{"region"} rewrites the display names in place, while \code{"label"} derives
-them from the source identifiers, so
-\code{atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")} turns
-label \code{ctx-lh-superiorfrontal} into region \code{superiorfrontal}. If
-\code{replacement} is a function, it receives the matched values of that
-column and returns the new region names.
+the rows: those whose \code{label} (the default) or \code{region} matches
+\code{pattern}. The edit is always made to the region text those rows already
+have. A string \code{replacement} is substituted for \code{pattern} wherever the
+region contains it, so \code{atlas_region_rename(atlas, "Left-", "")} strips
+the prefix from regions that still carry it. A function \code{replacement}
+receives the regions of the matching rows and returns the new ones, which
+is how to set a region outright for a label:
+\verb{atlas_region_rename(atlas, "^Brain-Stem$", \\(region) "brainstem")}. A
+string that changes nothing, because the pattern is in the labels but
+not in their regions, is reported with a warning.
 
 \item \code{atlas_region_keep()}: Keep only matching regions. Non-matching
 regions are removed from core, palette, and 3D data but sf geometry
@@ -271,7 +277,7 @@ in \code{order} are appended at end.
 \examples{
 dk() |>
   atlas_region_remove("bankssts") |>
-  atlas_region_keep("frontal", match_on = "region")
+  atlas_region_keep("frontal")
 
 }
 \seealso{

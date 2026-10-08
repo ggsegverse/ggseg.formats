@@ -782,14 +782,19 @@ describe("atlas_region_op", {
 describe("atlas_region_rename", {
   it("renames matching regions with string replacement", {
     atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, "frontal", "prefrontal")
+    result <- atlas_region_rename(
+      atlas,
+      "frontal",
+      "prefrontal",
+      match_on = "region"
+    )
     non_parietal <- result$core$region != "parietal"
     expect_true(all(result$core$region[non_parietal] == "prefrontal"))
   })
 
   it("renames matching regions with function", {
     atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, ".*", toupper)
+    result <- atlas_region_rename(atlas, ".*", toupper, match_on = "region")
     expect_true(all(result$core$region %in% c("FRONTAL", "PARIETAL")))
   })
 
@@ -802,37 +807,51 @@ describe("atlas_region_rename", {
   it("preserves NA regions", {
     atlas <- make_test_atlas()
     atlas$core$region[1] <- NA
-    result <- atlas_region_rename(atlas, "parietal", "PARIETAL")
+    result <- atlas_region_rename(
+      atlas,
+      "parietal",
+      "PARIETAL",
+      match_on = "region"
+    )
     expect_true(is.na(result$core$region[1]))
   })
 
-  it("derives regions from labels when matching on label", {
+  it("picks rows by label and edits the region they already have", {
     atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, "^lh_", "left ", match_on = "label")
+    result <- atlas_region_rename(atlas, "^lh_", toupper)
     lh <- grepl("^lh_", atlas$core$label)
+
+    expect_identical(result$core$region[lh], toupper(atlas$core$region[lh]))
+    expect_identical(result$core$region[!lh], atlas$core$region[!lh])
+    expect_identical(result$core$label, atlas$core$label)
+  })
+
+  it("substitutes a string in the region, not in the label it matched", {
+    atlas <- make_test_atlas()
+    atlas$core$region <- atlas$core$label
+
+    stripped <- atlas_region_rename(atlas, "^[lr]h_", "")
+    again <- atlas_region_rename(stripped, "al$", "AL")
+
+    expect_identical(stripped$core$region, sub("^[lr]h_", "", atlas$core$label))
+    expect_identical(again$core$region, sub("al$", "AL", stripped$core$region))
+  })
+
+  it("sets a region outright through a function", {
+    atlas <- make_test_atlas()
+    result <- atlas_region_rename(atlas, "^lh_frontal$", \(region) "anterior")
+
     expect_identical(
-      result$core$region[lh],
-      sub("^lh_", "left ", atlas$core$label[lh])
+      result$core$region[result$core$label == "lh_frontal"],
+      "anterior"
     )
   })
 
-  it("leaves regions whose label does not match", {
+  it("warns when a string matches labels but changes no region", {
     atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, "^lh_", "left ", match_on = "label")
-    rh <- !grepl("^lh_", atlas$core$label)
-    expect_identical(result$core$region[rh], atlas$core$region[rh])
-  })
 
-  it("passes label values to a replacement function when matching on label", {
-    atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, ".*", toupper, match_on = "label")
-    expect_identical(result$core$region, toupper(atlas$core$label))
-  })
-
-  it("never writes to label when matching on label", {
-    atlas <- make_test_atlas()
-    result <- atlas_region_rename(atlas, "^lh_", "", match_on = "label")
-    expect_identical(result$core$label, atlas$core$label)
+    expect_snapshot(result <- atlas_region_rename(atlas, "^lh_", "left "))
+    expect_identical(result$core$region, atlas$core$region)
   })
 
   it("rejects an unknown match_on", {
@@ -1715,6 +1734,66 @@ describe("rebuild_atlas_data", {
     result <- atlas_view_keep(tracula(), "sagittal")
     expect_s3_class(result, "ggseg_atlas")
     expect_s3_class(result$data, "ggseg_data_tract")
+  })
+})
+
+
+describe("region verbs match on label by default", {
+  it("selects by label, so a hemisphere prefix can be matched", {
+    left <- atlas_region_keep(aseg(), "^Left-")
+
+    expect_true(all(startsWith(left$core$label, "Left-")))
+    expect_gt(nrow(left$core), 0)
+  })
+
+  it("does not match a region spelling that differs from the label", {
+    expect_warning(
+      unchanged <- atlas_region_remove(aseg(), "brain stem"),
+      "Nothing was removed"
+    )
+    expect_true("Brain-Stem" %in% unchanged$core$label)
+  })
+
+  it("matches the region key when asked to", {
+    removed <- atlas_region_remove(aseg(), "brain stem", match_on = "region")
+    contextual <- atlas_region_contextual(
+      aseg(),
+      "brain stem",
+      match_on = "region"
+    )
+    kept <- atlas_region_keep(aseg(), "brain stem", match_on = "region")
+
+    expect_false("Brain-Stem" %in% removed$core$label)
+    expect_false("Brain-Stem" %in% contextual$core$label)
+    expect_identical(kept$core$label, "Brain-Stem")
+  })
+
+  it("renames by label too, setting the region through a function", {
+    renamed <- atlas_region_rename(
+      aseg(),
+      "^Brain-Stem$",
+      \(region) "brainstem"
+    )
+
+    expect_identical(
+      renamed$core$region[renamed$core$label == "Brain-Stem"],
+      "brainstem"
+    )
+    expect_identical(renamed$core$label, aseg()$core$label)
+  })
+
+  it("rewrites the region text in place when asked to match region", {
+    renamed <- atlas_region_rename(
+      aseg(),
+      "brain stem",
+      "brainstem",
+      match_on = "region"
+    )
+
+    expect_identical(
+      renamed$core$region[renamed$core$label == "Brain-Stem"],
+      "brainstem"
+    )
   })
 })
 

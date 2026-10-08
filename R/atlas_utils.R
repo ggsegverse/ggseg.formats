@@ -182,7 +182,7 @@ atlas_type.brain_atlas <- function(x) {
 #' @param atlas A `ggseg_atlas` object
 #' @param pattern Character pattern to match. Uses
 #'   `grepl(..., ignore.case = TRUE)`.
-#' @param match_on Column to match against: `"region"` or `"label"`.
+#' @template match_on
 #' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
 #'   Defaults to `TRUE` for backwards compatibility, but note that a context
 #'   pattern like `"Thalamus"` then also matches focus labels such as
@@ -206,7 +206,7 @@ atlas_type.brain_atlas <- function(x) {
 #' @examples
 #' dk() |>
 #'   atlas_region_remove("bankssts") |>
-#'   atlas_region_keep("frontal", match_on = "region")
+#'   atlas_region_keep("frontal")
 #'
 #' @name atlas_manipulation
 #' @export
@@ -214,7 +214,7 @@ atlas_type.brain_atlas <- function(x) {
 atlas_region_remove <- function(
   atlas,
   pattern,
-  match_on = c("region", "label")
+  match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
 
@@ -264,7 +264,7 @@ atlas_region_remove <- function(
 atlas_region_contextual <- function(
   atlas,
   pattern,
-  match_on = c("region", "label"),
+  match_on = c("label", "region"),
   ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
@@ -419,37 +419,38 @@ atlas_context_remove <- function(atlas) {
 
 #' @describeIn atlas_manipulation Rename regions matching a pattern. Only
 #'   ever writes to the `region` column, never to `label`. `match_on` chooses
-#'   which column the pattern is matched and substituted against: the default
-#'   `"region"` rewrites the display names in place, while `"label"` derives
-#'   them from the source identifiers, so
-#'   `atlas_region_rename(atlas, "^ctx-lh-", "", match_on = "label")` turns
-#'   label `ctx-lh-superiorfrontal` into region `superiorfrontal`. If
-#'   `replacement` is a function, it receives the matched values of that
-#'   column and returns the new region names.
+#'   the rows: those whose `label` (the default) or `region` matches
+#'   `pattern`. The edit is always made to the region text those rows already
+#'   have. A string `replacement` is substituted for `pattern` wherever the
+#'   region contains it, so `atlas_region_rename(atlas, "Left-", "")` strips
+#'   the prefix from regions that still carry it. A function `replacement`
+#'   receives the regions of the matching rows and returns the new ones, which
+#'   is how to set a region outright for a label:
+#'   `atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")`. A
+#'   string that changes nothing, because the pattern is in the labels but
+#'   not in their regions, is reported with a warning.
 #' @export
 #' @family atlas manipulations
 atlas_region_rename <- function(
   atlas,
   pattern,
   replacement,
-  match_on = c("region", "label")
+  match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
 
   new_core <- atlas$core
-  source_values <- new_core[[match_on]]
-  match_mask <- grepl(pattern, source_values, ignore.case = TRUE)
-  match_mask[is.na(source_values)] <- FALSE
+  match_values <- new_core[[match_on]]
+  match_mask <- grepl(pattern, match_values, ignore.case = TRUE)
+  match_mask[is.na(match_values)] <- FALSE
+  regions <- new_core$region[match_mask]
 
   if (is.function(replacement)) {
-    new_core$region[match_mask] <- replacement(source_values[match_mask])
+    new_core$region[match_mask] <- replacement(regions)
   } else {
-    new_core$region[match_mask] <- gsub(
-      pattern,
-      replacement,
-      source_values[match_mask],
-      ignore.case = TRUE
-    )
+    renamed <- gsub(pattern, replacement, regions, ignore.case = TRUE)
+    warn_rename_changed_nothing(regions, renamed, pattern, match_on)
+    new_core$region[match_mask] <- renamed
   }
 
   ggseg_atlas(
@@ -467,7 +468,7 @@ atlas_region_rename <- function(
 #'   is preserved for surface continuity.
 #' @export
 #' @family atlas manipulations
-atlas_region_keep <- function(atlas, pattern, match_on = c("region", "label")) {
+atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
   match_on <- match.arg(match_on)
 
   match_col <- atlas$core[[match_on]]
@@ -878,6 +879,22 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
   )
   new_data <- rebuild_atlas_data(atlas, new_sf)
   rebuild_atlas(atlas, new_data)
+}
+
+
+#' @noRd
+warn_rename_changed_nothing <- function(regions, renamed, pattern, match_on) {
+  unchanged <- identical(regions, renamed)
+  if (length(regions) == 0 || !unchanged) {
+    return(invisible())
+  }
+  cli::cli_warn(c(
+    "No region was renamed.",
+    "i" = "{.val {pattern}} matches {length(regions)} row{?s} on
+      {.field {match_on}}, but none of their regions contain it.",
+    "i" = "Pass a function as {.arg replacement} to set those regions
+      outright, or {.code match_on = \"region\"} to match the region text."
+  ))
 }
 
 
