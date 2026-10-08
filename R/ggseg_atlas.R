@@ -6,9 +6,10 @@
 #' @param atlas atlas short name, length one
 #' @param type atlas type: "cortical", "subcortical", "tract", or "cerebellar"
 #' @param palette named character vector of colours keyed by label
-#' @param core data.frame with required columns hemi, region, label (one row per
-#'   unique label). May contain additional columns for grouping or metadata
-#'   (e.g., lobe, network, Brodmann area).
+#' @param core data.frame with required columns hemi, region, label. `label` is
+#'   the key the palette and every geometry slot are joined on, so it must be
+#'   unique: a duplicated `label` is an error. May contain additional columns
+#'   for grouping or metadata (e.g., lobe, network, Brodmann area).
 #' @param data a ggseg_atlas_data object created by
 #'   [ggseg_data_cortical()], [ggseg_data_subcortical()],
 #'   [ggseg_data_tract()], or [ggseg_data_cerebellar()].
@@ -38,7 +39,7 @@ ggseg_atlas <- function(atlas, type, core, data, palette = NULL) {
 
   validate_ggseg_atlas_inputs(atlas, core, data, type)
 
-  data <- validate_data_labels(data, core, check_sf = TRUE)
+  data <- validate_data_labels(data, core, report_2d_coverage = TRUE)
 
   if (!is.null(palette)) {
     palette <- validate_palette(palette, core)
@@ -705,15 +706,19 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
   invisible()
 }
 
-#' Warn when `core$label` is not unique
+#' Abort when `core$label` is not unique
 #'
 #' `label` is the key the palette and every geometry slot are joined on, so a
 #' duplicated label fans one geometry row into several: the same parcel is
 #' drawn more than once, which in 3D also breaks semi-transparent compositing.
-#' The bundled `aseg` carried such alias rows until 0.1.0. This cannot be an
-#' error -- published atlas packages may carry them and would stop loading --
-#' so it warns once per atlas per session. Unlike a missing `names` column this
-#' is a data defect rather than schema incompleteness, so it stays a warning.
+#' The bundled `aseg` carried such alias rows (`Thalamus` / `Thalamus Proper`)
+#' until 0.1.0, and 18 of its 47 meshes were exact duplicates as a result.
+#'
+#' This is a schema violation rather than schema incompleteness, so it aborts
+#' from the constructor, where the atlas author stands and can fix the table.
+#' Read paths stay forgiving: legacy conversion collapses alias rows (see
+#' `dedupe_legacy_core_labels()`) and ggseg3d de-duplicates defensively at
+#' render time, so already-published atlases keep loading and drawing.
 #' @noRd
 #' @keywords internal
 validate_core_label_unique <- function(core, atlas) {
@@ -721,20 +726,46 @@ validate_core_label_unique <- function(core, atlas) {
   if (length(dupes) == 0) {
     return(invisible())
   }
-  rlang::warn(
-    cli::format_message(c(
-      "!" = "{.arg core$label} is not unique in {.val {atlas}}:
-             {.val {utils::head(dupes, 3)}}.",
+  cli::cli_abort(
+    c(
+      "{.arg core$label} must be unique in {.val {atlas}}.",
+      "x" = "Duplicated: {.val {dupes}}.",
       "i" = "{.field label} is the key the palette and geometry join on, so a
              duplicate draws the same region more than once.",
       "i" = "Keep one row per {.field label} and move any alias name into
              {.field names}."
-    )),
-    class = "ggseg.formats_duplicate_labels",
-    .frequency = "once",
-    .frequency_id = paste0("ggseg.formats-core-label-unique-", atlas)
+    ),
+    class = "ggseg.formats_duplicate_labels"
   )
-  invisible()
+}
+
+
+#' Collapse duplicated `core$label` rows on a legacy conversion path
+#'
+#' The constructor rejects duplicated labels, but the legacy atlases
+#' [convert_legacy_brain_atlas()] and [as_ggseg_atlas()] exist to migrate are
+#' exactly the ones that carry alias rows. Keeping the first row per `label`
+#' and warning lets the migration finish with a schema-valid atlas instead of
+#' aborting on data the caller cannot edit.
+#' @noRd
+#' @keywords internal
+dedupe_legacy_core_labels <- function(core, atlas = NA_character_) {
+  if (is.null(core) || !is.data.frame(core) || !"label" %in% names(core)) {
+    return(core)
+  }
+  dupes <- unique(core$label[duplicated(core$label)]) # nolint
+  if (length(dupes) == 0) {
+    return(core)
+  }
+  cli::cli_warn(
+    c(
+      "Collapsed {length(dupes)} duplicated {.field label} row{?s} while
+       converting {.val {atlas}}: {.val {dupes}}.",
+      "i" = "The first row of each duplicated {.field label} is kept."
+    ),
+    class = "ggseg.formats_collapsed_duplicate_labels"
+  )
+  core[!duplicated(core$label), , drop = FALSE]
 }
 
 

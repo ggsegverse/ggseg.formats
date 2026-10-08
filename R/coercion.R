@@ -143,7 +143,7 @@ convert_legacy_brain_data <- function(x) {
   sf_data <- normalize_legacy_sf(x$data)
   type <- x$type %||% "cortical"
 
-  core <- legacy_core_from_sf(sf_data)
+  core <- legacy_core_from_sf(sf_data, x$atlas)
   palette <- legacy_palette_from_sf(sf_data)
 
   data <- switch(
@@ -182,6 +182,7 @@ convert_legacy_structure <- function(x) {
   ) {
     core$names <- core$region
   }
+  core <- dedupe_legacy_core_labels(core, x$atlas)
 
   data <- switch(
     type,
@@ -240,7 +241,7 @@ normalize_legacy_sf <- function(sf_data) {
 #' Distinct hemi/region/label core table from legacy sf data
 #' @noRd
 #' @keywords internal
-legacy_core_from_sf <- function(sf_data) {
+legacy_core_from_sf <- function(sf_data, atlas = NA_character_) {
   core <- df_distinct(
     sf::st_drop_geometry(sf_data[
       !is.na(sf_data$label),
@@ -253,7 +254,7 @@ legacy_core_from_sf <- function(sf_data) {
   # `names` holds in the current schema, so the converted atlas is complete
   # rather than missing a required column.
   core$names <- core$region
-  core
+  dedupe_legacy_core_labels(core, atlas)
 }
 
 

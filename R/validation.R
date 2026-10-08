@@ -201,14 +201,17 @@ validate_tract_metadata <- function(metadata, label) {
 #' 3D sources (vertices, meshes, centerlines) are validated strictly: every
 #' core label must have a corresponding entry. This check always runs.
 #'
-#' When `check_sf = TRUE` (the default at construction time), sf coverage
-#' is also checked: an error is raised when fewer than 80 percent of core
-#' labels appear in sf, and a warning when fewer than 90 percent. This
-#' threshold is relaxed because 2D projections cannot always capture every
-#' region (too small, occluded, etc.).
+#' 2D coverage is *reported*, never enforced. Partial 2D coverage is a normal
+#' property of an atlas, not a defect: no single slice contains every
+#' structure, and narrowing an atlas to one view legitimately drops geometry
+#' while `core` stays whole. Deciding that a freshly *built* atlas has too
+#' little geometry is a construction-pipeline judgement and lives in
+#' ggseg.extra. When `report_2d_coverage = TRUE` (the default at construction
+#' time) incomplete coverage warns, so an atlas author sees it; the object is
+#' valid either way.
 #'
-#' During manipulation (view removal, region cleanup) sf coverage naturally
-#' drops, so `rebuild_atlas` calls with `check_sf = FALSE`.
+#' During manipulation (view removal, region cleanup) coverage naturally
+#' drops, so `rebuild_atlas` calls with `report_2d_coverage = FALSE`.
 #'
 #' Labels in data that are not in core are always allowed — these represent
 #' context-only geometry (like medial wall) that renders grey without
@@ -216,18 +219,19 @@ validate_tract_metadata <- function(metadata, label) {
 #'
 #' @param data ggseg_atlas_data object
 #' @param core core data.frame
-#' @param check_sf if TRUE, validate sf label coverage against core
+#' @param report_2d_coverage if TRUE, warn when 2D geometry covers fewer than
+#'   90 percent of core labels
 #' @return data (unchanged)
 #' @keywords internal
 #' @noRd
-validate_data_labels <- function(data, core, check_sf = FALSE) {
+validate_data_labels <- function(data, core, report_2d_coverage = FALSE) {
   core_labels <- core$label[!is.na(core$label)]
   n_core <- length(core_labels)
 
   validate_3d_data_labels(data, core_labels)
 
-  if (isTRUE(check_sf) && n_core > 0) {
-    validate_sf_coverage(data, core_labels, n_core)
+  if (isTRUE(report_2d_coverage) && n_core > 0) {
+    report_2d_label_coverage(data, core_labels, n_core)
   }
 
   data
@@ -261,14 +265,17 @@ validate_3d_data_labels <- function(data, core_labels) {
 }
 
 
-#' Validate 2D (sf/polygon) label coverage against core
+#' Report 2D (sf/polygon) label coverage against core
 #'
-#' Aborts when coverage is below 80 percent and warns below 90 percent.
-#' Coverage is relaxed because 2D projections cannot always capture every
-#' region.
+#' Warns when fewer than 90 percent of core labels have 2D geometry. This is
+#' informational only: it never makes the atlas invalid. A hard coverage floor
+#' used to live here and was wrong for any derived atlas — one view of
+#' `aseg()` carries 52 percent of the labels and is a perfectly good atlas.
+#' The construction-time equivalent belongs to the atlas-building pipeline in
+#' ggseg.extra.
 #' @keywords internal
 #' @noRd
-validate_sf_coverage <- function(data, core_labels, n_core) {
+report_2d_label_coverage <- function(data, core_labels, n_core) {
   twod_source <- geom_from_data(data)
   if (is.null(twod_source)) {
     return(invisible(data))
@@ -286,18 +293,16 @@ validate_sf_coverage <- function(data, core_labels, n_core) {
   missing <- setdiff(core_labels, twod_labels)
   coverage <- 1 - length(missing) / n_core
 
-  if (coverage < 0.8) {
-    cli::cli_abort(c(
-      "{twod_kind} covers only {.strong {round(coverage * 100)}%} of core
-      labels (minimum 80%).",
-      "i" = "Missing from {twod_kind}: {.val {missing}}."
-    ))
-  } else if (coverage < 0.9) {
-    cli::cli_warn(c(
-      "{twod_kind} covers only {.strong {round(coverage * 100)}%} of core
-      labels.",
-      "i" = "Missing from {twod_kind}: {.val {missing}}."
-    ))
+  if (coverage < 0.9) {
+    cli::cli_warn(
+      c(
+        "{twod_kind} covers only {.strong {round(coverage * 100)}%} of core
+        labels.",
+        "i" = "Missing from {twod_kind}: {.val {missing}}.",
+        "i" = "This is informational; the atlas is still valid."
+      ),
+      class = "ggseg.formats_partial_2d_coverage"
+    )
   }
 
   invisible(data)
