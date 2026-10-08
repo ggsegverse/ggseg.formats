@@ -1,26 +1,11 @@
-make_test_atlas <- function() {
-  sf_geom <- sf::st_sf(
-    label = c("lh_frontal", "lh_parietal", "rh_frontal", "lh_unknown"),
-    view = c("lateral", "lateral", "medial", "lateral"),
-    geometry = sf::st_sfc(
-      # nolint next: object_usage_linter. Defined in helper-polygons.R.
-      make_polygon(),
-      sf::st_polygon(list(matrix(
-        c(2, 2, 4, 2, 4, 4, 2, 2),
-        ncol = 2,
-        byrow = TRUE
-      ))),
-      sf::st_polygon(list(matrix(
-        c(5, 5, 8, 5, 8, 8, 5, 5),
-        ncol = 2,
-        byrow = TRUE
-      ))),
-      sf::st_polygon(list(matrix(
-        c(0, 0, 10, 0, 10, 10, 0, 0),
-        ncol = 2,
-        byrow = TRUE
-      )))
-    )
+make_test_atlas <- function(polygons = FALSE) {
+  # nolint start: object_usage_linter. ring*/rings_as_geom are defined in
+  # helper-polygons.R, which lintr does not see from this file.
+  spec <- list(
+    ring("lh_frontal", "lateral", c(0, 0, 1, 0, 1, 1, 0, 0)),
+    ring("lh_parietal", "lateral", c(2, 2, 4, 2, 4, 4, 2, 2)),
+    ring("rh_frontal", "medial", c(5, 5, 8, 5, 8, 8, 5, 5)),
+    ring("lh_unknown", "lateral", c(0, 0, 10, 0, 10, 10, 0, 0))
   )
   core <- data.frame(
     hemi = c("left", "left", "right"),
@@ -43,28 +28,16 @@ make_test_atlas <- function() {
     type = "cortical",
     core = core,
     palette = palette,
-    data = ggseg_data_cortical(geom = sf_geom, vertices = vertices)
+    data = ggseg_data_cortical(
+      geom = rings_as_geom(spec, polygons),
+      vertices = vertices
+    )
   )
+  # nolint end
 }
 
-make_multiview_atlas <- function() {
-  make_view_poly <- function(x_off, y_off, size = 1) {
-    sf::st_polygon(list(matrix(
-      c(
-        x_off,
-        y_off,
-        x_off + size,
-        y_off,
-        x_off + size,
-        y_off + size,
-        x_off,
-        y_off
-      ),
-      ncol = 2,
-      byrow = TRUE
-    )))
-  }
-
+make_multiview_atlas <- function(polygons = FALSE) {
+  # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
   core_labels <- c(
     "lh_frontal",
     "lh_parietal",
@@ -81,28 +54,24 @@ make_multiview_atlas <- function() {
   ctx <- c("ctx_left", "ctx_left", "ctx_right")
   views <- c("axial_1", "axial_2", "sagittal")
 
-  sf_labels <- character(0)
-  sf_views <- character(0)
-  geoms <- list()
-
+  spec <- list()
   for (v_idx in seq_along(views)) {
     x_base <- (v_idx - 1) * 40
     for (i in seq_along(core_labels)) {
       sz <- if (core_labels[i] %in% small_labels) 0.5 else 2
-      sf_labels <- c(sf_labels, core_labels[i])
-      sf_views <- c(sf_views, views[v_idx])
-      geoms <- c(geoms, list(make_view_poly(x_base + (i - 1) * 3, 0, sz)))
+      spec <- c(
+        spec,
+        list(ring_square(
+          core_labels[i],
+          views[v_idx],
+          x_base + (i - 1) * 3,
+          0,
+          sz
+        ))
+      )
     }
-    sf_labels <- c(sf_labels, ctx[v_idx])
-    sf_views <- c(sf_views, views[v_idx])
-    geoms <- c(geoms, list(make_view_poly(x_base, 5, 4)))
+    spec <- c(spec, list(ring_square(ctx[v_idx], views[v_idx], x_base, 5, 4)))
   }
-
-  sf_geom <- sf::st_sf(
-    label = sf_labels,
-    view = sf_views,
-    geometry = sf::st_sfc(geoms)
-  )
 
   core <- data.frame(
     hemi = c(rep("left", 5), rep("right", 5)),
@@ -138,56 +107,28 @@ make_multiview_atlas <- function() {
     type = "cortical",
     core = core,
     palette = palette,
-    data = ggseg_data_cortical(geom = sf_geom)
+    data = ggseg_data_cortical(geom = rings_as_geom(spec, polygons))
   )
+  # nolint end
 }
 
-make_cortical_hemi_atlas <- function() {
-  make_view_poly <- function(x_off, y_off, size = 1) {
-    sf::st_polygon(list(matrix(
-      c(
-        x_off,
-        y_off,
-        x_off + size,
-        y_off,
-        x_off + size,
-        y_off + size,
-        x_off,
-        y_off
-      ),
-      ncol = 2,
-      byrow = TRUE
-    )))
-  }
-
+make_cortical_hemi_atlas <- function(polygons = FALSE) {
+  # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
   lh_labels <- c("lh_frontal", "lh_parietal")
   rh_labels <- c("rh_frontal", "rh_parietal")
   views <- c("lateral", "medial")
 
-  sf_labels <- character(0)
-  sf_views <- character(0)
-  geoms <- list()
-
+  spec <- list()
   for (v in views) {
     for (i in seq_along(lh_labels)) {
-      sf_labels <- c(sf_labels, lh_labels[i])
-      sf_views <- c(sf_views, v)
       x <- (match(v, views) - 1) * 20 + (i - 1) * 3
-      geoms <- c(geoms, list(make_view_poly(x, 0, 2)))
+      spec <- c(spec, list(ring_square(lh_labels[i], v, x, 0, 2)))
     }
     for (i in seq_along(rh_labels)) {
-      sf_labels <- c(sf_labels, rh_labels[i])
-      sf_views <- c(sf_views, v)
       x <- (match(v, views) - 1) * 20 + 10 + (i - 1) * 3
-      geoms <- c(geoms, list(make_view_poly(x, 0, 2)))
+      spec <- c(spec, list(ring_square(rh_labels[i], v, x, 0, 2)))
     }
   }
-
-  sf_geom <- sf::st_sf(
-    label = sf_labels,
-    view = sf_views,
-    geometry = sf::st_sfc(geoms)
-  )
 
   core <- data.frame(
     hemi = c("left", "left", "right", "right"),
@@ -208,8 +149,9 @@ make_cortical_hemi_atlas <- function() {
     type = "cortical",
     core = core,
     palette = palette,
-    data = ggseg_data_cortical(geom = sf_geom)
+    data = ggseg_data_cortical(geom = rings_as_geom(spec, polygons))
   )
+  # nolint end
 }
 
 
@@ -305,8 +247,7 @@ describe("atlas_views", {
   })
 
   it("reads views from polygons when sf is absent", {
-    atlas <- make_test_atlas()
-    atlas$data$sf <- NULL
+    atlas <- make_test_atlas(polygons = TRUE)
     expect_identical(atlas_views(atlas), c("lateral", "medial"))
   })
 
@@ -314,6 +255,11 @@ describe("atlas_views", {
     atlas <- make_test_atlas()
     atlas$data$geom <- NULL
     expect_null(atlas_views(atlas))
+  })
+
+  it("rejects a non-atlas instead of failing on the $ operator", {
+    expect_error(atlas_views(42), "must be a")
+    expect_error(atlas_views("dk"), "must be a")
   })
 })
 
@@ -448,6 +394,7 @@ describe("atlas_region_remove", {
 # cerebellar region ops (vertices + meshes) ----
 
 make_cerebellar_atlas <- function() {
+  testthat::skip_if_not_installed("sf")
   sf_geom <- sf::st_sf(
     label = c("lobule_I", "dentate"),
     view = c("flatmap", "nuclei"),
@@ -583,7 +530,7 @@ describe("atlas_region_contextual", {
   })
 
   it("operates on a polygon-only atlas without sf", {
-    poly <- as_polygon_atlas(make_test_atlas())
+    poly <- make_test_atlas(polygons = TRUE)
     expect_null(poly$data$sf)
 
     result <- atlas_region_contextual(poly, "parietal")
@@ -602,6 +549,7 @@ describe("atlas_region_contextual", {
 
 describe("atlas_region_op", {
   make_op_atlas <- function() {
+    skip_if_not_installed("sf")
     outer <- sf::st_polygon(list(matrix(
       c(0, 0, 10, 0, 10, 10, 0, 10, 0, 0),
       ncol = 2,
@@ -633,6 +581,7 @@ describe("atlas_region_op", {
   }
 
   area_of <- function(atlas, lbl) {
+    skip_if_not_installed("sf")
     g <- atlas$data$geom$geometry[atlas$data$geom$label == lbl]
     as.numeric(sum(sf::st_area(g)))
   }
@@ -744,6 +693,7 @@ describe("atlas_region_op", {
   })
 
   it("operates on a polygon-only atlas and stays polygon-only", {
+    skip_if_not_installed("sf")
     poly <- as_polygon_atlas(make_op_atlas())
     expect_null(poly$data$sf)
 
@@ -763,6 +713,7 @@ describe("atlas_region_op", {
   })
 
   it("matches sf-backed and polygon-only results", {
+    skip_if_not_installed("sf")
     sf_res <- atlas_region_op(
       make_op_atlas(),
       "cortex",
@@ -975,8 +926,7 @@ describe("atlas_view_remove", {
   })
 
   it("removes views from a polygon-only atlas without sf", {
-    atlas <- make_test_atlas()
-    atlas$data$sf <- NULL
+    atlas <- make_test_atlas(polygons = TRUE)
     result <- atlas_view_remove(atlas, "medial")
     expect_null(result$data$sf)
     expect_false("medial" %in% atlas_views(result))
@@ -1013,7 +963,13 @@ describe("atlas_view_keep", {
 
   it("warns when no views match", {
     atlas <- make_multiview_atlas()
-    expect_warning(atlas_view_keep(atlas, "nonexistent"), "No views matched")
+    expect_warning(
+      expect_warning(
+        atlas_view_keep(atlas, "nonexistent"),
+        "matched no view in this atlas"
+      ),
+      "No views matched"
+    )
   })
 })
 
@@ -1062,6 +1018,7 @@ describe("atlas_view_remove_region", {
 # view holds left labels only, at the same size as the large drawings, so it
 # is only competitive once single-hemisphere views are weighted up.
 make_view_select_atlas <- function() {
+  testthat::skip_if_not_installed("sf")
   square <- function(x_off, size) {
     sf::st_polygon(list(matrix(
       c(
@@ -1290,8 +1247,7 @@ describe("atlas_view_remove_small", {
   })
 
   it("removes small geometries from a polygon-only atlas", {
-    atlas <- make_multiview_atlas()
-    poly <- as_polygon_atlas(atlas)
+    poly <- make_multiview_atlas(polygons = TRUE)
     expect_message(
       result <- atlas_view_remove_small(poly, min_area = 2),
       "Removed"
@@ -1302,7 +1258,7 @@ describe("atlas_view_remove_small", {
       flat <- polygons_unnest(p)
       length(unique(paste(flat$label, flat$view)))
     }
-    expect_lt(n_geoms(result$data$geom), nrow(atlas$data$geom))
+    expect_lt(n_geoms(result$data$geom), n_geoms(poly$data$geom))
   })
 })
 
@@ -1329,8 +1285,7 @@ describe("atlas_view_gather", {
   })
 
   it("repositions a polygon-only atlas without sf", {
-    atlas <- make_multiview_atlas()
-    poly <- as_polygon_atlas(atlas)
+    poly <- make_multiview_atlas(polygons = TRUE)
     result <- atlas_view_gather(poly)
 
     expect_null(result$data$sf)
@@ -1351,6 +1306,7 @@ describe("atlas_view_gather", {
   })
 
   it("keeps cortical hemi+view groups spatially coherent", {
+    skip_if_not_installed("sf")
     atlas <- make_cortical_hemi_atlas()
     result <- atlas_view_gather(atlas)
 
@@ -1393,11 +1349,15 @@ describe("atlas_view_reorder", {
 
   it("appends all current views when given only nonexistent ones", {
     atlas <- make_multiview_atlas()
-    result <- atlas_view_reorder(atlas, "nonexistent")
+    expect_warning(
+      result <- atlas_view_reorder(atlas, "nonexistent"),
+      "names no view in this atlas"
+    )
     expect_length(unique(result$data$geom$view), 3)
   })
 
   it("reorders cortical views with hemi sub-groups", {
+    skip_if_not_installed("sf")
     atlas <- make_cortical_hemi_atlas()
     result <- atlas_view_reorder(atlas, c("medial", "lateral"))
 
@@ -1420,7 +1380,7 @@ describe("view operations on polygon-only atlases", {
   }
 
   it("atlas_context_remove drops context geometry without sf", {
-    poly <- as_polygon_atlas(make_test_atlas())
+    poly <- make_test_atlas(polygons = TRUE)
     result <- atlas_context_remove(poly)
     expect_null(result$data$sf)
     expect_false("lh_unknown" %in% result$data$geom$label)
@@ -1428,14 +1388,14 @@ describe("view operations on polygon-only atlases", {
   })
 
   it("atlas_view_keep keeps only matching views without sf", {
-    poly <- as_polygon_atlas(make_multiview_atlas())
+    poly <- make_multiview_atlas(polygons = TRUE)
     result <- atlas_view_keep(poly, "axial_1")
     expect_null(result$data$sf)
     expect_identical(poly_views(result), "axial_1")
   })
 
   it("atlas_view_remove_region drops a region's geometry without sf", {
-    poly <- as_polygon_atlas(make_test_atlas())
+    poly <- make_test_atlas(polygons = TRUE)
     result <- atlas_view_remove_region(poly, "lh_frontal", match_on = "label")
     expect_null(result$data$sf)
     expect_false("lh_frontal" %in% result$data$geom$label)
@@ -1458,7 +1418,7 @@ describe("view operations on polygon-only atlases", {
   })
 
   it("atlas_view_reorder lays views out in the requested order", {
-    poly <- as_polygon_atlas(make_cortical_hemi_atlas())
+    poly <- make_cortical_hemi_atlas(polygons = TRUE)
     result <- atlas_view_reorder(poly, c("medial", "lateral"))
     expect_null(result$data$sf)
 
@@ -1546,10 +1506,14 @@ describe("subclass preservation", {
     )
     expect_s3_class(removed, "cortical_atlas")
     expect_s3_class(atlas_view_gather(atlas), "cortical_atlas")
-    expect_s3_class(
-      atlas_view_reorder(atlas, c("sagittal", "axial_1", "coronal_2")),
-      "cortical_atlas"
+    expect_warning(
+      reordered <- atlas_view_reorder(
+        atlas,
+        c("sagittal", "axial_1", "coronal_2")
+      ),
+      "names no view in this atlas"
     )
+    expect_s3_class(reordered, "cortical_atlas")
   })
 
   it("bundled atlases have correct subclasses", {
@@ -1682,7 +1646,10 @@ describe("atlas_view_keep", {
   it("warns when no views match", {
     atlas <- make_multiview_atlas()
     expect_warning(
-      result <- atlas_view_keep(atlas, "nonexistent"),
+      expect_warning(
+        atlas_view_keep(atlas, "nonexistent"),
+        "matched no view in this atlas"
+      ),
       "No views matched"
     )
   })
@@ -1894,7 +1861,10 @@ describe("atlas_view_remove_region matching by region", {
 describe("atlas_view_reorder with nonexistent views", {
   it("appends unmatched order entries but still reorders", {
     atlas <- make_test_atlas()
-    result <- atlas_view_reorder(atlas, "nonexistent")
+    expect_warning(
+      result <- atlas_view_reorder(atlas, "nonexistent"),
+      "names no view in this atlas"
+    )
     expect_s3_class(result, "ggseg_atlas")
   })
 })
@@ -1970,6 +1940,7 @@ describe("guess_type edge cases", {
   })
 
   it("reads views from the modern $data$geom slot for a ggseg_atlas", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -1997,6 +1968,7 @@ describe("guess_type edge cases", {
   })
 
   it("falls back to the legacy bare $sf slot when $data is not unified", {
+    skip_if_not_installed("sf")
     legacy <- structure(
       list(
         atlas = "old",
@@ -2072,6 +2044,7 @@ describe("atlas_region_remove with no sf data", {
 
 describe("atlas_region_op edge cases", {
   make_sq <- function(x, y, s = 2) {
+    skip_if_not_installed("sf")
     sf::st_polygon(list(matrix(
       c(x, y, x + s, y, x + s, y + s, x, y + s, x, y),
       ncol = 2,
@@ -2080,6 +2053,7 @@ describe("atlas_region_op edge cases", {
   }
 
   make_simple_op_atlas <- function() {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("cortex", "wm"),
       view = c("v1", "v1"),
@@ -2162,6 +2136,7 @@ describe("atlas_region_op edge cases", {
   })
 
   it("skips views with no x geometry but keeps views with both", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("a", "b", "b"),
       view = c("v1", "v1", "v2"),
@@ -2185,6 +2160,7 @@ describe("atlas_region_op edge cases", {
   })
 
   it("intersects per view, dropping views with only x", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("a", "b", "a"),
       view = c("v1", "v1", "v2"),
@@ -2211,6 +2187,7 @@ describe("atlas_region_op edge cases", {
 
 describe("atlas_context_remove edge cases", {
   make_sq <- function(x, y, s = 2) {
+    skip_if_not_installed("sf")
     sf::st_polygon(list(matrix(
       c(x, y, x + s, y, x + s, y + s, x, y + s, x, y),
       ncol = 2,
@@ -2233,6 +2210,7 @@ describe("atlas_context_remove edge cases", {
   })
 
   it("drops contextual sf rows whose label is not in core", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("a", "b", "ctx"),
       view = c("v1", "v1", "v1"),
@@ -2292,7 +2270,10 @@ describe("polygon-only view removal and keeping", {
   it("warns when no views match on keep", {
     poly <- as_polygon_atlas(dk())
     expect_warning(
-      atlas_view_keep(poly, "zzz_nope"),
+      expect_warning(
+        atlas_view_keep(poly, "zzz_nope"),
+        "matched no view in this atlas"
+      ),
       "No views matched",
       fixed = TRUE
     )
@@ -2314,6 +2295,7 @@ describe("atlas_region_contextual on a polygon atlas", {
 
 describe("atlas_view_gather sf early returns", {
   make_sq <- function(x, y, s = 2) {
+    skip_if_not_installed("sf")
     sf::st_polygon(list(matrix(
       c(x, y, x + s, y, x + s, y + s, x, y + s, x, y),
       ncol = 2,
@@ -2322,6 +2304,7 @@ describe("atlas_view_gather sf early returns", {
   }
 
   it("returns the atlas unchanged when sf data has zero rows", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "a",
       view = "v1",
@@ -2340,6 +2323,7 @@ describe("atlas_view_gather sf early returns", {
   })
 
   it("casts a mixed-geometry sfc to multipolygon before packing", {
+    skip_if_not_installed("sf")
     geom <- sf::st_sfc(
       make_sq(0, 0),
       sf::st_multipolygon(list(list(matrix(
@@ -2416,7 +2400,10 @@ describe("view_reorder_poly with no matching views", {
   it("warns and still returns a polygon atlas", {
     poly <- as_polygon_atlas(dk())
     expect_warning(
-      result <- atlas_view_reorder(poly, "zzz_nope"),
+      expect_warning(
+        result <- atlas_view_reorder(poly, "zzz_nope"),
+        "names no view in this atlas"
+      ),
       "No matching views",
       fixed = TRUE
     )
@@ -2427,6 +2414,7 @@ describe("view_reorder_poly with no matching views", {
 
 describe("view_reorder_group_order across atlas types", {
   it("returns the order unchanged for a non-cortical sf atlas", {
+    skip_if_not_installed("sf")
     atlas <- as_sf_atlas(aseg())
     views <- atlas_views(atlas)
     result <- atlas_view_reorder(atlas, views[2])
@@ -2435,6 +2423,7 @@ describe("view_reorder_group_order across atlas types", {
   })
 
   it("expands a partial order into hemi groups for a cortical sf atlas", {
+    skip_if_not_installed("sf")
     result <- atlas_view_reorder(as_sf_atlas(dk()), "lateral")
     expect_identical(unique(result$data$geom$view)[1], "lateral")
   })
@@ -2466,6 +2455,7 @@ describe("order_context_behind()", {
 
 describe("atlas_region_op() difference with no second operand", {
   it("returns the first operand's geometry when y matches nothing", {
+    skip_if_not_installed("sf")
     region <- unique(dk()$core$region)[1]
     res <- atlas_region_op(
       dk(),
@@ -2482,6 +2472,7 @@ describe("atlas_region_op() difference with no second operand", {
 
 describe("rebuild_data_with_geom() cerebellar vertices-only branch", {
   it("rebuilds a cerebellar atlas that has vertices but no meshes", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("left_lobule", "right_lobule"),
       view = c("lateral", "lateral"),
@@ -2514,6 +2505,7 @@ describe("rebuild_data_with_geom() cerebellar vertices-only branch", {
 describe("atlas_view_remove_small(scope = 'piece')", {
   # One region drawn as a big square plus a detached speck, in one view.
   speck_atlas <- function() {
+    skip_if_not_installed("sf")
     sq <- function(x0, y0, w) {
       list(cbind(
         c(x0, x0 + w, x0 + w, x0, x0),
@@ -2542,6 +2534,7 @@ describe("atlas_view_remove_small(scope = 'piece')", {
     )
   }
   total_area <- function(x) {
+    skip_if_not_installed("sf")
     sum(as.numeric(sf::st_area(atlas_geom(as_sf_atlas(x)))))
   }
 
@@ -2573,5 +2566,55 @@ describe("atlas_view_remove_small(scope = 'piece')", {
       atlas_view_remove_small(speck_atlas(), 10),
       atlas_view_remove_small(speck_atlas(), 10, scope = "region")
     )
+  })
+})
+
+
+describe("the view verbs on a view that does not exist", {
+  it("names the half of an alternation that matched nothing", {
+    expect_warning(
+      atlas_view_keep(aseg(), "coronal_3|axial_3"),
+      "coronal_3"
+    )
+  })
+
+  it("names an unmatched element of a vector request", {
+    expect_warning(
+      atlas_view_remove(aseg(), c("coronal_3", "axial_3")),
+      "coronal_3"
+    )
+  })
+
+  it("stays silent when every element matches", {
+    expect_no_warning(atlas_view_keep(aseg(), "coronal_2|axial_3"))
+    expect_no_warning(atlas_view_remove(aseg(), c("coronal_2", "axial_3")))
+  })
+
+  it("reports the atlas's actual views alongside the bad one", {
+    expect_warning(
+      atlas_view_reorder(aseg(), c("coronal_3", "sagittal")),
+      "coronal_2"
+    )
+  })
+
+  it("stays silent on a geometry-less atlas rather than blaming the views", {
+    atlas <- ggseg_atlas(
+      atlas = "test",
+      type = "cortical",
+      core = data.frame(
+        hemi = "left",
+        region = "frontal",
+        label = "lh_frontal",
+        names = "frontal"
+      ),
+      data = ggseg_data_cortical(
+        vertices = local({
+          v <- data.frame(label = "lh_frontal")
+          v$vertices <- list(1L:3L)
+          v
+        })
+      )
+    )
+    expect_warning(atlas_view_keep(atlas, "zzz"), "no 2D geometry")
   })
 })

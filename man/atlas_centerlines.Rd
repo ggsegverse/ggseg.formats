@@ -10,8 +10,9 @@ atlas_centerlines(atlas)
 \item{atlas}{a ggseg_atlas object}
 }
 \value{
-data.frame with one row per tract, a \code{points} list-column of
-n x 3 coordinate matrices and a matching \code{tangents} list-column
+A \code{ggseg_centerlines} data.frame with one row per tract, a \code{points}
+list-column of n x 3 coordinate matrices and a matching \code{tangents}
+list-column
 }
 \description{
 Returns the centerline of each tract, joined with core region info and

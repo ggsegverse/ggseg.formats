@@ -25,6 +25,13 @@ read_freesurfer_stats <- function(path, rename = TRUE) {
   headers <- headers[headers != ""]
 
   data <- as_tbl(read.table(path))
+  if (length(headers) != ncol(data)) {
+    cli::cli_abort(c(
+      "{.path {path}} has {length(headers)} column header{?s} but
+       {ncol(data)} data column{?s}.",
+      "i" = "The {.code # ColHeaders} line and the table below it must agree."
+    ))
+  }
   names(data) <- headers
 
   if (rename) {
@@ -57,6 +64,16 @@ read_atlas_files <- function(subjects_dir, atlas) {
     recursive = TRUE
   )
   stats_files <- stats_files[grepl("stats$", stats_files)]
+
+  if (length(stats_files) == 0) {
+    cli::cli_abort(c(
+      "No FreeSurfer stats files found.",
+      "x" = "No file under {.arg subjects_dir} ({.path {subjects_dir}})
+             matches {.arg atlas} ({.val {atlas}}) and ends in
+             {.field .stats}.",
+      "i" = "Check the directory path and the atlas pattern."
+    ))
+  }
 
   stats <- lapply(stats_files, read_freesurfer_stats)
 

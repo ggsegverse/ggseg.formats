@@ -22,8 +22,8 @@ determines the rendering path used downstream.}
 \item tangents: list-column of n x 3 matrices (for orientation coloring)
 }}
 
-\item{meshes}{Deprecated. Use centerlines instead. If provided, will be
-converted to centerlines format.}
+\item{meshes}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{centerlines} instead.
+If supplied, it is converted to the centerlines format.}
 
 \item{...}{Captures a deprecated \code{sf} argument (converted to polygons) and
 absorbs legacy fields (e.g. tube_radius, tube_segments) from old cached

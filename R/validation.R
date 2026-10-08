@@ -4,7 +4,6 @@
 #' @keywords internal
 #' @noRd
 validate_sf <- function(sf) {
-  require_sf("validate_sf()")
   if (!is.data.frame(sf)) {
     cli::cli_abort("{.arg sf} must be a data.frame.")
   }
@@ -20,6 +19,11 @@ validate_sf <- function(sf) {
       "{.field geometry} column must be an sf geometry column (sfc)."
     )
   }
+
+  # Everything above is a shape check on a plain data.frame, so it reports the
+  # real problem whether or not sf is installed. Only the coercion and the
+  # emptiness test below need sf itself.
+  require_sf("validate_sf()")
 
   if (!inherits(sf, "sf")) {
     sf <- sf::st_as_sf(sf)

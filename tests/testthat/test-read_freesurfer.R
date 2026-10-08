@@ -242,3 +242,41 @@ describe("find_hemi_fromfile", {
     expect_identical(result, "aseg")
   })
 })
+
+
+describe("read_atlas_files() on a directory that matches nothing", {
+  it("names subjects_dir and the pattern instead of failing in strsplit", {
+    empty <- withr::local_tempdir()
+    expect_error(
+      read_atlas_files(empty, "aseg.stats"),
+      "No FreeSurfer stats files found"
+    )
+    expect_error(read_atlas_files(empty, "aseg.stats"), "aseg.stats")
+  })
+
+  it("reports a typo'd subjects_dir rather than a type error", {
+    expect_error(
+      read_atlas_files(file.path(test_path("data"), "no_such_dir"), "aseg"),
+      "No FreeSurfer stats files found"
+    )
+  })
+})
+
+
+describe("read_freesurfer_stats() header/column mismatch", {
+  it("reports both counts and the path", {
+    path <- withr::local_tempfile(fileext = ".stats")
+    writeLines(
+      c(
+        "# Title Segmentation Statistics",
+        "# ColHeaders  Index SegId NVoxels StructName",
+        "1 2 3 4 Left-Thalamus",
+        "2 3 4 5 Left-Caudate"
+      ),
+      path
+    )
+    expect_error(read_freesurfer_stats(path), "4 column headers")
+    expect_error(read_freesurfer_stats(path), "5 data columns")
+    expect_error(read_freesurfer_stats(path), basename(path), fixed = TRUE)
+  })
+})
