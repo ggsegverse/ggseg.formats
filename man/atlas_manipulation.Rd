@@ -206,15 +206,16 @@ labelled regions.
 
 \item \code{atlas_region_rename()}: Rename regions matching a pattern. Only
 ever writes to the \code{region} column, never to \code{label}. \code{match_on} chooses
-which column the pattern is matched and substituted against. The default
-\code{"label"} derives the region from the label, so
-\code{atlas_region_rename(atlas, "^ctx-lh-", "")} turns label
-\code{ctx-lh-superiorfrontal} into region \code{superiorfrontal}, and a pattern
-that spans the whole label, as in
-\code{atlas_region_rename(atlas, "^Left-Thalamus$", "thalamus")}, sets the
-region outright. \code{"region"} rewrites the existing region text in place. If
-\code{replacement} is a function, it receives the matched values of that
-column and returns the new region names.
+the rows: those whose \code{label} (the default) or \code{region} matches
+\code{pattern}. The edit is always made to the region text those rows already
+have. A string \code{replacement} is substituted for \code{pattern} wherever the
+region contains it, so \code{atlas_region_rename(atlas, "Left-", "")} strips
+the prefix from regions that still carry it. A function \code{replacement}
+receives the regions of the matching rows and returns the new ones, which
+is how to set a region outright for a label:
+\verb{atlas_region_rename(atlas, "^Brain-Stem$", \\(region) "brainstem")}. A
+string that changes nothing, because the pattern is in the labels but
+not in their regions, is reported with a warning.
 
 \item \code{atlas_region_keep()}: Keep only matching regions. Non-matching
 regions are removed from core, palette, and 3D data but sf geometry

@@ -422,15 +422,16 @@ atlas_context_remove <- function(atlas) {
 
 #' @describeIn atlas_manipulation Rename regions matching a pattern. Only
 #'   ever writes to the `region` column, never to `label`. `match_on` chooses
-#'   which column the pattern is matched and substituted against. The default
-#'   `"label"` derives the region from the label, so
-#'   `atlas_region_rename(atlas, "^ctx-lh-", "")` turns label
-#'   `ctx-lh-superiorfrontal` into region `superiorfrontal`, and a pattern
-#'   that spans the whole label, as in
-#'   `atlas_region_rename(atlas, "^Left-Thalamus$", "thalamus")`, sets the
-#'   region outright. `"region"` rewrites the existing region text in place. If
-#'   `replacement` is a function, it receives the matched values of that
-#'   column and returns the new region names.
+#'   the rows: those whose `label` (the default) or `region` matches
+#'   `pattern`. The edit is always made to the region text those rows already
+#'   have. A string `replacement` is substituted for `pattern` wherever the
+#'   region contains it, so `atlas_region_rename(atlas, "Left-", "")` strips
+#'   the prefix from regions that still carry it. A function `replacement`
+#'   receives the regions of the matching rows and returns the new ones, which
+#'   is how to set a region outright for a label:
+#'   `atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")`. A
+#'   string that changes nothing, because the pattern is in the labels but
+#'   not in their regions, is reported with a warning.
 #' @export
 #' @family atlas manipulations
 atlas_region_rename <- function(
@@ -442,19 +443,17 @@ atlas_region_rename <- function(
   match_on <- match.arg(match_on)
 
   new_core <- atlas$core
-  source_values <- new_core[[match_on]]
-  match_mask <- grepl(pattern, source_values, ignore.case = TRUE)
-  match_mask[is.na(source_values)] <- FALSE
+  match_values <- new_core[[match_on]]
+  match_mask <- grepl(pattern, match_values, ignore.case = TRUE)
+  match_mask[is.na(match_values)] <- FALSE
+  regions <- new_core$region[match_mask]
 
   if (is.function(replacement)) {
-    new_core$region[match_mask] <- replacement(source_values[match_mask])
+    new_core$region[match_mask] <- replacement(regions)
   } else {
-    new_core$region[match_mask] <- gsub(
-      pattern,
-      replacement,
-      source_values[match_mask],
-      ignore.case = TRUE
-    )
+    renamed <- gsub(pattern, replacement, regions, ignore.case = TRUE)
+    warn_rename_changed_nothing(regions, renamed, pattern, match_on)
+    new_core$region[match_mask] <- renamed
   }
 
   ggseg_atlas(
@@ -464,6 +463,22 @@ atlas_region_rename <- function(
     core = new_core,
     data = atlas$data
   )
+}
+
+
+#' @noRd
+warn_rename_changed_nothing <- function(regions, renamed, pattern, match_on) {
+  unchanged <- identical(regions, renamed)
+  if (length(regions) == 0 || !unchanged) {
+    return(invisible())
+  }
+  cli::cli_warn(c(
+    "No region was renamed.",
+    "i" = "{.val {pattern}} matches {length(regions)} row{?s} on
+      {.field {match_on}}, but none of their regions contain it.",
+    "i" = "Pass a function as {.arg replacement} to set those regions
+      outright, or {.code match_on = \"region\"} to match the region text."
+  ))
 }
 
 
