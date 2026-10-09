@@ -144,7 +144,7 @@ describe("cerebellar atlas construction and data.frame conversion", {
       atlas = "suit_lobules",
       type = "cerebellar",
       core = data.frame(
-        hemi = c("left", "vermis", "right"),
+        hemi = c("left", "midline", "right"),
         region = c("I-IV", "VI", "Crus-I"),
         label = c("left_I-IV", "vermis_VI", "right_Crus-I"),
         display = c("lobules I-IV", "vermis VI", "Crus I")
@@ -161,12 +161,13 @@ describe("cerebellar atlas construction and data.frame conversion", {
     expect_identical(nrow(atlas$core), 3L)
   })
 
-  it("as.data.frame preserves vermis hemisphere", {
+  it("as.data.frame preserves the midline hemisphere and its label", {
     atlas <- make_cerebellar_atlas()
     df <- as.data.frame(atlas)
-    expect_true("vermis" %in% df$hemi)
+    expect_true("midline" %in% df$hemi)
     expect_true("left" %in% df$hemi)
     expect_true("right" %in% df$hemi)
+    expect_identical(df$label[df$hemi == "midline"], "vermis_VI")
     expect_identical(nrow(df), 3L)
   })
 

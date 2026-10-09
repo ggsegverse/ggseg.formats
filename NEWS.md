@@ -4,6 +4,19 @@
 
 ### Breaking changes
 
+- `core$hemi` is a closed vocabulary: `"left"`, `"right"`, `"midline"`, or
+  `NA` where a side does not apply. Anything else is an error at
+  construction, because `hemi` is what plots filter and facet on, so an
+  unrecognised spelling silently drops rows rather than failing. A finer
+  distinction than side belongs in a column of its own.
+
+  `suit` records the vermis as `"midline"`; its labels keep the upstream
+  `vermis_` spelling, since `label` is the join key. Legacy atlases are
+  normalised on conversion, with the subcortical marker `"subcort"` becoming
+  `NA` -- that format never recorded which side those rows were on.
+
+- New `atlas_hemi()`, completing the core-column accessors.
+
 - The `core` column holding the long-form display name is now `display`, not
   `names`, and is read with `atlas_display()`. `atlas_names()` is deprecated.
   `names` collided with `names()`, and no published atlas populated it; the

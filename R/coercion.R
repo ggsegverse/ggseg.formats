@@ -182,6 +182,7 @@ convert_legacy_structure <- function(x) {
   ) {
     core$display <- core$region
   }
+  core <- normalise_legacy_hemi(core)
   core <- dedupe_legacy_core_labels(core, x$atlas)
 
   data <- switch(

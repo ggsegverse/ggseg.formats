@@ -753,6 +753,7 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
   }
 
   validate_core_display(core, atlas)
+  validate_core_hemi(core, atlas)
   validate_core_label_unique(core, atlas)
 
   if (
@@ -838,6 +839,41 @@ dedupe_legacy_core_labels <- function(core, atlas = NA_character_) {
     class = "ggseg.formats_collapsed_duplicate_labels"
   )
   core[!duplicated(core$label), , drop = FALSE]
+}
+
+
+#' Enforce the `hemi` vocabulary of `core`
+#'
+#' Unlike `region` and `display`, which are curated per atlas and mean
+#' whatever that parcellation needs them to mean, `hemi` answers one question
+#' with a closed set of answers. Consumers filter and facet on it, so a fifth
+#' spelling is not a stylistic choice but a row that silently disappears from
+#' `hemi == "left"`. `NA` is allowed, for structures to which a side does not
+#' apply.
+#' @noRd
+#' @keywords internal
+validate_core_hemi <- function(core, atlas) {
+  if (!"hemi" %in% names(core)) {
+    return(invisible())
+  }
+
+  allowed <- c("left", "right", "midline")
+  present <- unique(as.character(core$hemi[!is.na(core$hemi)]))
+  unexpected <- setdiff(present, allowed)
+  if (length(unexpected) == 0) {
+    return(invisible())
+  }
+
+  cli::cli_abort(
+    c(
+      "{.arg core$hemi} must be one of {.val {allowed}}, or {.val {NA}}.",
+      "x" = "Unexpected in {.val {atlas}}: {.val {unexpected}}.",
+      "i" = "{.field hemi} is filtered and facetted on, so an unrecognised
+             value drops those rows instead of erroring.",
+      "i" = "A finer distinction than side belongs in a column of its own."
+    ),
+    class = "ggseg.formats_invalid_hemi"
+  )
 }
 
 

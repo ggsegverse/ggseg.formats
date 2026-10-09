@@ -65,6 +65,44 @@ atlas_labels.data.frame <- function(x) {
 }
 
 
+#' Extract the hemisphere column of an atlas
+#'
+#' `hemi` records which side of the brain a row sits on, as one of `"left"`,
+#' `"right"` or `"midline"`, or `NA` where a side does not apply. It is a
+#' closed vocabulary, enforced at construction, because it is what consumers
+#' filter and facet on.
+#'
+#' @param x brain atlas
+#' @return The `hemi` column of `core`, unchanged: one element per `core` row,
+#'   in `core` row order, with repeats and `NA`s retained. A zero-length
+#'   character vector when the atlas carries no `hemi` column.
+#' @examples
+#' unique(atlas_hemi(dk()))
+#' unique(atlas_hemi(suit()))
+#'
+#' @export
+#' @seealso [atlas_regions()], [atlas_labels()], [atlas_display()]
+#' @family atlas accessors
+atlas_hemi <- function(x) {
+  UseMethod("atlas_hemi")
+}
+
+#' @export
+atlas_hemi.ggseg_atlas <- function(x) {
+  get_col(x$core, "hemi")
+}
+
+#' @export
+atlas_hemi.brain_atlas <- function(x) {
+  get_col(x$core, "hemi")
+}
+
+#' @export
+atlas_hemi.data.frame <- function(x) {
+  get_col(x, "hemi")
+}
+
+
 #' Extract the display-name column of an atlas
 #'
 #' The `display` column of `core` holds the long-form, human-readable name of
@@ -995,7 +1033,7 @@ legacy_region_hint <- function(atlas, pattern) {
 
 #' @noRd
 get_col <- function(x, type) {
-  type <- match.arg(type, c("label", "region", "display"))
+  type <- match.arg(type, c("label", "region", "display", "hemi"))
   if (!type %in% names(x)) {
     return(character(0))
   }
