@@ -83,6 +83,10 @@
   method, matching `atlas_sf()`, `atlas_vertices()` and `atlas_meshes()`.
 - The exported API is organised into three `@family` groups: accessors, setters
   and manipulations.
+- New `assert_ggseg_atlas()` aborts with the `ggseg_atlas()` constructor's own
+  diagnostic (missing column, duplicated label, mismatched data class) instead
+  of the class message `is_ggseg_atlas()` could only reduce it to.
+  `as_polygon_atlas()` and `as_sf_atlas()` now use it.
 
 ### Bug fixes
 

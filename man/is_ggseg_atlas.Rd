@@ -38,3 +38,7 @@ is_cortical_atlas(dk())
 is_subcortical_atlas(aseg())
 is_tract_atlas(tracula())
 }
+\seealso{
+\code{\link[=assert_ggseg_atlas]{assert_ggseg_atlas()}}, which aborts with the reason instead of
+reducing it to \code{FALSE}.
+}
