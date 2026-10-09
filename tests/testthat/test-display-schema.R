@@ -57,20 +57,6 @@ atlas_without_names <- function(name = "nameless") {
   ))
 }
 
-describe("atlas_names", {
-  it("is deprecated in favour of atlas_display()", {
-    expect_snapshot(x <- atlas_names(dk()))
-  })
-
-  it("still returns what atlas_display() returns", {
-    expect_warning(
-      got <- atlas_names(dk()),
-      class = "lifecycle_warning_deprecated"
-    )
-    expect_identical(got, atlas_display(dk()))
-  })
-})
-
 describe("atlas_display", {
   it("returns the display column of a bundled atlas in core row order", {
     result <- atlas_display(dk())

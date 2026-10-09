@@ -17,10 +17,10 @@
 
 - New `atlas_hemi()`, completing the core-column accessors.
 
-- The `core` column holding the long-form display name is now `display`, not
-  `names`, and is read with `atlas_display()`. `atlas_names()` is deprecated.
-  `names` collided with `names()`, and no published atlas populated it; the
-  bundled atlases are rebuilt. Rename the column when rebuilding your own.
+- The `core` column holding the long-form display name is `display`, read with
+  `atlas_display()`. It was briefly called `names` during development, which
+  collided with `names()`; since that spelling was never released there is no
+  `atlas_names()` and no migration path. The bundled atlases are rebuilt.
 
 - `region` is now a short, hemisphere-free key derived from `label`
   (`"bankssts"`), not a long-form display name. `label` is unchanged. Translate

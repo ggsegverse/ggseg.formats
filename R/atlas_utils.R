@@ -144,18 +144,6 @@ atlas_display.data.frame <- function(x) {
 }
 
 
-#' @rdname atlas_display
-#' @export
-atlas_names <- function(x) {
-  lifecycle::deprecate_warn(
-    "0.0.5",
-    "atlas_names()",
-    "atlas_display()"
-  )
-  atlas_display(x)
-}
-
-
 #' @rdname atlas_regions
 #' @export
 brain_regions <- function(x) {

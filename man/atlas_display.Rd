@@ -2,12 +2,9 @@
 % Please edit documentation in R/atlas_utils.R
 \name{atlas_display}
 \alias{atlas_display}
-\alias{atlas_names}
 \title{Extract the display-name column of an atlas}
 \usage{
 atlas_display(x)
-
-atlas_names(x)
 }
 \arguments{
 \item{x}{brain atlas}
