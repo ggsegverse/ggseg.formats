@@ -88,6 +88,8 @@ brain_atlas <- function(atlas, type, core, data, palette = NULL) {
 #'
 #' @param x an object
 #' @return logical
+#' @seealso [assert_ggseg_atlas()], which aborts with the reason instead of
+#'   reducing it to `FALSE`.
 #' @name is_ggseg_atlas
 #' @export
 #' @examples
@@ -132,6 +134,61 @@ is_brain_atlas <- function(x) {
     "is_ggseg_atlas()"
   )
   is_ggseg_atlas(x)
+}
+
+#' Require a valid ggseg atlas, reporting why it is not
+#'
+#' The companion to [is_ggseg_atlas()] for code that cannot continue without a
+#' valid atlas. The predicate answers a yes/no question and so has nothing to
+#' say about *why* an object failed; callers that turned that `FALSE` into an
+#' error could only report the class, which is the one thing that was usually
+#' fine. `assert_ggseg_atlas()` separates the two failure kinds:
+#'
+#' * A wrong class is reported as a wrong class.
+#' * A `ggseg_atlas` whose parts do not satisfy the schema aborts with the
+#'   [ggseg_atlas()] constructor's own diagnostic, chained as the parent error,
+#'   so the reader sees the missing column, the duplicated label or the
+#'   mismatched data class instead of a message about the class tag.
+#'
+#' Prefer this wherever a bad atlas would otherwise propagate; keep
+#' [is_ggseg_atlas()] for control flow, where signalling is wrong.
+#'
+#' @param x an object
+#' @param arg argument name to report, for use inside another function
+#' @param call environment the error is attributed to
+#'
+#' @return `x`, invisibly, when it is a valid atlas. Aborts otherwise.
+#' @export
+#' @examples
+#' atlas <- assert_ggseg_atlas(dk())
+#'
+#' broken <- dk()
+#' broken$core$label <- NULL
+#' try(assert_ggseg_atlas(broken))
+assert_ggseg_atlas <- function(
+  x,
+  arg = rlang::caller_arg(x),
+  call = rlang::caller_env()
+) {
+  if (!is_atlas_class(x)) {
+    cli::cli_abort(
+      "{.arg {arg}} must be a {.cls ggseg_atlas}, not {.cls {class(x)[1]}}.",
+      class = "ggseg.formats_not_atlas",
+      call = call
+    )
+  }
+
+  defect <- atlas_structure_defect(x)
+  if (!is.null(defect)) {
+    cli::cli_abort(
+      "{.arg {arg}} is a {.cls ggseg_atlas} with an invalid structure.",
+      class = "ggseg.formats_invalid_atlas",
+      parent = defect,
+      call = call
+    )
+  }
+
+  invisible(x)
 }
 
 #' Check if object is a legacy ggseg3d atlas
@@ -285,15 +342,30 @@ is_atlas_class <- function(x) {
 
 #' Structurally revalidate an atlas, without signalling
 #'
-#' Re-runs the `ggseg_atlas()` constructor on the parts of `x` and reports only
-#' whether it succeeded. Every class predicate (`is_ggseg_atlas()` and friends)
-#' goes through here, and renderers call those predicates in their control flow,
-#' so this must stay silent: the constructor's schema nudges are for the atlas
-#' author at build time, not for the user of a published atlas.
+#' Reports only whether the `ggseg_atlas()` constructor accepts the parts of
+#' `x`. Every class predicate (`is_ggseg_atlas()` and friends) goes through
+#' here, and renderers call those predicates in their control flow, so this
+#' must stay silent and must keep returning a bare logical: the constructor's
+#' schema nudges are for the atlas author at build time, not for the user of a
+#' published atlas. `assert_ggseg_atlas()` is the signalling counterpart.
 #' @keywords internal
 #' @noRd
 validate_ggseg_atlas <- function(x) {
-  tryCatch(
+  is.null(atlas_structure_defect(x))
+}
+
+
+#' The constructor error an atlas's parts raise, or `NULL`
+#'
+#' Re-runs the `ggseg_atlas()` constructor on the parts of `x` and returns the
+#' condition it threw, so a caller can either reduce it to a logical
+#' (`validate_ggseg_atlas()`) or re-raise it as the parent of its own error
+#' (`assert_ggseg_atlas()`). Messages and warnings are muffled either way;
+#' only an error distinguishes a structurally invalid atlas.
+#' @keywords internal
+#' @noRd
+atlas_structure_defect <- function(x) {
+  rlang::try_fetch(
     suppressMessages(suppressWarnings({
       ggseg_atlas(
         atlas = x$atlas,
@@ -302,9 +374,9 @@ validate_ggseg_atlas <- function(x) {
         data = x$data,
         palette = x$palette
       )
-      TRUE
+      NULL
     })),
-    error = function(e) FALSE
+    error = function(cnd) cnd
   )
 }
 
