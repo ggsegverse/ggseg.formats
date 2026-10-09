@@ -5,7 +5,7 @@
 # stripped into `hemi`, the remainder lowercased with separators spaced);
 # `structure` groups regions.
 #
-# `names` holds the curated long-form display name: fully spelled out, chosen
+# `display` holds the curated long-form display name: fully spelled out, chosen
 # to read well as a figure label or legend entry. It is deliberately NOT the
 # `region` value the CRAN 0.0.4 release shipped -- several of those were
 # mechanically derived and read poorly. Migration from the old keys goes
@@ -77,7 +77,7 @@ aseg_metadata <- data.frame(
     "CC_Mid_Anterior",
     "CC_Anterior"
   ),
-  names = c(
+  display = c(
     "cerebral cortex",
     "cerebral cortex",
     "cerebral white matter",
@@ -184,5 +184,5 @@ aseg_metadata$region <- tolower(
 )
 
 aseg_metadata <- aseg_metadata[,
-  c("label", "hemi", "region", "names", "structure")
+  c("label", "hemi", "region", "display", "structure")
 ]

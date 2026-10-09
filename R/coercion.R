@@ -178,9 +178,9 @@ convert_legacy_structure <- function(x) {
 
   core <- x$core
   if (
-    !is.null(core) && !"names" %in% names(core) && "region" %in% names(core)
+    !is.null(core) && !"display" %in% names(core) && "region" %in% names(core)
   ) {
-    core$names <- core$region
+    core$display <- core$region
   }
   core <- dedupe_legacy_core_labels(core, x$atlas)
 
@@ -253,7 +253,7 @@ legacy_core_from_sf <- function(sf_data, atlas = NA_character_) {
   # A legacy atlas's `region` is the long-form display name, which is what
   # `names` holds in the current schema, so the converted atlas is complete
   # rather than missing a required column.
-  core$names <- core$region
+  core$display <- core$region
   dedupe_legacy_core_labels(core, atlas)
 }
 

@@ -4,7 +4,7 @@
 # hemisphere-free `region`. `label` is built from `hemi` and `region` by the
 # atlas itself, so only `region` is matched on here.
 #
-# `names` holds the curated long-form display name, spelled out from the
+# `display` holds the curated long-form display name, spelled out from the
 # Diedrichsen SUIT nomenclature (lobules I-X plus Crus I/II for the cerebellar
 # cortex, and the dentate, interposed and fastigial deep nuclei). The SUIT
 # release ships no machine-readable lookup table of long names alongside the
@@ -30,7 +30,7 @@ suit_metadata <- data.frame(
     "Interposed",
     "Fastigial"
   ),
-  names = c(
+  display = c(
     "lobules I-IV",
     "lobule V",
     "lobule VI",

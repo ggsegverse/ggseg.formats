@@ -10,7 +10,7 @@
 # (the lh./rh. prefix becomes `hemi`, the remainder with dots spaced becomes
 # `region`); `group` classifies tracts.
 #
-# `names` holds the curated long-form display name: fully spelled out, chosen
+# `display` holds the curated long-form display name: fully spelled out, chosen
 # to read well as a figure label or legend entry. It is deliberately NOT the
 # `region` value the CRAN 0.0.4 release shipped -- several of those were
 # mechanically derived and read poorly. Migration from the old keys goes
@@ -68,7 +68,7 @@ tracula_metadata <- data.frame(
     "rh.slf3",
     "rh.uf"
   ),
-  names = c(
+  display = c(
     # CC segments
     "corpus callosum rostrum",
     "corpus callosum genu",
@@ -149,5 +149,5 @@ tracula_metadata$region <- tracula_metadata$label_short |>
   gsub("\\.", " ", x = _)
 
 tracula_metadata <- tracula_metadata[,
-  c("label", "label_short", "hemi", "region", "names", "group")
+  c("label", "label_short", "hemi", "region", "display", "group")
 ]

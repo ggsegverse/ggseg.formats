@@ -4,6 +4,11 @@
 
 ### Breaking changes
 
+- The `core` column holding the long-form display name is now `display`, not
+  `names`, and is read with `atlas_display()`. `atlas_names()` is deprecated.
+  `names` collided with `names()`, and no published atlas populated it; the
+  bundled atlases are rebuilt. Rename the column when rebuilding your own.
+
 - `region` is now a short, hemisphere-free key derived from `label`
   (`"bankssts"`), not a long-form display name. `label` is unchanged. Translate
   your own tables with the new `legacy_region_map()`; see

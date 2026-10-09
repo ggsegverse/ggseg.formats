@@ -752,7 +752,7 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
     )
   }
 
-  validate_core_names(core, atlas)
+  validate_core_display(core, atlas)
   validate_core_label_unique(core, atlas)
 
   if (
@@ -805,7 +805,7 @@ validate_core_label_unique <- function(core, atlas) {
       "i" = "{.field label} is the key the palette and geometry join on, so a
              duplicate draws the same region more than once.",
       "i" = "Keep one row per {.field label} and move any alias name into
-             {.field names}."
+             {.field display}."
     ),
     class = "ggseg.formats_duplicate_labels"
   )
@@ -841,40 +841,40 @@ dedupe_legacy_core_labels <- function(core, atlas = NA_character_) {
 }
 
 
-#' Enforce the `names` column of `core`
+#' Enforce the `display` column of `core`
 #'
-#' `names` holds the curated long-form display name and is part of the `core`
+#' `display` holds the curated long-form display name and is part of the `core`
 #' schema. It arrived after roughly twenty atlas packages had already been
 #' published against the schema without it, so a hard requirement would break
 #' every one of them on load. The policy is therefore: required and strictly
-#' validated when present -- a malformed `names` is an error, because a
+#' validated when present -- a malformed `display` is an error, because a
 #' half-filled column is worse than none -- and, when absent, a message once per
 #' atlas per session. Only the atlas author can add the column, so the signal is
 #' raised on construction, where an author stands, and muffled by
 #' `validate_ggseg_atlas()`, which every class predicate and renderer reaches.
 #' @noRd
 #' @keywords internal
-validate_core_names <- function(core, atlas) {
-  if (!"names" %in% names(core)) {
+validate_core_display <- function(core, atlas) {
+  if (!"display" %in% names(core)) {
     rlang::inform(
       cli::format_message(c(
-        "i" = "{.arg core} has no {.field names} column.",
-        "i" = "{.field names} holds the long-form display name and is part of
-               the {.arg core} schema; add it when rebuilding
+        "i" = "{.arg core} has no {.field display} column.",
+        "i" = "{.field display} holds the long-form display name and is part
+               of the {.arg core} schema; add it when rebuilding
                {.val {atlas}}.",
-        "i" = "See {.fn atlas_names}."
+        "i" = "See {.fn atlas_display}."
       )),
-      class = "ggseg.formats_missing_names",
+      class = "ggseg.formats_missing_display",
       .frequency = "once",
-      .frequency_id = paste0("ggseg.formats-core-names-", atlas)
+      .frequency_id = paste0("ggseg.formats-core-display-", atlas)
     )
     return(invisible())
   }
 
-  if (!is.character(core$names)) {
+  if (!is.character(core$display)) {
     cli::cli_abort(
-      "{.arg core$names} must be a character vector, not
-       {.cls {class(core$names)[1]}}."
+      "{.arg core$display} must be a character vector, not
+       {.cls {class(core$display)[1]}}."
     )
   }
 
