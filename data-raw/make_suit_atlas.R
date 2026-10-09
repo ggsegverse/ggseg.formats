@@ -37,15 +37,21 @@ suit_env <- new.env()
 load(suit_src, envir = suit_env)
 .suit_atlas <- as_polygon_atlas(suit_env$.suit)
 
-# ggsegSUIT ships the parcel keys only, so the long-form `names` column comes
-# from suit_metadata.R.
+# ggsegSUIT ships the parcel keys only, so the long-form `display` column
+# comes from suit_metadata.R.
 source("data-raw/suit_metadata.R")
 hit <- match(.suit_atlas$core$region, suit_metadata$region)
 stopifnot("every SUIT region must have a metadata row" = !anyNA(hit))
-.suit_atlas$core$names <- suit_metadata$names[hit]
+.suit_atlas$core$display <- suit_metadata$display[hit]
 .suit_atlas$core <- .suit_atlas$core[,
-  c("hemi", "region", "label", "names")
+  c("hemi", "region", "label", "display")
 ]
+
+# ggsegSUIT marks the vermis as a hemisphere of its own. `hemi` carries only
+# left/right/midline/NA, and the vermis is the cerebellar midline, so it is
+# recorded as such. The labels keep the upstream `vermis_` spelling because
+# they are the join key.
+.suit_atlas$core$hemi[.suit_atlas$core$hemi == "vermis"] <- "midline"
 
 usethis::use_data(
   brain_mesh_inflated,

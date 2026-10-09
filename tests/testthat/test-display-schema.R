@@ -153,6 +153,94 @@ describe("core display validation", {
   })
 })
 
+describe("core hemi vocabulary", {
+  it("accepts left, right, midline and NA", {
+    for (h in list("left", "right", "midline", NA_character_)) {
+      core <- data.frame(
+        hemi = h,
+        region = "frontal",
+        label = "lh_frontal",
+        display = "frontal"
+      )
+      atlas <- ggseg_atlas(
+        atlas = "test",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(
+          vertices = data.frame(label = "lh_frontal", vertices = I(list(0:5)))
+        )
+      )
+      expect_identical(atlas_hemi(atlas), h)
+    }
+  })
+
+  it("errors on an unrecognised hemisphere, naming it", {
+    core <- data.frame(
+      hemi = c("left", "vermis"),
+      region = c("frontal", "frontal"),
+      label = c("lh_frontal", "vermis_frontal"),
+      display = c("frontal", "frontal")
+    )
+    expect_error(
+      ggseg_atlas(
+        atlas = "test",
+        type = "cortical",
+        core = core,
+        data = ggseg_data_cortical(
+          vertices = data.frame(
+            label = c("lh_frontal", "vermis_frontal"),
+            vertices = I(list(0:5, 6:10))
+          )
+        )
+      ),
+      "vermis",
+      class = "ggseg.formats_invalid_hemi"
+    )
+  })
+
+  it("gives every bundled atlas a recognised hemisphere", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      expect_true(all(
+        is.na(atlas_hemi(atlas)) |
+          atlas_hemi(atlas) %in% c("left", "right", "midline")
+      ))
+    }
+  })
+
+  it("records the suit vermis as midline while keeping its labels", {
+    a <- suit()
+    expect_false("vermis" %in% atlas_hemi(a))
+    midline <- atlas_labels(a)[atlas_hemi(a) == "midline"]
+    expect_true(all(grepl("^vermis_", midline)))
+  })
+})
+
+describe("atlas_hemi", {
+  it("is row-aligned with the other core accessors", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      expect_length(atlas_hemi(atlas), nrow(atlas$core))
+    }
+  })
+
+  it("has a data.frame method", {
+    df <- data.frame(label = "a", region = "b", hemi = "left")
+    expect_identical(atlas_hemi(df), "left")
+  })
+
+  it("returns an empty vector when the atlas carries no hemi column", {
+    core <- data.frame(region = "frontal", label = "lh_frontal", display = "f")
+    atlas <- ggseg_atlas(
+      atlas = "test",
+      type = "cortical",
+      core = core,
+      data = ggseg_data_cortical(
+        vertices = data.frame(label = "lh_frontal", vertices = I(list(0:5)))
+      )
+    )
+    expect_identical(atlas_hemi(atlas), character(0))
+  })
+})
+
 describe("core label uniqueness", {
   it("errors when two core rows share a label, naming them", {
     core <- data.frame(

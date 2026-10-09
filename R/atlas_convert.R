@@ -470,6 +470,7 @@ legacy_atlas_setup <- function(
 #' @keywords internal
 assemble_legacy_atlas <- function(setup, result, original_palette) {
   core <- fill_legacy_core_display(result$core %||% setup$core)
+  core <- normalise_legacy_hemi(core)
   core <- dedupe_legacy_core_labels(core, setup$atlas_name)
   palette <- resolve_legacy_palette(
     result$palette %||% setup$palette,
@@ -489,6 +490,44 @@ assemble_legacy_atlas <- function(setup, result, original_palette) {
     core = core,
     data = data
   )
+}
+
+
+#' Normalise a legacy atlas's `hemi` onto the current vocabulary
+#'
+#' Legacy atlases spelled the hemisphere several ways, and subcortical and
+#' cerebellar ones used `"subcort"` -- not a side at all, but a marker that the
+#' structure was not cortical. `hemi` now carries `left`/`right`/`midline`, or
+#' `NA` where a side does not apply, so `"subcort"` becomes `NA`: the legacy
+#' format never recorded which side those rows were on, and inventing one would
+#' be worse than admitting it is unknown. Values this does not recognise are
+#' left alone, so the validator still reports them rather than having them
+#' quietly rewritten.
+#' @noRd
+#' @keywords internal
+normalise_legacy_hemi <- function(core) {
+  if (is.null(core) || !"hemi" %in% names(core)) {
+    return(core)
+  }
+
+  hemi <- as.character(core$hemi)
+  known <- c(
+    l = "left",
+    lh = "left",
+    left = "left",
+    r = "right",
+    rh = "right",
+    right = "right",
+    mid = "midline",
+    midline = "midline",
+    vermis = "midline",
+    subcort = NA_character_,
+    subcortical = NA_character_
+  )
+  hit <- match(tolower(hemi), names(known))
+  hemi[!is.na(hit)] <- unname(known[hit[!is.na(hit)]])
+  core$hemi <- hemi
+  core
 }
 
 

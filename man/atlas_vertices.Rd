@@ -26,6 +26,7 @@ Other atlas accessors:
 \code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
+\code{\link[=atlas_hemi]{atlas_hemi()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
