@@ -58,31 +58,45 @@ atlas_without_names <- function(name = "nameless") {
 }
 
 describe("atlas_names", {
-  it("returns the names column of a bundled atlas in core row order", {
-    result <- atlas_names(dk())
+  it("is deprecated in favour of atlas_display()", {
+    expect_snapshot(x <- atlas_names(dk()))
+  })
+
+  it("still returns what atlas_display() returns", {
+    expect_warning(
+      got <- atlas_names(dk()),
+      class = "lifecycle_warning_deprecated"
+    )
+    expect_identical(got, atlas_display(dk()))
+  })
+})
+
+describe("atlas_display", {
+  it("returns the display column of a bundled atlas in core row order", {
+    result <- atlas_display(dk())
     expect_type(result, "character")
-    expect_identical(result, dk()$core$names)
+    expect_identical(result, dk()$core$display)
     expect_true("banks of superior temporal sulcus" %in% result)
   })
 
   it("works for every bundled atlas", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_gt(length(atlas_names(atlas)), 0)
+      expect_gt(length(atlas_display(atlas)), 0)
     }
   })
 
-  it("returns an empty vector when the atlas carries no names column", {
-    expect_identical(atlas_names(atlas_without_names()), character(0))
+  it("returns an empty vector when the atlas carries no display column", {
+    expect_identical(atlas_display(atlas_without_names()), character(0))
   })
 
   it("has a data.frame method", {
-    df <- data.frame(names = c("b", "a", NA, "a"))
-    expect_identical(atlas_names(df), c("b", "a", NA, "a"))
+    df <- data.frame(display = c("b", "a", NA, "a"))
+    expect_identical(atlas_display(df), c("b", "a", NA, "a"))
   })
 })
 
-describe("core names validation", {
-  it("informs the atlas author once when core has no names column", {
+describe("core display validation", {
+  it("informs the atlas author once when core has no display column", {
     parts <- core_without_names()
     expect_message(
       ggseg_atlas(
@@ -91,11 +105,11 @@ describe("core names validation", {
         core = parts$core,
         data = ggseg_data_cortical(vertices = parts$vertices)
       ),
-      class = "ggseg.formats_missing_names"
+      class = "ggseg.formats_missing_display"
     )
   })
 
-  it("does not warn when core has no names column", {
+  it("does not warn when core has no display column", {
     parts <- core_without_names()
     expect_no_warning(suppressMessages(
       ggseg_atlas(
@@ -107,16 +121,16 @@ describe("core names validation", {
     ))
   })
 
-  it("does not error when core has no names column", {
+  it("does not error when core has no display column", {
     expect_s3_class(atlas_without_names(), "ggseg_atlas")
   })
 
-  it("errors when names is not a character vector", {
+  it("errors when display is not a character vector", {
     parts <- core_without_names()
-    parts$core$names <- 1L
+    parts$core$display <- 1L
     expect_error(
       ggseg_atlas(
-        atlas = "bad-names",
+        atlas = "bad-display",
         type = "cortical",
         core = parts$core,
         data = ggseg_data_cortical(vertices = parts$vertices)
@@ -125,12 +139,12 @@ describe("core names validation", {
     )
   })
 
-  it("accepts a character names column silently", {
+  it("accepts a character display column silently", {
     parts <- core_without_names()
-    parts$core$names <- "frontal lobe"
+    parts$core$display <- "frontal lobe"
     expect_no_warning(
       ggseg_atlas(
-        atlas = "good-names",
+        atlas = "good-display",
         type = "cortical",
         core = parts$core,
         data = ggseg_data_cortical(vertices = parts$vertices)
@@ -145,7 +159,7 @@ describe("core label uniqueness", {
       hemi = c("left", "left"),
       region = c("thalamus", "thalamus proper"),
       label = c("Left-Thalamus", "Left-Thalamus"),
-      names = c("Thalamus", "Thalamus Proper")
+      display = c("Thalamus", "Thalamus Proper")
     )
     vertices <- data.frame(label = "Left-Thalamus")
     vertices$vertices <- list(1L:3L)
@@ -174,7 +188,7 @@ describe("core label uniqueness", {
       hemi = c("left", "left"),
       region = c("a", "b"),
       label = c("x", "x"),
-      names = c("a", "b")
+      display = c("a", "b")
     )
     vertices <- data.frame(label = "x")
     vertices$vertices <- list(1L:3L)
@@ -203,7 +217,7 @@ describe("core-column accessor alignment", {
       n <- nrow(atlas$core)
       expect_length(atlas_labels(atlas), n)
       expect_length(atlas_regions(atlas), n)
-      expect_length(atlas_names(atlas), n)
+      expect_length(atlas_display(atlas), n)
     }
   })
 
@@ -211,7 +225,7 @@ describe("core-column accessor alignment", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
       expect_identical(atlas_labels(atlas), atlas$core$label)
       expect_identical(atlas_regions(atlas), atlas$core$region)
-      expect_identical(atlas_names(atlas), atlas$core$names)
+      expect_identical(atlas_display(atlas), atlas$core$display)
     }
   })
 
@@ -221,7 +235,7 @@ describe("core-column accessor alignment", {
       row_of <- match(atlas_labels(atlas)[i], atlas$core$label)
       expect_identical(row_of, i)
       expect_identical(atlas_regions(atlas)[i], atlas$core$region[row_of])
-      expect_identical(atlas_names(atlas)[i], atlas$core$names[row_of])
+      expect_identical(atlas_display(atlas)[i], atlas$core$display[row_of])
     }
   })
 
@@ -236,11 +250,11 @@ describe("core-column accessor alignment", {
 })
 
 describe("bundled atlas schema", {
-  it("gives every bundled atlas a character names column", {
+  it("gives every bundled atlas a character display column", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_true("names" %in% names(atlas$core))
-      expect_type(atlas$core$names, "character")
-      expect_false(anyNA(atlas$core$names))
+      expect_true("display" %in% names(atlas$core))
+      expect_type(atlas$core$display, "character")
+      expect_false(anyNA(atlas$core$display))
     }
   })
 
@@ -257,41 +271,45 @@ describe("bundled atlas schema", {
   })
 })
 
-describe("names is preserved by the atlas verbs", {
-  has_names <- function(atlas) "names" %in% names(atlas$core)
+describe("display is preserved by the atlas verbs", {
+  has_display <- function(atlas) "display" %in% names(atlas$core)
 
   it("survives the region verbs", {
-    expect_true(has_names(atlas_region_remove(aseg(), "vessel")))
-    expect_true(has_names(atlas_region_keep(aseg(), "thalamus")))
-    expect_true(has_names(atlas_region_contextual(aseg(), "vessel")))
-    expect_true(has_names(atlas_region_rename(aseg(), "thalamus", "thal")))
-    expect_true(has_names(atlas_context_remove(aseg())))
+    expect_true(has_display(atlas_region_remove(aseg(), "vessel")))
+    expect_true(has_display(atlas_region_keep(aseg(), "thalamus")))
+    expect_true(has_display(atlas_region_contextual(aseg(), "vessel")))
+    expect_true(has_display(atlas_region_rename(aseg(), "thalamus", "thal")))
+    expect_true(has_display(atlas_context_remove(aseg())))
   })
 
   it("survives the view verbs", {
     views <- atlas_views(aseg())
-    expect_true(has_names(atlas_view_keep(aseg(), views[1])))
-    expect_true(has_names(atlas_view_remove(aseg(), views[1])))
-    expect_true(has_names(atlas_view_remove_region(aseg(), "vessel")))
-    expect_true(has_names(atlas_view_remove_small(aseg(), min_area = 1)))
-    expect_true(has_names(atlas_view_select(aseg(), threshold = 0.5)))
-    expect_true(has_names(atlas_view_gather(aseg())))
-    expect_true(has_names(atlas_view_reorder(aseg(), rev(views))))
+    expect_true(has_display(atlas_view_keep(aseg(), views[1])))
+    expect_true(has_display(atlas_view_remove(aseg(), views[1])))
+    expect_true(has_display(atlas_view_remove_region(aseg(), "vessel")))
+    expect_true(has_display(atlas_view_remove_small(aseg(), min_area = 1)))
+    expect_true(has_display(atlas_view_select(aseg(), threshold = 0.5)))
+    expect_true(has_display(atlas_view_gather(aseg())))
+    expect_true(has_display(atlas_view_reorder(aseg(), rev(views))))
   })
 
   it("survives atlas_structure_reorder()", {
     labels <- atlas_labels(aseg())
     expect_true(
-      has_names(atlas_structure_reorder(aseg(), labels[1], .after = labels[2]))
+      has_display(atlas_structure_reorder(
+        aseg(),
+        labels[1],
+        .after = labels[2]
+      ))
     )
   })
 
-  it("fills names on the region a boolean op adds", {
+  it("fills display on the region a boolean op adds", {
     core <- data.frame(
       hemi = c(NA, NA),
       region = c("a", "b"),
       label = c("a", "b"),
-      names = c("alpha", "beta")
+      display = c("alpha", "beta")
     )
     expect_identical(
       add_op_region_meta(
@@ -299,7 +317,7 @@ describe("names is preserved by the atlas verbs", {
         c(a = "#aaa", b = "#bbb"),
         "merged",
         "#FF0000"
-      )$core$names,
+      )$core$display,
       c("alpha", "beta", "merged")
     )
   })
@@ -386,13 +404,13 @@ describe("legacy_region_map", {
   })
 })
 
-describe("names is the curated display name, not the legacy key", {
+describe("display is the curated display name, not the legacy key", {
   # The two were briefly the same column. Keeping them apart is a deliberate
-  # decision, so assert the specific values that would regress if `names` were
+  # decision, so assert the specific values that would regress if `display` were
   # ever repurposed as the migration table again.
   it("spells out the aseg regions 0.0.4 abbreviated", {
     core <- aseg()$core
-    name_of <- function(label) core$names[core$label == label]
+    name_of <- function(label) core$display[core$label == label]
 
     expect_identical(name_of("Left-VentralDC"), "ventral diencephalon")
     expect_identical(name_of("Left-Accumbens-area"), "accumbens")
@@ -400,18 +418,18 @@ describe("names is the curated display name, not the legacy key", {
     expect_identical(name_of("CC_Mid_Anterior"), "corpus callosum mid-anterior")
   })
 
-  it("does not reuse the 0.0.4 region strings as aseg names", {
+  it("does not reuse the 0.0.4 region strings as aseg display names", {
     legacy <- names(legacy_region_map(aseg()))
     expect_false(any(
       c("ventraldc", "accumbens area", "cc posterior") %in%
-        atlas_names(aseg())
+        atlas_display(aseg())
     ))
-    expect_false(setequal(atlas_names(aseg()), legacy))
+    expect_false(setequal(atlas_display(aseg()), legacy))
   })
 
   it("spells out the tracula tracts 0.0.4 abbreviated", {
     core <- tracula()$core
-    name_of <- function(label) core$names[core$label == label]
+    name_of <- function(label) core$display[core$label == label]
 
     expect_match(
       name_of("lh.slf1.bbr.prep"),
@@ -421,19 +439,19 @@ describe("names is the curated display name, not the legacy key", {
     expect_identical(name_of("cc.genu.bbr.prep"), "corpus callosum genu")
   })
 
-  it("does not reuse the 0.0.4 region strings as tracula names", {
-    expect_false(any(c("SLF I", "CC genu") %in% atlas_names(tracula())))
+  it("does not reuse the 0.0.4 region strings as tracula display names", {
+    expect_false(any(c("SLF I", "CC genu") %in% atlas_display(tracula())))
     expect_false(setequal(
-      atlas_names(tracula()),
+      atlas_display(tracula()),
       names(
         legacy_region_map(tracula())
       )
     ))
   })
 
-  it("keeps every bundled atlas's names readable", {
+  it("keeps every bundled atlas's display names readable", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      nms <- atlas_names(atlas)
+      nms <- atlas_display(atlas)
       expect_false(any(grepl("[._]", nms)))
       expect_true(all(nzchar(nms)))
     }
@@ -467,7 +485,7 @@ describe("legacy region no-match hint", {
 
 aseg_without_names <- function() {
   stripped <- aseg()
-  stripped$core$names <- NULL
+  stripped$core$display <- NULL
   suppressMessages(ggseg_atlas(
     atlas = "silent-aseg",
     type = stripped$type,
@@ -477,12 +495,12 @@ aseg_without_names <- function() {
   ))
 }
 
-describe("a missing names column is silent outside construction", {
+describe("a missing display column is silent outside construction", {
   it("says nothing when the atlas is plotted", {
     atlas <- aseg_without_names()
     expect_no_condition(
       print(plot(atlas)),
-      class = "ggseg.formats_missing_names"
+      class = "ggseg.formats_missing_display"
     )
     expect_no_warning(suppressMessages(print(plot(atlas))))
   })
@@ -492,13 +510,13 @@ describe("a missing names column is silent outside construction", {
     expect_no_message(expect_no_warning({
       atlas_regions(atlas)
       atlas_labels(atlas)
-      atlas_names(atlas)
+      atlas_display(atlas)
       atlas_palette(atlas)
     }))
   })
 
-  it("returns character(0) from atlas_names()", {
-    expect_identical(atlas_names(atlas_without_names()), character(0))
+  it("returns character(0) from atlas_display()", {
+    expect_identical(atlas_display(atlas_without_names()), character(0))
   })
 
   it("says nothing through the class predicates", {
@@ -560,8 +578,8 @@ describe("a missing names column is silent outside construction", {
 })
 
 
-describe("legacy conversion back-fills names", {
-  it("copies the legacy long-form region into names", {
+describe("legacy conversion back-fills display", {
+  it("copies the legacy long-form region into display", {
     skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
@@ -587,6 +605,6 @@ describe("legacy conversion back-fills names", {
     result <- suppressMessages(
       convert_legacy_brain_atlas(atlas_2d = legacy)
     )
-    expect_identical(atlas_names(result), "superior frontal gyrus")
+    expect_identical(atlas_display(result), "superior frontal gyrus")
   })
 })

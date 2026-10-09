@@ -24,7 +24,7 @@ describe("gather/reorder layout is representation-independent", {
     hemi = c("left", "right"),
     region = c("a", "a"),
     label = c("lh_a", "rh_a"),
-    names = c("a", "a")
+    display = c("a", "a")
   )
   mk_atlas <- function(geom) {
     ggseg_atlas(

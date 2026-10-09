@@ -22,7 +22,7 @@ describe("as_polygon_atlas()", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -67,7 +67,7 @@ describe("as_sf_atlas()", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)

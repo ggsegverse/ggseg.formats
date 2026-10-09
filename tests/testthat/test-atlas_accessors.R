@@ -35,7 +35,7 @@ describe("atlas_geometry_type", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -109,8 +109,7 @@ describe("atlas_sf", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
-      names = c("frontal", "frontal")
+      display = c("frontal", "frontal")
     )
     palette <- c(lh_frontal = "#FF0000", rh_frontal = "#00FF00")
 
@@ -146,7 +145,7 @@ describe("atlas_sf", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
 
     atlas <- ggseg_atlas(
@@ -177,7 +176,7 @@ describe("atlas_sf", {
       hemi = "left",
       region = c("zzz", "aaa"),
       label = c("lh_zzz", "lh_aaa"),
-      names = c("zzz", "aaa")
+      display = c("zzz", "aaa")
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -219,8 +218,7 @@ describe("atlas_vertices", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
-      names = c("frontal", "frontal")
+      display = c("frontal", "frontal")
     )
     vertices <- data.frame(label = c("lh_frontal", "rh_frontal"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -253,7 +251,7 @@ describe("atlas_vertices", {
       hemi = NA,
       region = "hippocampus",
       label = "hippocampus",
-      names = "hippocampus"
+      display = "hippocampus"
     )
 
     atlas <- ggseg_atlas(
@@ -271,8 +269,7 @@ describe("atlas_vertices", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
-      names = c("frontal", "frontal")
+      display = c("frontal", "frontal")
     )
     vertices <- data.frame(label = c("lh_frontal", "rh_frontal"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -315,7 +312,7 @@ describe("atlas_centerlines", {
         hemi = c("left", "right"),
         region = c("af", "af"),
         label = c("lh_af", "rh_af"),
-        names = c("af", "af")
+        display = c("af", "af")
       ),
       data = ggseg_data_tract(centerlines = centerlines)
     )
@@ -386,7 +383,7 @@ describe("atlas_meshes", {
       hemi = NA,
       region = "hippocampus",
       label = "hippocampus",
-      names = "hippocampus"
+      display = "hippocampus"
     )
     palette <- c(hippocampus = "#FF0000")
 
@@ -410,7 +407,7 @@ describe("atlas_meshes", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -435,7 +432,7 @@ describe("atlas_meshes", {
       hemi = NA,
       region = "hippocampus",
       label = "hippocampus",
-      names = "hippocampus"
+      display = "hippocampus"
     )
 
     atlas <- ggseg_atlas(

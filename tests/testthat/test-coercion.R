@@ -4,7 +4,7 @@ describe("as_ggseg_atlas", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -48,7 +48,7 @@ describe("as_ggseg_atlas.ggseg_atlas", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal")
+      display = c("frontal", "frontal")
     )
 
     legacy <- structure(
@@ -75,7 +75,7 @@ describe("as_ggseg_atlas.ggseg_atlas", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -108,7 +108,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -138,7 +138,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
+      display = c("frontal", "frontal"),
       view = c("lateral", "lateral"),
       colour = c("#FF0000", "#00FF00"),
       geometry = sf::st_sfc(
@@ -181,7 +181,7 @@ describe("as_ggseg_atlas.list", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
 
     legacy_list <- list(
@@ -214,7 +214,7 @@ describe("convert_legacy_brain_data", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -236,7 +236,7 @@ describe("convert_legacy_brain_data", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
+      display = c("frontal", "frontal"),
       view = c("lateral", "lateral"),
       colour = c("#FF0000", "#00FF00"),
       geometry = sf::st_sfc(
@@ -268,7 +268,7 @@ describe("convert_legacy_brain_data", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
+      display = c("frontal", "frontal"),
       side = c("lateral", "lateral"),
       geometry = sf::st_sfc(
         make_polygon(),
@@ -326,7 +326,7 @@ describe("as_brain_atlas (deprecated)", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -362,7 +362,7 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
           hemi = "left",
           region = "frontal",
           label = "lh_frontal",
-          names = "frontal"
+          display = "frontal"
         ),
         data = sf_geom
       ),
@@ -389,7 +389,7 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
           hemi = "left",
           region = "frontal",
           label = "lh_frontal",
-          names = "frontal"
+          display = "frontal"
         ),
         sf = sf_geom,
         vertices = NULL,
@@ -457,7 +457,7 @@ describe("legacy core label de-duplication", {
           hemi = c("left", "left"),
           region = c("thalamus", "thalamus proper"),
           label = c("Left-Thalamus", "Left-Thalamus"),
-          names = c("Thalamus", "Thalamus Proper")
+          display = c("Thalamus", "Thalamus Proper")
         ),
         vertices = vertices
       ),
@@ -483,7 +483,7 @@ describe("legacy core label de-duplication", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     expect_identical(dedupe_legacy_core_labels(core, "clean"), core)
   })

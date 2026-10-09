@@ -201,7 +201,7 @@ describe("validate_palette", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -223,7 +223,7 @@ describe("validate_palette", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -248,7 +248,7 @@ describe("validate_data_labels", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = c("lh_frontal", "lh_unknown"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -277,7 +277,7 @@ describe("validate_data_labels", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
 
     expect_no_warning(
@@ -306,7 +306,7 @@ describe("validate_data_labels", {
       hemi = NA,
       region = "hippocampus",
       label = "hippocampus",
-      names = "hippocampus"
+      display = "hippocampus"
     )
 
     expect_no_warning(
@@ -324,8 +324,7 @@ describe("validate_data_labels", {
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
       label = c("lh_frontal", "rh_frontal"),
-      names = c("frontal", "frontal"),
-      names = c("frontal", "frontal")
+      display = c("frontal", "frontal")
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -369,7 +368,7 @@ describe("validate_data_labels", {
       hemi = rep("left", 5),
       region = c("frontal", "parietal", "temporal", "occipital", "insula"),
       label = labels,
-      names = c("frontal", "parietal", "temporal", "occipital", "insula")
+      display = c("frontal", "parietal", "temporal", "occipital", "insula")
     )
 
     expect_warning(
@@ -412,7 +411,7 @@ describe("validate_data_labels", {
       hemi = rep("left", 10),
       region = gsub("lh_", "", labels, fixed = TRUE),
       label = labels,
-      names = gsub("lh_", "", labels, fixed = TRUE)
+      display = gsub("lh_", "", labels, fixed = TRUE)
     )
 
     expect_warning(
@@ -438,7 +437,7 @@ describe("validate_data_labels", {
       hemi = c("left", "left"),
       region = c("a", "b"),
       label = c("lh_a", "lh_b"),
-      names = c("a", "b")
+      display = c("a", "b")
     )
     expect_no_condition(
       ggseg_atlas(

@@ -28,11 +28,11 @@ dim(centerlines$points[[1]])
 }
 \seealso{
 Other atlas accessors:
+\code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
-\code{\link[=atlas_names]{atlas_names()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
 \code{\link[=atlas_regions]{atlas_regions()}},

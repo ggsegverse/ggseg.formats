@@ -15,7 +15,7 @@ brain_regions(x)
 \value{
 The \code{region} column of \code{core}, unchanged: one element per \code{core}
 row, in \code{core} row order, with repeats and \code{NA}s retained. It is therefore
-row-aligned with \code{\link[=atlas_labels]{atlas_labels()}} and \code{\link[=atlas_names]{atlas_names()}}. Use \code{unique()} for
+row-aligned with \code{\link[=atlas_labels]{atlas_labels()}} and \code{\link[=atlas_display]{atlas_display()}}. Use \code{unique()} for
 the distinct set. A zero-length character vector when the atlas carries no
 \code{region} column.
 }
@@ -30,11 +30,11 @@ atlas_regions(aseg())
 \seealso{
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
+\code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
-\code{\link[=atlas_names]{atlas_names()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
 \code{\link[=atlas_sf]{atlas_sf()}},

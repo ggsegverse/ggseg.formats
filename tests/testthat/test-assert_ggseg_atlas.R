@@ -54,13 +54,13 @@ describe("assert_ggseg_atlas", {
     )
   })
 
-  it("surfaces a non-character core names column", {
+  it("surfaces a non-character core display column", {
     atlas <- dk()
-    atlas$core$names <- seq_len(nrow(atlas$core))
+    atlas$core$display <- seq_len(nrow(atlas$core))
 
     expect_error(
       assert_ggseg_atlas(atlas),
-      "`core\\$names` must be a character vector, not <integer>",
+      "`core\\$display` must be a character vector, not <integer>",
       class = "ggseg.formats_invalid_atlas"
     )
   })
