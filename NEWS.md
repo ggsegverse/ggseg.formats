@@ -34,6 +34,16 @@
   column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
   instead of a sorted set of unique values, so the three are now row-aligned.
   `sort(unique(x))` recovers the old value. `atlas_views()` is unchanged.
+- **Duplicate `core$label` values are now an error** from `ggseg_atlas()` and
+  `brain_atlas()`, naming the duplicates. `label` is the key the palette and
+  every geometry slot join on. Read paths stay forgiving: legacy conversion
+  collapses alias rows with a warning, and class predicates still return
+  `FALSE` silently.
+- `ggseg_atlas()` no longer rejects an atlas whose 2D geometry covers fewer
+  than 80% of `core` labels. Partial coverage is normal — no single view holds
+  every structure — so every single-view subset of an atlas is now valid and
+  plottable. Coverage below 90% warns, for information only; the
+  construction-time gate lives in ggseg.extra.
 - `names` is part of the `core` schema, read by the new `atlas_names()`, and
   `suit()` gains it. A non-character `names` is an error; a missing one only
   informs the atlas author once per session at construction, so plotting,
@@ -76,6 +86,8 @@
 
 ### Bug fixes
 
+- `sf_to_polygons()` validates its argument before checking for `sf`, so a
+  malformed input reports its own problem on an install without `sf`.
 - The `atlas_region_*` verbs warn when their pattern matches no region, instead
   of silently returning the atlas unchanged.
 - `plot()` falls back to distinguishable colours, with a warning, when a palette

@@ -344,3 +344,21 @@ describe("sf_to_polygons() non-canonical columns", {
     expect_identical(attr(back, "sf_column"), "geometry")
   })
 })
+
+
+describe("sf_to_polygons argument checks precede the sf gate", {
+  it("reports a non-sf input rather than a missing dependency", {
+    expect_error(
+      sf_to_polygons(data.frame(label = "a", view = "lateral")),
+      "must inherit from class"
+    )
+  })
+
+  it("reports missing columns rather than a missing dependency", {
+    fake <- structure(
+      data.frame(label = "a"),
+      class = c("sf", "data.frame")
+    )
+    expect_error(sf_to_polygons(fake), "missing columns")
+  })
+})
