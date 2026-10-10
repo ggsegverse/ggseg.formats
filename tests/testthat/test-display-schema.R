@@ -201,6 +201,37 @@ describe("core hemi vocabulary", {
   })
 })
 
+describe("normalise_legacy_hemi", {
+  it("maps every midline spelling seen in a published atlas", {
+    core <- data.frame(
+      hemi = c("mid", "middle", "midline", "vermis", "Middle"),
+      label = letters[1:5]
+    )
+    expect_identical(normalise_legacy_hemi(core)$hemi, rep("midline", 5))
+  })
+
+  it("maps the side spellings and reads subcort as no side at all", {
+    core <- data.frame(
+      hemi = c("l", "lh", "left", "r", "rh", "right", "subcort", "subcortical"),
+      label = letters[1:8]
+    )
+    expect_identical(
+      normalise_legacy_hemi(core)$hemi,
+      c(rep("left", 3), rep("right", 3), NA_character_, NA_character_)
+    )
+  })
+
+  it("leaves an unrecognised spelling for the validator to report", {
+    core <- data.frame(hemi = c("left", "dorsal"), label = c("a", "b"))
+    expect_identical(normalise_legacy_hemi(core)$hemi, c("left", "dorsal"))
+  })
+
+  it("returns a core without a hemi column untouched", {
+    core <- data.frame(label = "a", region = "a")
+    expect_identical(normalise_legacy_hemi(core), core)
+  })
+})
+
 describe("atlas_hemi", {
   it("is row-aligned with the other core accessors", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {

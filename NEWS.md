@@ -12,8 +12,9 @@
 
   `suit` records the vermis as `"midline"`; its labels keep the upstream
   `vermis_` spelling, since `label` is the join key. Legacy atlases are
-  normalised on conversion, with the subcortical marker `"subcort"` becoming
-  `NA` -- that format never recorded which side those rows were on.
+  normalised on conversion: `"mid"`, `"middle"` and `"vermis"` all become
+  `"midline"`, and the subcortical marker `"subcort"` becomes `NA` -- that
+  format never recorded which side those rows were on.
 
 - New `atlas_hemi()`, completing the core-column accessors.
 
@@ -48,7 +49,7 @@
   (`atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")`); a
   string that matches labels but changes no region now warns.
 
-- `atlas_regions()`, `atlas_labels()` and `atlas_names()` return their `core`
+- `atlas_regions()`, `atlas_labels()` and `atlas_display()` return their `core`
   column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
   instead of a sorted set of unique values, so the three are now row-aligned.
   `sort(unique(x))` recovers the old value. `atlas_views()` is unchanged.
@@ -62,8 +63,8 @@
   every structure — so every single-view subset of an atlas is now valid and
   plottable. Coverage below 90% warns, for information only; the
   construction-time gate lives in ggseg.extra.
-- `names` is part of the `core` schema, read by the new `atlas_names()`, and
-  `suit()` gains it. A non-character `names` is an error; a missing one only
+- `display` is part of the `core` schema and `suit()` gains it. A
+  non-character `display` is an error; a missing one only
   informs the atlas author once per session at construction, so plotting,
   accessing or class-checking an older atlas package stays silent.
 - `ggseg_atlas()` warns when `core$label` is not unique, since the palette and
@@ -85,7 +86,7 @@
 
 - New `legacy_region_map()` gives the pre-0.1.0 `region` to current `region`
   mapping for a bundled atlas.
-- New accessors `atlas_names()`, `atlas_centerlines()` and
+- New accessors `atlas_display()`, `atlas_centerlines()` and
   `atlas_plot_palette()`, the last substituting a fallback for an unusable
   palette; renderers should read the palette through it.
 - New setters `set_atlas_palette()` and `set_atlas_type()` keep the coupled
@@ -125,7 +126,7 @@
 - `migrate_atlas_files()` gains `force`: it aborts, naming the columns and the
   file, when a migration cannot carry every column across.
 - `atlas_labels()` gains the `data.frame` method its `atlas_regions()` and
-  `atlas_names()` siblings already had.
+  `atlas_display()` siblings already had.
 - `atlas_view_select()` warns and returns the atlas unchanged on a
   geometry-less atlas, like the other view verbs, instead of aborting.
 - The five `brain_atlas`-rename deprecations stamped 0.2.0 now say 0.1.0, the
