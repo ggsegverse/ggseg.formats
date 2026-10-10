@@ -519,6 +519,7 @@ normalise_legacy_hemi <- function(core) {
     rh = "right",
     right = "right",
     mid = "midline",
+    middle = "midline",
     midline = "midline",
     vermis = "midline",
     subcort = NA_character_,
