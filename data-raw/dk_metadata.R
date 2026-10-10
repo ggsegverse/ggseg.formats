@@ -5,7 +5,8 @@
 # there is no `hemi` column (hemisphere is assigned per annotation file when
 # the atlas is built). `lobe` groups regions.
 #
-# `names` holds the curated long-form display name. For this atlas it coincides
+# `display` holds the curated long-form display name. For this atlas it
+# coincides
 # with the `region` value CRAN 0.0.4 shipped, because the annotation's
 # spelled-out names already read well; that is a coincidence, not the contract.
 # Migration from the old keys goes through `legacy_region_map()`.
@@ -50,7 +51,7 @@ dk_metadata <- data.frame(
     "temporalpole",
     "transversetemporal"
   ),
-  names = c(
+  display = c(
     "banks of superior temporal sulcus",
     "caudal anterior cingulate",
     "caudal middle frontal",
@@ -128,4 +129,4 @@ dk_metadata <- data.frame(
 
 dk_metadata$region <- dk_metadata$label
 
-dk_metadata <- dk_metadata[, c("label", "region", "names", "lobe")]
+dk_metadata <- dk_metadata[, c("label", "region", "display", "lobe")]

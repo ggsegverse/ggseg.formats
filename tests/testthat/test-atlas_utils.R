@@ -11,7 +11,7 @@ make_test_atlas <- function(polygons = FALSE) {
     hemi = c("left", "left", "right"),
     region = c("frontal", "parietal", "frontal"),
     label = c("lh_frontal", "lh_parietal", "rh_frontal"),
-    names = c("frontal", "parietal", "frontal")
+    display = c("frontal", "parietal", "frontal")
   )
   palette <- c(
     lh_frontal = "#FF0000",
@@ -80,7 +80,7 @@ make_multiview_atlas <- function(polygons = FALSE) {
       2
     ),
     label = core_labels,
-    names = rep(
+    display = rep(
       c("frontal", "parietal", "temporal", "occipital", "insula"),
       2
     )
@@ -134,7 +134,7 @@ make_cortical_hemi_atlas <- function(polygons = FALSE) {
     hemi = c("left", "left", "right", "right"),
     region = c("frontal", "parietal", "frontal", "parietal"),
     label = c(lh_labels, rh_labels),
-    names = c("frontal", "parietal", "frontal", "parietal")
+    display = c("frontal", "parietal", "frontal", "parietal")
   )
 
   palette <- c(
@@ -200,21 +200,21 @@ describe("atlas_labels", {
   })
 
   it("dispatches on data.frame like the rest of the trio", {
-    df <- data.frame(label = "a", region = "b", names = "c")
+    df <- data.frame(label = "a", region = "b", display = "c")
     expect_identical(atlas_labels(df), "a")
     expect_identical(atlas_regions(df), "b")
-    expect_identical(atlas_names(df), "c")
+    expect_identical(atlas_display(df), "c")
   })
 
-  it("is row-aligned with atlas_regions() and atlas_names()", {
+  it("is row-aligned with atlas_regions() and atlas_display()", {
     atlas <- make_test_atlas()
     expect_length(atlas_labels(atlas), nrow(atlas$core))
     expect_length(atlas_regions(atlas), nrow(atlas$core))
-    expect_length(atlas_names(atlas), nrow(atlas$core))
+    expect_length(atlas_display(atlas), nrow(atlas$core))
     i <- 3L
     expect_identical(atlas_labels(atlas)[i], "rh_frontal")
     expect_identical(atlas_regions(atlas)[i], "frontal")
-    expect_identical(atlas_names(atlas)[i], "frontal")
+    expect_identical(atlas_display(atlas)[i], "frontal")
   })
 
   it("retains NA labels", {
@@ -222,7 +222,7 @@ describe("atlas_labels", {
       hemi = c("left", "left"),
       region = c("frontal", "unknown"),
       label = c("lh_frontal", NA),
-      names = c("frontal", "unknown")
+      display = c("frontal", "unknown")
     )
     vertices <- data.frame(label = c("lh_frontal", NA))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -412,7 +412,7 @@ make_cerebellar_atlas <- function() {
     hemi = c(NA, NA),
     region = c("lobule I", "dentate"),
     label = c("lobule_I", "dentate"),
-    names = c("lobule I", "dentate nucleus")
+    display = c("lobule I", "dentate nucleus")
   )
   vertices <- data.frame(label = "lobule_I")
   vertices$vertices <- list(1L:3L)
@@ -569,7 +569,7 @@ describe("atlas_region_op", {
       hemi = c(NA, NA),
       region = c("cortex", "wm"),
       label = c("cortex", "wm"),
-      names = c("cortex", "white matter")
+      display = c("cortex", "white matter")
     )
     ggseg_atlas(
       atlas = "op",
@@ -1069,7 +1069,7 @@ make_view_select_atlas <- function() {
     hemi = c("left", "right", "left", "right"),
     region = c("frontal", "frontal", "temporal", "temporal"),
     label = c("lh_frontal", "rh_frontal", "lh_temporal", "rh_temporal"),
-    names = c("frontal", "frontal", "temporal", "temporal")
+    display = c("frontal", "frontal", "temporal", "temporal")
   )
 
   ggseg_atlas(
@@ -1617,7 +1617,7 @@ describe("atlas_view_remove_region", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -1659,7 +1659,7 @@ describe("atlas_view_keep", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -1680,7 +1680,7 @@ describe("atlas_view_reorder", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -1950,7 +1950,7 @@ describe("guess_type edge cases", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -2021,7 +2021,7 @@ describe("atlas_region_remove with no sf data", {
       hemi = c("left", "right"),
       region = c("frontal", "parietal"),
       label = c("lh_frontal", "rh_parietal"),
-      names = c("frontal", "parietal")
+      display = c("frontal", "parietal")
     )
     vertices <- data.frame(
       label = c("lh_frontal", "rh_parietal")
@@ -2063,7 +2063,7 @@ describe("atlas_region_op edge cases", {
       hemi = c(NA, NA),
       region = c("cortex", "wm"),
       label = c("cortex", "wm"),
-      names = c("cortex", "white matter")
+      display = c("cortex", "white matter")
     )
     ggseg_atlas(
       atlas = "op",
@@ -2146,7 +2146,7 @@ describe("atlas_region_op edge cases", {
       hemi = c(NA, NA),
       region = c("a", "b"),
       label = c("a", "b"),
-      names = c("a", "b")
+      display = c("a", "b")
     )
     atlas <- ggseg_atlas(
       atlas = "op",
@@ -2170,7 +2170,7 @@ describe("atlas_region_op edge cases", {
       hemi = c(NA, NA),
       region = c("a", "b"),
       label = c("a", "b"),
-      names = c("a", "b")
+      display = c("a", "b")
     )
     atlas <- ggseg_atlas(
       atlas = "op",
@@ -2220,7 +2220,7 @@ describe("atlas_context_remove edge cases", {
       hemi = c(NA, NA, NA),
       region = c("a", "b", "c"),
       label = c("a", "b", "ctx"),
-      names = c("a", "b", "c")
+      display = c("a", "b", "c")
     )
     atlas <- ggseg_atlas(
       atlas = "t",
@@ -2342,7 +2342,7 @@ describe("atlas_view_gather sf early returns", {
       hemi = c(NA, NA),
       region = c("a", "b"),
       label = c("a", "b"),
-      names = c("a", "b")
+      display = c("a", "b")
     )
     atlas <- ggseg_atlas(
       atlas = "x",
@@ -2482,7 +2482,7 @@ describe("rebuild_data_with_geom() cerebellar vertices-only branch", {
       hemi = c("left", "right"),
       region = c("lobule", "lobule"),
       label = c("left_lobule", "right_lobule"),
-      names = c("lobule", "lobule")
+      display = c("lobule", "lobule")
     )
     vertices <- data.frame(label = c("left_lobule", "right_lobule"))
     vertices$vertices <- list(1:3, 4:6)
@@ -2524,10 +2524,10 @@ describe("atlas_view_remove_small(scope = 'piece')", {
       atlas = "t",
       type = "subcortical",
       core = data.frame(
-        hemi = "mid",
+        hemi = "midline",
         region = "a",
         label = "a",
-        names = "a",
+        display = "a",
         stringsAsFactors = FALSE
       ),
       data = ggseg.formats::ggseg_data_subcortical(geom = geom)
@@ -2605,7 +2605,7 @@ describe("the view verbs on a view that does not exist", {
         hemi = "left",
         region = "frontal",
         label = "lh_frontal",
-        names = "frontal"
+        display = "frontal"
       ),
       data = ggseg_data_cortical(
         vertices = local({

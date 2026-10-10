@@ -18,7 +18,7 @@ the bundled four.
 \description{
 Before version 0.1.0 the \code{region} column of the bundled atlases held a
 long-form display name. From 0.1.0 it holds a short, hemisphere-free key
-derived from \code{label}, and the long-form name lives in \code{names}. Joins and
+derived from \code{label}, and the long-form name lives in \code{display}. Joins and
 filters written against the old values therefore match nothing and fail
 silently: \code{merge(all.x = TRUE)} and the ggseg fill scale both yield \code{NA},
 which draws as a blank parcel rather than raising an error.
@@ -32,9 +32,10 @@ my_data$region <- unname(map[my_data$region])
 }\if{html}{\out{</div>}}
 
 The mapping comes from a table of exactly what each bundled atlas shipped at
-0.0.4, not from the atlas's current \code{names} column -- \code{names} is the curated
-display name and several 0.0.4 \code{region} values were mechanically derived
-(\code{"ventraldc"}, \code{"cc posterior"}), so the two are deliberately not the same.
+0.0.4, not from the atlas's current \code{display} column -- \code{display} is the
+curated display name and several 0.0.4 \code{region} values were mechanically
+derived (\code{"ventraldc"}, \code{"cc posterior"}), so the two are deliberately not
+the same.
 Where two old names shared one \code{label}, as \code{"Thalamus"} and
 \code{"Thalamus Proper"} did in \code{aseg}, both still translate even though the alias
 row itself is gone from \code{core}.
@@ -45,16 +46,17 @@ legacy_region_map(tracula())[["SLF I"]]
 legacy_region_map(aseg())[["Thalamus Proper"]]
 }
 \seealso{
-\code{\link[=atlas_names]{atlas_names()}} for the curated display names, \code{\link[=atlas_regions]{atlas_regions()}}
+\code{\link[=atlas_display]{atlas_display()}} for the curated display names, \code{\link[=atlas_regions]{atlas_regions()}}
 for the current keys.
 
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
+\code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
+\code{\link[=atlas_hemi]{atlas_hemi()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
-\code{\link[=atlas_names]{atlas_names()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
 \code{\link[=atlas_regions]{atlas_regions()}},

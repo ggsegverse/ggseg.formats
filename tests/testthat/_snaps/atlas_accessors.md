@@ -34,7 +34,7 @@
       8         lh_inferiorparietal <int [484]> left        inferiorparietal
       9         lh_inferiortemporal <int [271]> left        inferiortemporal
       10        lh_isthmuscingulate <int [123]> left        isthmuscingulate
-                                     names         lobe  colour
+                                   display         lobe  colour
       1  banks of superior temporal sulcus     temporal #196428
       2          caudal anterior cingulate    cingulate #7D64A0
       3              caudal middle frontal      frontal #641900

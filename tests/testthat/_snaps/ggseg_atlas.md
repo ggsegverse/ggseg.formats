@@ -25,7 +25,7 @@
       8  left        inferiorparietal        lh_inferiorparietal
       9  left        inferiortemporal        lh_inferiortemporal
       10 left        isthmuscingulate        lh_isthmuscingulate
-                                     names         lobe
+                                   display         lobe
       1  banks of superior temporal sulcus     temporal
       2          caudal anterior cingulate    cingulate
       3              caudal middle frontal      frontal
@@ -59,7 +59,7 @@
       1 left                bankssts                lh_bankssts
       2 left caudalanteriorcingulate lh_caudalanteriorcingulate
       3 left     caudalmiddlefrontal     lh_caudalmiddlefrontal
-                                    names      lobe
+                                  display      lobe
       1 banks of superior temporal sulcus  temporal
       2         caudal anterior cingulate cingulate
       3             caudal middle frontal   frontal
@@ -89,7 +89,7 @@
       4 left          corpuscallosum          lh_corpuscallosum
       5 left                  cuneus                  lh_cuneus
       6 left              entorhinal              lh_entorhinal
-                                    names         lobe
+                                  display         lobe
       1 banks of superior temporal sulcus     temporal
       2         caudal anterior cingulate    cingulate
       3             caudal middle frontal      frontal
@@ -126,7 +126,7 @@
       8  midline  cc rostrum  cc.rostrum.bbr.prep  cc.rostrum
       9  midline cc splenium cc.splenium.bbr.prep cc.splenium
       10    left          af       lh.af.bbr.prep       lh.af
-                                   names           group
+                                 display           group
       1              anterior commissure      commissure
       2     corpus callosum body central corpus callosum
       3    corpus callosum body parietal corpus callosum
@@ -156,7 +156,7 @@
       v ggseg3d (meshes)
       --------------------------------------------------------------------------------
     Output
-         hemi            region                  label                names
+         hemi            region                  label              display
       1  left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
       2  left          thalamus          Left-Thalamus             thalamus
       3  left           caudate           Left-Caudate              caudate
@@ -208,7 +208,7 @@
       8  left        inferiorparietal        lh_inferiorparietal
       9  left        inferiortemporal        lh_inferiortemporal
       10 left        isthmuscingulate        lh_isthmuscingulate
-                                     names         lobe
+                                   display         lobe
       1  banks of superior temporal sulcus     temporal
       2          caudal anterior cingulate    cingulate
       3              caudal middle frontal      frontal
@@ -238,7 +238,7 @@
       x ggseg3d (none)
       --------------------------------------------------------------------------------
     Output
-        hemi  region      label   names
+        hemi  region      label display
       1 left frontal lh_frontal frontal
 
 # print.ggseg_atlas rendering branches / prints a polygon atlas summary with views
@@ -268,7 +268,7 @@
       8  left        inferiorparietal        lh_inferiorparietal
       9  left        inferiortemporal        lh_inferiortemporal
       10 left        isthmuscingulate        lh_isthmuscingulate
-                                     names         lobe
+                                   display         lobe
       1  banks of superior temporal sulcus     temporal
       2          caudal anterior cingulate    cingulate
       3              caudal middle frontal      frontal

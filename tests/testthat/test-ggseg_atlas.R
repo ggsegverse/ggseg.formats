@@ -99,7 +99,7 @@ describe("is_*_atlas helpers", {
         hemi = "left",
         region = "I-IV",
         label = "left_I-IV",
-        names = "lobules I-IV"
+        display = "lobules I-IV"
       ),
       data = ggseg_data_cerebellar(geom = sf_geom)
     )
@@ -144,10 +144,10 @@ describe("cerebellar atlas construction and data.frame conversion", {
       atlas = "suit_lobules",
       type = "cerebellar",
       core = data.frame(
-        hemi = c("left", "vermis", "right"),
+        hemi = c("left", "midline", "right"),
         region = c("I-IV", "VI", "Crus-I"),
         label = c("left_I-IV", "vermis_VI", "right_Crus-I"),
-        names = c("lobules I-IV", "vermis VI", "Crus I")
+        display = c("lobules I-IV", "vermis VI", "Crus I")
       ),
       data = ggseg_data_cerebellar(geom = sf_geom)
     )
@@ -161,12 +161,13 @@ describe("cerebellar atlas construction and data.frame conversion", {
     expect_identical(nrow(atlas$core), 3L)
   })
 
-  it("as.data.frame preserves vermis hemisphere", {
+  it("as.data.frame preserves the midline hemisphere and its label", {
     atlas <- make_cerebellar_atlas()
     df <- as.data.frame(atlas)
-    expect_true("vermis" %in% df$hemi)
+    expect_true("midline" %in% df$hemi)
     expect_true("left" %in% df$hemi)
     expect_true("right" %in% df$hemi)
+    expect_identical(df$label[df$hemi == "midline"], "vermis_VI")
     expect_identical(nrow(df), 3L)
   })
 
@@ -186,7 +187,7 @@ describe("cerebellar atlas construction and data.frame conversion", {
         hemi = NA_character_,
         region = "dentate",
         label = "midline_dentate",
-        names = "dentate nucleus"
+        display = "dentate nucleus"
       ),
       data = ggseg_data_cerebellar(geom = sf_geom)
     )
@@ -206,7 +207,7 @@ describe("cerebellar atlas construction and data.frame conversion", {
           hemi = "left",
           region = "frontal",
           label = "lh_frontal",
-          names = "frontal"
+          display = "frontal"
         ),
         data = ggseg_data_cortical(vertices = vertices)
       ),
@@ -222,7 +223,7 @@ describe("ggseg_atlas constructor validation", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -259,7 +260,7 @@ describe("ggseg_atlas constructor validation", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     expect_error(
       ggseg_atlas(
@@ -277,7 +278,7 @@ describe("ggseg_atlas constructor validation", {
       hemi = NA,
       region = "hippocampus",
       label = "hippocampus",
-      names = "hippocampus"
+      display = "hippocampus"
     )
     meshes <- data.frame(label = "hippocampus")
     meshes$mesh <- list(list(
@@ -303,7 +304,7 @@ describe("deprecated wrappers", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -335,7 +336,7 @@ describe("as.data.frame.ggseg_atlas", {
     core <- data.frame(
       region = c("frontal", "parietal"),
       label = c("lh_frontal", "rh_parietal"),
-      names = c("frontal", "parietal")
+      display = c("frontal", "parietal")
     )
     vertices <- data.frame(label = c("lh_frontal", "rh_parietal"))
     vertices$vertices <- list(1L:3L, 4L:6L)
@@ -363,7 +364,7 @@ describe("as.data.frame.ggseg_atlas", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -385,7 +386,7 @@ describe("as.data.frame.ggseg_atlas", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -452,7 +453,7 @@ describe("plot.ggseg_atlas", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -486,7 +487,7 @@ describe("plot.ggseg_atlas", {
       hemi = c("left", "right"),
       region = c("frontal", "parietal"),
       label = c("lh_frontal", "rh_parietal"),
-      names = c("frontal", "parietal")
+      display = c("frontal", "parietal")
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -525,7 +526,7 @@ describe("print.ggseg_atlas rendering branches", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -589,7 +590,7 @@ describe("ggseg_atlas constructor validation", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
@@ -626,7 +627,7 @@ describe("as.data.frame.ggseg_atlas edge cases", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -654,7 +655,7 @@ describe("as.data.frame.ggseg_atlas edge cases", {
       hemi = NA_character_,
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -678,7 +679,7 @@ describe("as.data.frame.ggseg_atlas edge cases", {
       hemi = c("left", NA_character_),
       region = c("frontal", "unknown"),
       label = c("lh_frontal", "no_prefix"),
-      names = c("frontal", "unknown")
+      display = c("frontal", "unknown")
     )
     atlas <- ggseg_atlas(
       atlas = "test",
@@ -727,7 +728,7 @@ describe("as.data.frame with legacy data structure", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     atlas <- structure(
       list(
