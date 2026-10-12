@@ -63,6 +63,7 @@ describe("atlas_structure_reorder()", {
   })
 
   it("moves every row a structure owns, when views are not gathered", {
+    skip_if_not_installed("sf")
     # Ungathered geometry holds a row per structure and view, so a label can
     # own several rows and all of them have to travel together.
     geom <- sf::st_sf(

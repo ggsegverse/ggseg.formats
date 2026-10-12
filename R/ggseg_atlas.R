@@ -6,9 +6,10 @@
 #' @param atlas atlas short name, length one
 #' @param type atlas type: "cortical", "subcortical", "tract", or "cerebellar"
 #' @param palette named character vector of colours keyed by label
-#' @param core data.frame with required columns hemi, region, label (one row per
-#'   unique label). May contain additional columns for grouping or metadata
-#'   (e.g., lobe, network, Brodmann area).
+#' @param core data.frame with required columns hemi, region, label. `label` is
+#'   the key the palette and every geometry slot are joined on, so it must be
+#'   unique: a duplicated `label` is an error. May contain additional columns
+#'   for grouping or metadata (e.g., lobe, network, Brodmann area).
 #' @param data a ggseg_atlas_data object created by
 #'   [ggseg_data_cortical()], [ggseg_data_subcortical()],
 #'   [ggseg_data_tract()], or [ggseg_data_cerebellar()].
@@ -38,7 +39,7 @@ ggseg_atlas <- function(atlas, type, core, data, palette = NULL) {
 
   validate_ggseg_atlas_inputs(atlas, core, data, type)
 
-  data <- validate_data_labels(data, core, check_sf = TRUE)
+  data <- validate_data_labels(data, core, report_2d_coverage = TRUE)
 
   if (!is.null(palette)) {
     palette <- validate_palette(palette, core)
@@ -87,6 +88,8 @@ brain_atlas <- function(atlas, type, core, data, palette = NULL) {
 #'
 #' @param x an object
 #' @return logical
+#' @seealso [assert_ggseg_atlas()], which aborts with the reason instead of
+#'   reducing it to `FALSE`.
 #' @name is_ggseg_atlas
 #' @export
 #' @examples
@@ -131,6 +134,61 @@ is_brain_atlas <- function(x) {
     "is_ggseg_atlas()"
   )
   is_ggseg_atlas(x)
+}
+
+#' Require a valid ggseg atlas, reporting why it is not
+#'
+#' The companion to [is_ggseg_atlas()] for code that cannot continue without a
+#' valid atlas. The predicate answers a yes/no question and so has nothing to
+#' say about *why* an object failed; callers that turned that `FALSE` into an
+#' error could only report the class, which is the one thing that was usually
+#' fine. `assert_ggseg_atlas()` separates the two failure kinds:
+#'
+#' * A wrong class is reported as a wrong class.
+#' * A `ggseg_atlas` whose parts do not satisfy the schema aborts with the
+#'   [ggseg_atlas()] constructor's own diagnostic, chained as the parent error,
+#'   so the reader sees the missing column, the duplicated label or the
+#'   mismatched data class instead of a message about the class tag.
+#'
+#' Prefer this wherever a bad atlas would otherwise propagate; keep
+#' [is_ggseg_atlas()] for control flow, where signalling is wrong.
+#'
+#' @param x an object
+#' @param arg argument name to report, for use inside another function
+#' @param call environment the error is attributed to
+#'
+#' @return `x`, invisibly, when it is a valid atlas. Aborts otherwise.
+#' @export
+#' @examples
+#' atlas <- assert_ggseg_atlas(dk())
+#'
+#' broken <- dk()
+#' broken$core$label <- NULL
+#' try(assert_ggseg_atlas(broken))
+assert_ggseg_atlas <- function(
+  x,
+  arg = rlang::caller_arg(x),
+  call = rlang::caller_env()
+) {
+  if (!is_atlas_class(x)) {
+    cli::cli_abort(
+      "{.arg {arg}} must be a {.cls ggseg_atlas}, not {.cls {class(x)[1]}}.",
+      class = "ggseg.formats_not_atlas",
+      call = call
+    )
+  }
+
+  defect <- atlas_structure_defect(x)
+  if (!is.null(defect)) {
+    cli::cli_abort(
+      "{.arg {arg}} is a {.cls ggseg_atlas} with an invalid structure.",
+      class = "ggseg.formats_invalid_atlas",
+      parent = defect,
+      call = call
+    )
+  }
+
+  invisible(x)
 }
 
 #' Check if object is a legacy ggseg3d atlas
@@ -194,8 +252,7 @@ as.data.frame.ggseg_atlas <- function(x, ...) {
     result$colour <- unname(x$palette[result$label])
   }
 
-  is_context <- !result$label %in% x$core$label | is.na(result$label)
-  result <- result[order(is_context, decreasing = TRUE), , drop = FALSE]
+  result <- order_context_behind(result, x$core$label)
 
   sf::st_as_sf(result)
 }
@@ -272,23 +329,6 @@ order_cells_spatially <- function(cell, x) {
 }
 
 
-#' Order polygon rows so contextual regions are drawn behind core regions
-#'
-#' Contextual regions are those whose `label` is not part of the atlas core
-#' (e.g. the cortex silhouette and neighbouring structures drawn for anatomical
-#' reference). They must be drawn first so the labelled core regions sit on top;
-#' otherwise a context region that overlaps a small core region would occlude
-#' it. Returns `flat` with context rows moved ahead of core rows, preserving the
-#' original within-group order (a stable sort), mirroring the ordering the
-#' ggplot path applies in `as.data.frame()`.
-#' @noRd
-#' @keywords internal
-order_context_behind <- function(flat, core_labels) {
-  is_context <- !flat$label %in% core_labels
-  flat[order(is_context, decreasing = TRUE), , drop = FALSE]
-}
-
-
 #' Lightweight class check for atlas-classed objects
 #'
 #' `TRUE` when `x` carries the `ggseg_atlas` or legacy `brain_atlas` class
@@ -302,15 +342,30 @@ is_atlas_class <- function(x) {
 
 #' Structurally revalidate an atlas, without signalling
 #'
-#' Re-runs the `ggseg_atlas()` constructor on the parts of `x` and reports only
-#' whether it succeeded. Every class predicate (`is_ggseg_atlas()` and friends)
-#' goes through here, and renderers call those predicates in their control flow,
-#' so this must stay silent: the constructor's schema nudges are for the atlas
-#' author at build time, not for the user of a published atlas.
+#' Reports only whether the `ggseg_atlas()` constructor accepts the parts of
+#' `x`. Every class predicate (`is_ggseg_atlas()` and friends) goes through
+#' here, and renderers call those predicates in their control flow, so this
+#' must stay silent and must keep returning a bare logical: the constructor's
+#' schema nudges are for the atlas author at build time, not for the user of a
+#' published atlas. `assert_ggseg_atlas()` is the signalling counterpart.
 #' @keywords internal
 #' @noRd
 validate_ggseg_atlas <- function(x) {
-  tryCatch(
+  is.null(atlas_structure_defect(x))
+}
+
+
+#' The constructor error an atlas's parts raise, or `NULL`
+#'
+#' Re-runs the `ggseg_atlas()` constructor on the parts of `x` and returns the
+#' condition it threw, so a caller can either reduce it to a logical
+#' (`validate_ggseg_atlas()`) or re-raise it as the parent of its own error
+#' (`assert_ggseg_atlas()`). Messages and warnings are muffled either way;
+#' only an error distinguishes a structurally invalid atlas.
+#' @keywords internal
+#' @noRd
+atlas_structure_defect <- function(x) {
+  rlang::try_fetch(
     suppressMessages(suppressWarnings({
       ggseg_atlas(
         atlas = x$atlas,
@@ -319,9 +374,9 @@ validate_ggseg_atlas <- function(x) {
         data = x$data,
         palette = x$palette
       )
-      TRUE
+      NULL
     })),
-    error = function(e) FALSE
+    error = function(cnd) cnd
   )
 }
 
@@ -723,15 +778,19 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
   invisible()
 }
 
-#' Warn when `core$label` is not unique
+#' Abort when `core$label` is not unique
 #'
 #' `label` is the key the palette and every geometry slot are joined on, so a
 #' duplicated label fans one geometry row into several: the same parcel is
 #' drawn more than once, which in 3D also breaks semi-transparent compositing.
-#' The bundled `aseg` carried such alias rows until 0.1.0. This cannot be an
-#' error -- published atlas packages may carry them and would stop loading --
-#' so it warns once per atlas per session. Unlike a missing `names` column this
-#' is a data defect rather than schema incompleteness, so it stays a warning.
+#' The bundled `aseg` carried such alias rows (`Thalamus` / `Thalamus Proper`)
+#' until 0.1.0, and 18 of its 47 meshes were exact duplicates as a result.
+#'
+#' This is a schema violation rather than schema incompleteness, so it aborts
+#' from the constructor, where the atlas author stands and can fix the table.
+#' Read paths stay forgiving: legacy conversion collapses alias rows (see
+#' `dedupe_legacy_core_labels()`) and ggseg3d de-duplicates defensively at
+#' render time, so already-published atlases keep loading and drawing.
 #' @noRd
 #' @keywords internal
 validate_core_label_unique <- function(core, atlas) {
@@ -739,20 +798,46 @@ validate_core_label_unique <- function(core, atlas) {
   if (length(dupes) == 0) {
     return(invisible())
   }
-  rlang::warn(
-    cli::format_message(c(
-      "!" = "{.arg core$label} is not unique in {.val {atlas}}:
-             {.val {utils::head(dupes, 3)}}.",
+  cli::cli_abort(
+    c(
+      "{.arg core$label} must be unique in {.val {atlas}}.",
+      "x" = "Duplicated: {.val {dupes}}.",
       "i" = "{.field label} is the key the palette and geometry join on, so a
              duplicate draws the same region more than once.",
       "i" = "Keep one row per {.field label} and move any alias name into
              {.field names}."
-    )),
-    class = "ggseg.formats_duplicate_labels",
-    .frequency = "once",
-    .frequency_id = paste0("ggseg.formats-core-label-unique-", atlas)
+    ),
+    class = "ggseg.formats_duplicate_labels"
   )
-  invisible()
+}
+
+
+#' Collapse duplicated `core$label` rows on a legacy conversion path
+#'
+#' The constructor rejects duplicated labels, but the legacy atlases
+#' [convert_legacy_brain_atlas()] and [as_ggseg_atlas()] exist to migrate are
+#' exactly the ones that carry alias rows. Keeping the first row per `label`
+#' and warning lets the migration finish with a schema-valid atlas instead of
+#' aborting on data the caller cannot edit.
+#' @noRd
+#' @keywords internal
+dedupe_legacy_core_labels <- function(core, atlas = NA_character_) {
+  if (is.null(core) || !is.data.frame(core) || !"label" %in% names(core)) {
+    return(core)
+  }
+  dupes <- unique(core$label[duplicated(core$label)]) # nolint
+  if (length(dupes) == 0) {
+    return(core)
+  }
+  cli::cli_warn(
+    c(
+      "Collapsed {length(dupes)} duplicated {.field label} row{?s} while
+       converting {.val {atlas}}: {.val {dupes}}.",
+      "i" = "The first row of each duplicated {.field label} is kept."
+    ),
+    class = "ggseg.formats_collapsed_duplicate_labels"
+  )
+  core[!duplicated(core$label), , drop = FALSE]
 }
 
 

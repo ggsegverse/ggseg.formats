@@ -48,6 +48,7 @@ describe("ggseg_data_cortical", {
   })
 
   it("creates ggseg_data_cortical with both sf and vertices", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -97,6 +98,7 @@ describe("ggseg_data_subcortical", {
   })
 
   it("creates ggseg_data_subcortical with both sf and meshes", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "hippocampus",
       view = "axial",
@@ -132,11 +134,32 @@ describe("ggseg_data_tract", {
       )
     ))
 
-    data <- ggseg_data_tract(meshes = meshes)
+    data <- withr::with_options(
+      list(lifecycle_verbosity = "quiet"),
+      ggseg_data_tract(meshes = meshes)
+    )
 
     expect_s3_class(data, "ggseg_data_tract")
     expect_s3_class(data, "ggseg_atlas_data")
     expect_identical(nrow(data$centerlines), 1L)
+  })
+
+  it("signals the deprecation of the meshes argument", {
+    meshes <- data.frame(label = "cst_left")
+    meshes$mesh <- list(list(
+      vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
+      faces = data.frame(i = 1:3, j = 2:4, k = 3:5),
+      metadata = list(
+        n_centerline_points = 10,
+        centerline = matrix(1:30, ncol = 3),
+        tangents = matrix(1:30, ncol = 3)
+      )
+    ))
+    withr::local_options(lifecycle_verbosity = "warning")
+    expect_warning(
+      ggseg_data_tract(meshes = meshes),
+      class = "lifecycle_warning_deprecated"
+    )
   })
 
   it("errors when no geom or centerlines provided", {
@@ -151,6 +174,7 @@ describe("ggseg_data_tract", {
       metadata = list(n_centerline_points = 10)
     ))
 
+    withr::local_options(lifecycle_verbosity = "quiet")
     expect_warning(
       expect_error(ggseg_data_tract(meshes = meshes), "No valid centerlines"),
       "missing centerline metadata"
@@ -158,6 +182,7 @@ describe("ggseg_data_tract", {
   })
 
   it("creates ggseg_data_tract with sf geometry", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "cst_left",
       view = "sagittal",
@@ -256,6 +281,7 @@ describe("compute_tangents", {
 
 describe("print methods", {
   it("prints ggseg_data_cortical with sf and vertices", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -270,6 +296,7 @@ describe("print methods", {
   })
 
   it("prints ggseg_data_subcortical with sf and meshes", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "hippocampus",
       view = "axial",
@@ -308,6 +335,7 @@ describe("print methods", {
   })
 
   it("summarises brain_polygons geometry in the 2D view listing", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -336,6 +364,7 @@ describe("print methods", {
   })
 
   it("prints ggseg_data_cerebellar with sf and vertices", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "left_I-IV",
       view = "flatmap",
@@ -353,6 +382,7 @@ describe("print methods", {
   })
 
   it("prints ggseg_data_cerebellar without vertices", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "left_I-IV",
       view = "flatmap",
@@ -365,6 +395,7 @@ describe("print methods", {
   })
 
   it("prints ggseg_data_tract with sf and centerlines", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "cst_left",
       view = "sagittal",
@@ -396,6 +427,7 @@ describe("ggseg_data_cerebellar", {
   })
 
   it("creates ggseg_data_cerebellar with sf", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "left_I-IV",
       view = "flatmap",
@@ -410,6 +442,7 @@ describe("ggseg_data_cerebellar", {
   })
 
   it("creates ggseg_data_cerebellar with both sf and vertices", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "left_I-IV",
       view = "flatmap",

@@ -18,8 +18,10 @@ the interception point used by ggseg for plotting: it always returns
 sf geometry, converting from the polygon representation when needed.
 }
 \examples{
+\dontshow{if (requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}
 sf_data <- atlas_sf(dk())
 head(sf_data)
+\dontshow{\}) # examplesIf}
 }
 \seealso{
 Other atlas accessors:

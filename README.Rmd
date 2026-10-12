@@ -81,7 +81,7 @@ regions, filter views, and pipe operations together:
 #| label: subset-aseg
 aseg_small <- aseg() |>
   atlas_region_keep("hippocampus|amygdala|thalamus") |>
-  atlas_view_keep("coronal_3|axial_3") |>
+  atlas_view_keep("coronal_2|axial_3") |>
   atlas_view_gather()
 plot(aseg_small)
 ```

@@ -28,9 +28,7 @@
 #' poly <- as_polygon_atlas(dk())
 #' is_atlas_polygon(poly) # TRUE
 as_polygon_atlas <- function(atlas) {
-  if (!is_atlas_class(atlas)) {
-    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
-  }
+  assert_ggseg_atlas(atlas)
 
   geom <- geom_from_data(atlas$data)
   if (is.null(geom)) {
@@ -85,9 +83,7 @@ as_polygon_atlas <- function(atlas) {
 #' atlas <- as_sf_atlas(as_polygon_atlas(dk()))
 #' sf::st_buffer(atlas_geom(atlas)$geometry[[1]], dist = 2)
 as_sf_atlas <- function(atlas) {
-  if (!is_atlas_class(atlas)) {
-    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
-  }
+  assert_ggseg_atlas(atlas)
 
   geom <- geom_from_data(atlas$data)
   if (is.null(geom)) {

@@ -213,6 +213,7 @@ describe("convert_legacy_brain_atlas", {
   })
 
   it("extracts sf from data$sf when available", {
+    skip_if_not_installed("sf")
     mock_sf <- sf::st_sf(
       label = "lh_test",
       view = "lateral",
@@ -418,6 +419,7 @@ describe("remap_palette_to_labels", {
 
 describe("convert_legacy_brain_atlas 2D-only path", {
   it("creates atlas from 2D sf without vertex data", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -491,6 +493,7 @@ describe("convert_legacy_brain_atlas 2D-only path", {
 
 describe("unify_legacy_atlases (deprecated)", {
   it("warns and delegates to convert_legacy_brain_atlas", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -794,6 +797,7 @@ describe("infer_vertices_from_meshes", {
 
 describe("convert_legacy_brain_atlas palette remap", {
   it("remaps palette when no label keys match core", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "lh_parietal"),
       view = c("lateral", "lateral"),
@@ -835,6 +839,7 @@ describe("convert_legacy_brain_atlas palette remap", {
 
 describe("build_atlas_data for tract type", {
   it("builds tract atlas data from meshes", {
+    withr::local_options(lifecycle_verbosity = "quiet")
     centerline <- matrix(rnorm(30), ncol = 3)
     tangents <- matrix(rnorm(30), ncol = 3)
     meshes_df <- data.frame(label = "cst_left")
@@ -939,6 +944,7 @@ describe("try_infer_vertices", {
   })
 
   it("returns NULL when inference fails but sf_data exists", {
+    skip_if_not_installed("sf")
     mock_3d <- data.frame(
       atlas = "test",
       hemi = "left",

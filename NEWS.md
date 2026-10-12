@@ -34,6 +34,16 @@
   column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
   instead of a sorted set of unique values, so the three are now row-aligned.
   `sort(unique(x))` recovers the old value. `atlas_views()` is unchanged.
+- **Duplicate `core$label` values are now an error** from `ggseg_atlas()` and
+  `brain_atlas()`, naming the duplicates. `label` is the key the palette and
+  every geometry slot join on. Read paths stay forgiving: legacy conversion
+  collapses alias rows with a warning, and class predicates still return
+  `FALSE` silently.
+- `ggseg_atlas()` no longer rejects an atlas whose 2D geometry covers fewer
+  than 80% of `core` labels. Partial coverage is normal — no single view holds
+  every structure — so every single-view subset of an atlas is now valid and
+  plottable. Coverage below 90% warns, for information only; the
+  construction-time gate lives in ggseg.extra.
 - `names` is part of the `core` schema, read by the new `atlas_names()`, and
   `suit()` gains it. A non-character `names` is an error; a missing one only
   informs the atlas author once per session at construction, so plotting,
@@ -69,11 +79,19 @@
 - New `atlas_view_select()` keeps each region only in the views where it holds at
   least `threshold` of its best view's area, comparing regions whole.
 - `atlas_region_rename()` gains `match_on`; it still only writes to `region`.
+- `atlas_centerlines()` returns a `ggseg_centerlines` object with a print
+  method, matching `atlas_sf()`, `atlas_vertices()` and `atlas_meshes()`.
 - The exported API is organised into three `@family` groups: accessors, setters
   and manipulations.
+- New `assert_ggseg_atlas()` aborts with the `ggseg_atlas()` constructor's own
+  diagnostic (missing column, duplicated label, mismatched data class) instead
+  of the class message `is_ggseg_atlas()` could only reduce it to.
+  `as_polygon_atlas()` and `as_sf_atlas()` now use it.
 
 ### Bug fixes
 
+- `sf_to_polygons()` validates its argument before checking for `sf`, so a
+  malformed input reports its own problem on an install without `sf`.
 - The `atlas_region_*` verbs warn when their pattern matches no region, instead
   of silently returning the atlas unchanged.
 - `plot()` falls back to distinguishable colours, with a warning, when a palette
@@ -94,11 +112,35 @@
   geometry-less atlas, like the other view verbs, instead of aborting.
 - The five `brain_atlas`-rename deprecations stamped 0.2.0 now say 0.1.0, the
   version they ship in.
+- The view verbs warn when a requested view matches nothing, per element, so a
+  half-valid request like `c("coronal_3", "axial_3")` no longer passes silently
+  on the half that matches.
+- `atlas_views()` rejects a non-atlas instead of failing on `$`; the accessors
+  now all gate on the same cheap class check.
+- `read_atlas_files()` aborts naming `subjects_dir` and the pattern when no
+  stats file matches, instead of failing inside `strsplit()`.
+- `read_freesurfer_stats()` aborts with both counts and the path when a file's
+  `# ColHeaders` line and its table disagree.
+- `ggseg_data_tract(meshes = )` now signals its deprecation, like the sibling
+  `sf` argument.
+- Argument checks in `atlas_sf()`, `atlas_region_op()`, `validate_sf()` and
+  `ggseg_data_*(sf = )` run before the `sf` availability gate, so a bad
+  argument reports itself rather than a missing optional dependency.
 
 ### Internals
 
 - `.Rbuildignore` excludes `revdep/`, `*.Rcheck/` and `*.tar.gz`; `LazyData` is
   dropped, as the package has no `data/`.
+- Examples, vignettes and tests no longer require the suggested `sf`:
+  `R CMD check` with `_R_CHECK_DEPENDS_ONLY_` goes from 4 errors to 0.
+  Fixtures build geometry in either representation, so the sf-free code paths
+  are now actually exercised on an install without sf.
+- `order_context_behind()` was defined twice and open-coded a third time in
+  `as.data.frame()`; one definition remains and both call sites use it.
+- Documentation fixes: `get_brain_mesh()` states its face index base, stale
+  `coronal_3` / long-form region names in the README and vignettes now name
+  values the bundled atlases actually have, and the introductory vignette no
+  longer contradicts itself about `$` versus accessors.
 
 ## ggseg.formats 0.0.4
 

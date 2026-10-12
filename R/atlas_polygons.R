@@ -41,7 +41,6 @@ print.brain_polygons <- function(x, n = 10, ...) {
 #' @keywords internal
 #' @rdname sf_to_polygons
 sf_to_polygons <- function(sf_data) {
-  require_sf("sf_to_polygons()")
   if (!inherits(sf_data, "sf")) {
     cli::cli_abort("{.arg sf_data} must inherit from class {.cls sf}.")
   }
@@ -50,6 +49,11 @@ sf_to_polygons <- function(sf_data) {
   if (length(miss)) {
     cli::cli_abort("{.arg sf_data} missing columns: {.field {miss}}.")
   }
+
+  # Gated after the argument checks: a malformed input must report what is
+  # wrong with it, not a missing optional dependency. The coordinate
+  # extraction below is the part that genuinely needs sf.
+  require_sf("sf_to_polygons()")
 
   dropped <- reserved_coord_columns(sf_data)
   if (length(dropped)) {
@@ -257,7 +261,11 @@ resolve_geom <- function(geom = NULL, ..., .fn) {
       sprintf("%s(geom)", .fn),
       details = "sf input is converted to polygons via `sf_to_polygons()`."
     )
-    geom <- sf_to_polygons(validate_sf(dots$sf))
+    # Forced in two steps: as a nested call R's lazy evaluation enters
+    # `sf_to_polygons()` first, so a malformed `sf` on an install without sf
+    # reported the missing dependency instead of what was wrong with the input.
+    checked <- validate_sf(dots$sf)
+    geom <- sf_to_polygons(checked)
   }
   if (is.null(geom)) {
     return(NULL)

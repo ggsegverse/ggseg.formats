@@ -14,9 +14,10 @@ brain_atlas(atlas, type, core, data, palette = NULL)
 
 \item{type}{atlas type: "cortical", "subcortical", "tract", or "cerebellar"}
 
-\item{core}{data.frame with required columns hemi, region, label (one row per
-unique label). May contain additional columns for grouping or metadata
-(e.g., lobe, network, Brodmann area).}
+\item{core}{data.frame with required columns hemi, region, label. \code{label} is
+the key the palette and every geometry slot are joined on, so it must be
+unique: a duplicated \code{label} is an error. May contain additional columns
+for grouping or metadata (e.g., lobe, network, Brodmann area).}
 
 \item{data}{a ggseg_atlas_data object created by
 \code{\link[=ggseg_data_cortical]{ggseg_data_cortical()}}, \code{\link[=ggseg_data_subcortical]{ggseg_data_subcortical()}},

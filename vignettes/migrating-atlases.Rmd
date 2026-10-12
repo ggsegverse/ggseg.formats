@@ -101,6 +101,29 @@ To add it, give `core` one long-form display name per row, in `core` row order,
 before calling `ggseg_atlas()`. Spell it to read well in a legend; it is not the
 pre-0.1.0 `region` key, which `legacy_region_map()` records separately.
 
+### `label` must be unique
+
+`label` is the key the palette and every geometry slot are joined on, so from
+0.1.0 a duplicated `label` in `core` is an error from `ggseg_atlas()`. A
+duplicate fans one geometry row into several: the parcel is drawn more than
+once, and in 3D the repeated draw also darkens semi-transparent compositing.
+The bundled `aseg` carried `Thalamus` / `Thalamus Proper` alias rows this way.
+
+Keep one row per `label` and move the alias spelling into `names`. Read paths
+stay forgiving so already-published atlases keep working:
+`as_ggseg_atlas()` and `convert_legacy_brain_atlas()` collapse alias rows with
+a warning, `is_ggseg_atlas()` reports `FALSE` without raising a condition,
+and ggseg3d drops the repeated rows at render time.
+
+### 2D coverage is not validated
+
+`ggseg_atlas()` does not check how much of `core` has 2D geometry. Partial
+coverage is normal: no single view holds every structure, and narrowing an
+atlas to one view with `atlas_view_keep()` leaves `core` whole while the
+geometry shrinks. Coverage below 90% raises a warning for information only;
+the atlas is valid either way. If you are *building* an atlas and want a coverage floor, that
+belongs in the construction pipeline (ggseg.extra), not in the schema.
+
 ## Migrating an atlas package to sf-optional
 
 Since the **sf-optional** milestone (ggseg 2.2), a `ggseg_atlas` stores its 2D

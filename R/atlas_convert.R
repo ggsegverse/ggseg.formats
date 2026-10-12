@@ -470,6 +470,7 @@ legacy_atlas_setup <- function(
 #' @keywords internal
 assemble_legacy_atlas <- function(setup, result, original_palette) {
   core <- fill_legacy_core_names(result$core %||% setup$core)
+  core <- dedupe_legacy_core_labels(core, setup$atlas_name)
   palette <- resolve_legacy_palette(
     result$palette %||% setup$palette,
     original_palette,

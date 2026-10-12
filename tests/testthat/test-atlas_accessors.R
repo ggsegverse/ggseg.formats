@@ -59,17 +59,20 @@ describe("atlas_polygons", {
 
 describe("atlas_sf", {
   it("returns sf data from atlas", {
+    skip_if_not_installed("sf")
     sf_data <- atlas_sf(dk())
     expect_s3_class(sf_data, "sf")
   })
 
   it("has ggseg_sf as first class", {
+    skip_if_not_installed("sf")
     sf_data <- atlas_sf(dk())
     expect_identical(class(sf_data)[1], "ggseg_sf")
     expect_s3_class(sf_data, "sf")
   })
 
   it("prints without error and keeps its classes", {
+    skip_if_not_installed("sf")
     sf_data <- sf::st_sf(
       label = c("lh_a", "lh_b"),
       view = c("lateral", "medial"),
@@ -93,6 +96,7 @@ describe("atlas_sf", {
   })
 
   it("returns sf joined with core and palette", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "rh_frontal"),
       view = c("lateral", "lateral"),
@@ -128,6 +132,7 @@ describe("atlas_sf", {
   })
 
   it("removes hemi/region from sf before merge", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       hemi = "left",
@@ -158,6 +163,7 @@ describe("atlas_sf", {
   })
 
   it("draws contextual rows before core rows (not re-sorted by label)", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_zzz", "lh_aaa", "lh_ctx"),
       view = "lateral",
@@ -333,6 +339,25 @@ describe("atlas_centerlines", {
 
   it("errors on a non-atlas", {
     expect_error(atlas_centerlines(data.frame(a = 1)), "must be a")
+  })
+
+  it("has ggseg_centerlines as first class, like the sibling accessors", {
+    result <- atlas_centerlines(make_tract_atlas())
+    expect_identical(class(result)[1], "ggseg_centerlines")
+  })
+
+  it("prints a summary instead of raw list-columns", {
+    result <- atlas_centerlines(make_tract_atlas())
+    header <- NULL
+    rows <- capture.output(
+      header <- capture.output(print(result), type = "message")
+    )
+    out <- paste(c(header, rows), collapse = "\n")
+    expect_match(out, "ggseg_centerlines")
+    expect_match(out, "Points per tract")
+    # the points/tangents list-columns are summarised, not dumped
+    expect_match(out, "<int [15]>", fixed = TRUE)
+    expect_false(grepl("1, 2, 3, 4, 5", out, fixed = TRUE))
   })
 })
 

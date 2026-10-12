@@ -20,6 +20,7 @@ reference:
       - starts_with("ggseg_")
       - starts_with("is_ggseg")
       - starts_with("as_ggseg")
+      - starts_with("assert_")
   - title: Legacy conversion
     desc: Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
     contents:

@@ -42,7 +42,7 @@ atlas_palette <- function(atlas, ...) {
 #' atlas_geometry_type(dk())
 #' @family atlas accessors
 atlas_geom <- function(atlas) {
-  if (!is_ggseg_atlas(atlas)) {
+  if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
   geom_from_data(atlas$data)
@@ -95,13 +95,12 @@ is_atlas_polygon <- function(atlas) {
 #' @param atlas a ggseg_atlas object
 #' @return sf data.frame ready for plotting
 #' @export
-#' @examples
+#' @examplesIf requireNamespace("sf", quietly = TRUE)
 #' sf_data <- atlas_sf(dk())
 #' head(sf_data)
 #' @family atlas accessors
 atlas_sf <- function(atlas) {
-  require_sf("atlas_sf()")
-  if (!is_ggseg_atlas(atlas)) {
+  if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
@@ -109,6 +108,11 @@ atlas_sf <- function(atlas) {
   if (is.null(geom)) {
     cli::cli_abort("Atlas does not contain 2D geometry for rendering.")
   }
+
+  # Gate after the argument checks, so a bad atlas reports what is wrong with
+  # it rather than reporting a missing optional dependency.
+  require_sf("atlas_sf()")
+
   sf_geom <- if (inherits(geom, "brain_polygons")) {
     polygons_to_sf(geom)
   } else {
@@ -149,7 +153,7 @@ atlas_sf <- function(atlas) {
 #' polys <- atlas_polygons(dk())
 #' @family atlas accessors
 atlas_polygons <- function(atlas) {
-  if (!is_ggseg_atlas(atlas)) {
+  if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
@@ -177,7 +181,7 @@ atlas_polygons <- function(atlas) {
 #' head(verts)
 #' @family atlas accessors
 atlas_vertices <- function(atlas) {
-  if (!is_ggseg_atlas(atlas)) {
+  if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
@@ -205,8 +209,9 @@ atlas_vertices <- function(atlas) {
 #' them.
 #'
 #' @param atlas a ggseg_atlas object
-#' @return data.frame with one row per tract, a `points` list-column of
-#'   n x 3 coordinate matrices and a matching `tangents` list-column
+#' @return A `ggseg_centerlines` data.frame with one row per tract, a `points`
+#'   list-column of n x 3 coordinate matrices and a matching `tangents`
+#'   list-column
 #' @export
 #' @examples
 #' centerlines <- atlas_centerlines(tracula())
@@ -214,7 +219,7 @@ atlas_vertices <- function(atlas) {
 #' dim(centerlines$points[[1]])
 #' @family atlas accessors
 atlas_centerlines <- function(atlas) {
-  if (!is_ggseg_atlas(atlas)) {
+  if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
@@ -232,6 +237,7 @@ atlas_centerlines <- function(atlas) {
     result$colour <- unname(atlas$palette[result$label])
   }
 
+  class(result) <- c("ggseg_centerlines", class(result))
   result
 }
 
@@ -249,7 +255,7 @@ atlas_centerlines <- function(atlas) {
 #' head(meshes)
 #' @family atlas accessors
 atlas_meshes <- function(atlas) {
-  if (!is_ggseg_atlas(atlas)) {
+  if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
@@ -293,6 +299,23 @@ print.ggseg_vertices <- function(x, n = 10, ...) {
     cli::cli_text(
       "Vertices per region: {format(min(vert_lengths), big.mark = ',')}
 \u2013{format(max(vert_lengths), big.mark = ',')}"
+    )
+  }
+  print_data_head(x, n)
+  invisible(x)
+}
+
+#' @export
+print.ggseg_centerlines <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  n_points <- if ("points" %in% names(x)) {
+    vapply(x$points, NROW, integer(1))
+  }
+  cli::cli_rule("{.cls ggseg_centerlines} data: {dims}")
+  if (!is.null(n_points) && length(n_points) > 0) {
+    cli::cli_text(
+      "Points per tract: {format(min(n_points), big.mark = ',')}
+\u2013{format(max(n_points), big.mark = ',')}"
     )
   }
   print_data_head(x, n)

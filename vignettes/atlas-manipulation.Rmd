@@ -19,10 +19,6 @@ knitr::opts_chunk$set(
 ```{r}
 #| label: setup
 library(ggseg.formats)
-# The atlas-manipulation helpers shown here operate on sf-backed atlas
-# geometry. Since the sf-optional milestone, sf is a Suggests dependency,
-# so load it explicitly here.
-library(sf)
 ```
 
 Say you are preparing a figure that focuses on the subcortical structures visible
@@ -35,25 +31,25 @@ Every one of those steps is a single function call, and they all pipe together.
 
 ggseg.formats provides three groups of manipulation functions. **Region
 functions** (`atlas_region_*`) control which regions are active in the atlas.
-**View functions** (`atlas_view_*`) control the 2D sf geometry—which views are
+**View functions** (`atlas_view_*`) control the 2D geometry—which views are
 present and how they are arranged. **Core functions** (`atlas_core_*`) enrich
 the region metadata. All of them accept a `ggseg_atlas` as the first argument,
 return a new `ggseg_atlas`, and play nicely with the pipe.
 
 ## Keeping and removing regions
 
-`atlas_region_remove()` strips a region entirely—from core, palette, sf geometry,
+`atlas_region_remove()` strips a region entirely—from core, palette, 2D geometry,
 and 3D data. The `pattern` argument is passed to `grepl()` with
 `ignore.case = TRUE`, so partial matches work:
 
 ```{r}
 #| label: region-remove
-no_cc <- atlas_region_remove(dk(), "corpus callosum")
-"corpus callosum" %in% atlas_regions(no_cc)
+no_cc <- atlas_region_remove(dk(), "corpuscallosum")
+"corpuscallosum" %in% atlas_regions(no_cc)
 ```
 
 `atlas_region_keep()` is the inverse: it keeps only the regions that match and
-turns everything else into context geometry (sf is preserved for surface
+turns everything else into context geometry (the geometry is preserved for surface
 continuity, but non-matching regions leave core and palette):
 
 ```{r}
@@ -85,7 +81,7 @@ atlas_labels(both_sides)
 Sometimes you want a region's polygon to stay visible (rendered in grey) but not
 appear in the legend or carry data. This is what
 `atlas_region_contextual()` does. It removes the region from core, palette, and
-3D data but leaves the sf geometry in place:
+3D data but leaves the 2D geometry in place:
 
 ```{r}
 #| label: region-contextual
@@ -179,7 +175,7 @@ cleaned_sag <- atlas_view_remove_small(
 )
 ```
 
-`atlas_view_remove_region()` removes a specific region's sf geometry without
+`atlas_view_remove_region()` removes a specific region's 2D geometry without
 touching core, palette, or 3D data. This is useful when a region's 2D projection
 is misleading but you still want it in 3D:
 
@@ -201,7 +197,7 @@ side-by-side with a configurable gap:
 ```{r}
 #| label: view-gather
 trimmed <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_3", "axial_3")) |>
+  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
   atlas_view_gather()
 atlas_views(trimmed)
 ```
@@ -212,8 +208,8 @@ at the same time. Views not mentioned in `order` are appended at the end:
 ```{r}
 #| label: view-reorder
 reordered <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_3", "axial_3")) |>
-  atlas_view_reorder(c("axial_3", "sagittal", "coronal_3"))
+  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
+  atlas_view_reorder(c("axial_3", "sagittal", "coronal_2"))
 atlas_views(reordered)
 ```
 
@@ -227,10 +223,10 @@ information. Here we add a custom network column to a handful of regions:
 #| label: core-add
 network_info <- data.frame(
   region = c(
-    "superior frontal",
+    "superiorfrontal",
     "precuneus",
-    "inferior parietal",
-    "posterior cingulate"
+    "inferiorparietal",
+    "posteriorcingulate"
   ),
   network = "default mode"
 )
@@ -248,7 +244,7 @@ two-view figure of deep grey matter structures:
 ```{r}
 #| label: full-pipeline
 publication_aseg <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_3")) |>
+  atlas_view_keep(c("sagittal", "coronal_2")) |>
   atlas_region_contextual("ventricle|choroid|white|cc") |>
   atlas_view_remove_small(min_area = 30) |>
   atlas_view_gather(gap = 0.1)

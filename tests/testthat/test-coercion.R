@@ -35,6 +35,7 @@ describe("as_ggseg_atlas", {
 
 describe("as_ggseg_atlas.ggseg_atlas", {
   it("converts legacy structure with separate sf/vertices fields", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = c("lh_frontal", "rh_frontal"),
       view = c("lateral", "lateral"),
@@ -132,6 +133,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
   })
 
   it("auto-converts old brain_atlas with sf-in-data to ggseg_atlas", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
@@ -167,6 +169,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
 
 describe("as_ggseg_atlas.list", {
   it("converts legacy list with separate sf field", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -228,6 +231,7 @@ describe("convert_legacy_brain_data", {
   })
 
   it("converts legacy atlas without core", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
@@ -259,6 +263,7 @@ describe("convert_legacy_brain_data", {
   })
 
   it("renames side column to view", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = c("left", "right"),
       region = c("frontal", "frontal"),
@@ -287,6 +292,7 @@ describe("convert_legacy_brain_data", {
   })
 
   it("handles legacy atlas without colour column", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = "left",
       region = "frontal",
@@ -340,6 +346,7 @@ describe("as_brain_atlas (deprecated)", {
 
 describe("as_ggseg_atlas.brain_atlas legacy paths", {
   it("converts brain_atlas with core and data.frame data", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       hemi = "left",
       region = "frontal",
@@ -368,6 +375,7 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
   })
 
   it("converts brain_atlas with separate sf field", {
+    skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
       label = "lh_frontal",
       view = "lateral",
@@ -432,5 +440,59 @@ describe("as_ggseg_atlas.ggseg3d_atlas", {
       "Using existing vertex indices from 3D atlas"
     )
     expect_s3_class(result, "ggseg_atlas")
+  })
+})
+
+
+describe("legacy core label de-duplication", {
+  it("collapses alias rows instead of aborting, and warns", {
+    vertices <- data.frame(label = "Left-Thalamus")
+    vertices$vertices <- list(1L:3L)
+    legacy <- structure(
+      list(
+        atlas = "aliased",
+        type = "cortical",
+        palette = NULL,
+        core = data.frame(
+          hemi = c("left", "left"),
+          region = c("thalamus", "thalamus proper"),
+          label = c("Left-Thalamus", "Left-Thalamus"),
+          names = c("Thalamus", "Thalamus Proper")
+        ),
+        vertices = vertices
+      ),
+      class = c("brain_atlas", "list")
+    )
+
+    expect_warning(
+      atlas <- withCallingHandlers(
+        as_ggseg_atlas(legacy),
+        lifecycle_warning_deprecated = function(w) {
+          invokeRestart("muffleWarning")
+        }
+      ),
+      class = "ggseg.formats_collapsed_duplicate_labels"
+    )
+    expect_identical(nrow(atlas$core), 1L)
+    expect_identical(atlas$core$label, "Left-Thalamus")
+    expect_true(is_ggseg_atlas(atlas))
+  })
+
+  it("leaves a unique core untouched", {
+    core <- data.frame(
+      hemi = "left",
+      region = "frontal",
+      label = "lh_frontal",
+      names = "frontal"
+    )
+    expect_identical(dedupe_legacy_core_labels(core, "clean"), core)
+  })
+
+  it("passes through objects without a label column", {
+    expect_null(dedupe_legacy_core_labels(NULL))
+    expect_identical(
+      dedupe_legacy_core_labels(data.frame(a = 1)),
+      data.frame(a = 1)
+    )
   })
 })
