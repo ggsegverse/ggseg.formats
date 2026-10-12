@@ -22,7 +22,6 @@ describe("sfg_coords", {
   })
 
   it("puts every ring of a POLYGON in one piece", {
-    # sfheaders omits polygon_id for a POLYGON, where there is only one piece.
     df <- data.frame(
       ring = c(rep(1, 5), rep(2, 5)),
       x = c(0, 4, 4, 0, 0, 1, 2, 2, 1, 1),
@@ -35,19 +34,17 @@ describe("sfg_coords", {
     expect_identical(out$subgroup, as.integer(df$ring))
   })
 
-  it("returns no rows for an empty geometry rather than erroring", {
-    # st_coordinates() gives an empty MULTIPOLYGON only X/Y/L3, so reading L2
-    # off it was a subscript error. An unmatched brain_join() row is exactly
-    # this shape.
-    empties <- list(
-      structure(list(), class = c("XY", "MULTIPOLYGON", "sfg")),
-      structure(list(), class = c("XY", "POLYGON", "sfg"))
-    )
-    for (geom in empties) {
-      out <- sfg_coords(geom)
-      expect_identical(nrow(out), 0L)
-      expect_identical(names(out), c("x", "y", "group", "subgroup"))
-    }
+  it("returns a zero-row frame for an empty geometry, for either sfg class", {
+    multi <- sfg_coords(structure(
+      list(),
+      class = c("XY", "MULTIPOLYGON", "sfg")
+    ))
+    expect_identical(nrow(multi), 0L)
+    expect_identical(names(multi), c("x", "y", "group", "subgroup"))
+
+    single <- sfg_coords(structure(list(), class = c("XY", "POLYGON", "sfg")))
+    expect_identical(nrow(single), 0L)
+    expect_identical(names(single), c("x", "y", "group", "subgroup"))
   })
 })
 

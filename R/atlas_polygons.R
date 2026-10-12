@@ -89,24 +89,25 @@ sf_to_polygons <- function(sf_data) {
 #'
 #' `sfheaders::sfg_to_df()` covers what `sf::st_coordinates()` was used for
 #' here, so reading an sf atlas needs no sf installation. Two shapes it does
-#' not handle directly: it errors on an empty geometry, where
-#' `st_coordinates()` returns no rows, and it omits `polygon_id` for a
-#' `POLYGON`, whose rings all belong to one piece.
+#' not handle directly: it errors on an empty geometry, and it omits
+#' `polygon_id` for a `POLYGON`, whose rings all belong to one piece. The
+#' caller still cannot assemble a row from no coordinates, so an empty
+#' geometry reaches `sf_to_polygons()` as a zero-row frame and fails there.
 #' @noRd
 sfg_coords <- function(geom) {
-  if (length(geom) == 0) {
-    return(data.frame(
-      x = numeric(),
-      y = numeric(),
-      group = integer(),
-      subgroup = integer()
-    ))
+  df <- if (length(geom) == 0) {
+    data.frame(x = numeric(), y = numeric(), linestring_id = integer())
+  } else {
+    sfheaders::sfg_to_df(geom)
   }
-  df <- sfheaders::sfg_to_df(geom)
   data.frame(
     x = df$x,
     y = df$y,
-    group = if (is.null(df$polygon_id)) 1L else as.integer(df$polygon_id),
+    group = if (is.null(df$polygon_id)) {
+      rep(1L, nrow(df))
+    } else {
+      as.integer(df$polygon_id)
+    },
     subgroup = as.integer(df$linestring_id)
   )
 }
