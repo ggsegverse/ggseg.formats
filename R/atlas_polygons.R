@@ -50,11 +50,6 @@ sf_to_polygons <- function(sf_data) {
     cli::cli_abort("{.arg sf_data} missing columns: {.field {miss}}.")
   }
 
-  # Gated after the argument checks: a malformed input must report what is
-  # wrong with it, not a missing optional dependency. The coordinate
-  # extraction below is the part that genuinely needs sf.
-  require_sf("sf_to_polygons()")
-
   dropped <- reserved_coord_columns(sf_data)
   if (length(dropped)) {
     cli::cli_warn(
@@ -69,15 +64,14 @@ sf_to_polygons <- function(sf_data) {
   carried <- setdiff(names(sf_data), c(required, dropped))
 
   per_row <- lapply(seq_len(nrow(sf_data)), function(i) {
-    geom <- sf_data$geometry[[i]]
-    co <- sf::st_coordinates(geom)
+    co <- sfg_coords(sf_data$geometry[[i]])
     row <- data.frame(
       label = unname(sf_data$label[i]),
       view = unname(sf_data$view[i]),
-      x = unname(co[, "X"]),
-      y = unname(co[, "Y"]),
-      group = as.integer(co[, "L2"]),
-      subgroup = as.integer(co[, "L1"])
+      x = co$x,
+      y = co$y,
+      group = co$group,
+      subgroup = co$subgroup
     )
     for (nm in carried) {
       row[[nm]] <- rep(unname(sf_data[[nm]][i]), nrow(row))
@@ -88,6 +82,33 @@ sf_to_polygons <- function(sf_data) {
   combined <- df_bind_rows(per_row)
   out <- df_nest(combined, "label", "geometry")
   structure(out, class = c("brain_polygons", class(out)))
+}
+
+
+#' Read one sfg's coordinates without sf
+#'
+#' `sfheaders::sfg_to_df()` covers what `sf::st_coordinates()` was used for
+#' here, so reading an sf atlas needs no sf installation. Two shapes it does
+#' not handle directly: it errors on an empty geometry, where
+#' `st_coordinates()` returns no rows, and it omits `polygon_id` for a
+#' `POLYGON`, whose rings all belong to one piece.
+#' @noRd
+sfg_coords <- function(geom) {
+  if (length(geom) == 0) {
+    return(data.frame(
+      x = numeric(),
+      y = numeric(),
+      group = integer(),
+      subgroup = integer()
+    ))
+  }
+  df <- sfheaders::sfg_to_df(geom)
+  data.frame(
+    x = df$x,
+    y = df$y,
+    group = if (is.null(df$polygon_id)) 1L else as.integer(df$polygon_id),
+    subgroup = as.integer(df$linestring_id)
+  )
 }
 
 
