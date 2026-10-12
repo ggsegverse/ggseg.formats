@@ -263,15 +263,13 @@ describe("validate_data_labels", {
     )
   })
 
-  it("allows context-only labels in sf (not in core)", {
-    skip_if_not_installed("sf")
-    sf_geom <- sf::st_sf(
-      label = c("lh_frontal", "lh_medialwall"),
-      view = c("lateral", "lateral"),
-      geometry = sf::st_sfc(
-        make_polygon(),
-        make_polygon2()
-      )
+  it("allows context-only labels in 2D geometry (not in core)", {
+    geom <- rings_as_geom(
+      list(
+        ring_square("lh_frontal", "lateral", 0, 0),
+        ring_square("lh_medialwall", "lateral", 2, 0)
+      ),
+      polygons = TRUE
     )
     core <- data.frame(
       hemi = "left",
@@ -285,7 +283,7 @@ describe("validate_data_labels", {
         atlas = "test",
         type = "cortical",
         core = core,
-        data = ggseg_data_cortical(geom = sf_geom)
+        data = ggseg_data_cortical(geom = geom)
       )
     )
   })
@@ -340,8 +338,7 @@ describe("validate_data_labels", {
     )
   })
 
-  it("warns, and stays valid, on partial sf coverage", {
-    skip_if_not_installed("sf")
+  it("warns, and stays valid, on partial 2D coverage", {
     labels <- paste0(
       "lh_",
       c(
@@ -352,15 +349,11 @@ describe("validate_data_labels", {
         "insula"
       )
     )
-    sf_geom <- sf::st_sf(
-      label = labels[1:4],
-      view = rep("lateral", 4),
-      geometry = sf::st_sfc(
-        make_polygon(),
-        make_polygon(c(1, 0, 2, 0, 2, 1, 1, 0)),
-        make_polygon(c(2, 0, 3, 0, 3, 1, 2, 0)),
-        make_polygon(c(3, 0, 4, 0, 4, 1, 3, 0))
-      )
+    geom <- rings_as_geom(
+      lapply(seq_len(4), function(i) {
+        ring_square(labels[i], "lateral", i - 1, 0)
+      }),
+      polygons = TRUE
     )
     vertices <- data.frame(label = labels)
     vertices$vertices <- list(1:3, 4:6, 7:9, 10:12, 13:15)
@@ -376,7 +369,7 @@ describe("validate_data_labels", {
         atlas = "test",
         type = "cortical",
         core = core,
-        data = ggseg_data_cortical(geom = sf_geom, vertices = vertices)
+        data = ggseg_data_cortical(geom = geom, vertices = vertices)
       ),
       class = "ggseg.formats_partial_2d_coverage"
     )

@@ -1,25 +1,12 @@
 describe("gather/reorder layout is representation-independent", {
   # Same geometry, two views, two hemispheres, built so each view sits at a
   # distinct x so group centroids are unambiguous.
-  mk <- function(x) {
-    skip_if_not_installed("sf")
-    sf::st_polygon(list(matrix(
-      c(x, 0, x + 1, 0, x + 1, 1, x, 1, x, 0),
-      ncol = 2,
-      byrow = TRUE
-    )))
-  }
-  # Built lazily inside a function: the whole block compares the sf path with
-  # the polygon path, so the fixture has to skip rather than fail when sf is
-  # not installed.
-  sf_geom <- function() {
-    skip_if_not_installed("sf")
-    sf::st_sf(
-      label = c("lh_a", "rh_a", "lh_a", "rh_a"),
-      view = c("lateral", "lateral", "medial", "medial"),
-      geometry = sf::st_sfc(mk(0), mk(2), mk(10), mk(12))
-    )
-  }
+  spec <- list(
+    ring_square("lh_a", "lateral", 0, 0),
+    ring_square("rh_a", "lateral", 2, 0),
+    ring_square("lh_a", "medial", 10, 0),
+    ring_square("rh_a", "medial", 12, 0)
+  )
   core <- data.frame(
     hemi = c("left", "right"),
     region = c("a", "a"),
@@ -36,8 +23,11 @@ describe("gather/reorder layout is representation-independent", {
     )
   }
 
-  sf_atlas <- function() mk_atlas(sf_geom())
-  poly_atlas <- function() mk_atlas(sf_to_polygons(sf_geom()))
+  # Built lazily inside a function: `rings_as_geom(polygons = FALSE)` skips
+  # when sf is not installed, so the parity blocks skip rather than fail while
+  # the polygon-only blocks still run.
+  sf_atlas <- function() mk_atlas(rings_as_geom(spec, polygons = FALSE))
+  poly_atlas <- function() mk_atlas(rings_as_geom(spec, polygons = TRUE))
 
   # per (hemi, view) x-range of an atlas's geometry, as a stable-keyed vector
   group_xranges <- function(atlas) {
@@ -78,6 +68,14 @@ describe("gather/reorder layout is representation-independent", {
     unique(polygons_unnest(atlas_polygons(atlas))$view)
   }
 
+  it("reorder puts polygon rows in the requested order", {
+    order <- c("medial", "lateral")
+    expect_identical(
+      view_row_order(atlas_view_reorder(poly_atlas(), order)),
+      order
+    )
+  })
+
   it("reorder puts the rows in the requested order, both reps agree", {
     order <- c("medial", "lateral")
     expect_identical(
@@ -90,6 +88,13 @@ describe("gather/reorder layout is representation-independent", {
     )
   })
 
+  it("gather puts polygon rows in layout order", {
+    expect_identical(
+      view_row_order(atlas_view_gather(poly_atlas())),
+      c("lateral", "medial")
+    )
+  })
+
   it("gather puts the rows in layout order, both reps agree", {
     expect_identical(
       view_row_order(atlas_view_gather(sf_atlas())),
@@ -97,13 +102,21 @@ describe("gather/reorder layout is representation-independent", {
     )
   })
 
+  layout_order <- function(atlas) {
+    xr <- group_xranges(atlas_view_gather(atlas))
+    xr$group[order(xr$xmin)]
+  }
+
+  # lateral sits left of medial in the source, so both halves of lateral
+  # precede both halves of medial after gathering.
+  it("gather orders polygon groups left-to-right by centroid", {
+    expect_identical(
+      layout_order(poly_atlas()),
+      c("left lateral", "right lateral", "left medial", "right medial")
+    )
+  })
+
   it("gather orders groups left-to-right by centroid, both reps agree", {
-    layout_order <- function(atlas) {
-      xr <- group_xranges(atlas_view_gather(atlas))
-      xr$group[order(xr$xmin)]
-    }
-    # lateral sits left of medial in the source, so both halves of lateral
-    # precede both halves of medial after gathering.
     expect_identical(
       layout_order(sf_atlas()),
       c("left lateral", "right lateral", "left medial", "right medial")
