@@ -109,14 +109,17 @@ atlas_sf <- function(atlas) {
     cli::cli_abort("Atlas does not contain 2D geometry for rendering.")
   }
 
-  # Both branches already yield an sf-class data frame -- polygons_to_sf()
-  # builds one through sfheaders -- so st_as_sf() was an identity call, and
-  # the only thing that tied this accessor to sf.
-  sf_data <- if (inherits(geom, "brain_polygons")) {
+  # Gate after the argument checks, so a bad atlas reports what is wrong with
+  # it rather than reporting a missing optional dependency.
+  require_sf("atlas_sf()")
+
+  sf_geom <- if (inherits(geom, "brain_polygons")) {
     polygons_to_sf(geom)
   } else {
     geom
   }
+
+  sf_data <- sf::st_as_sf(sf_geom)
   core_cols <- intersect(names(sf_data), c("hemi", "region"))
   if (length(core_cols) > 0) {
     sf_data[core_cols] <- NULL
