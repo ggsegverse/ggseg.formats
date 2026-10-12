@@ -23,9 +23,10 @@ brain_atlas(atlas, type, core, data, palette = NULL)
 
 - core:
 
-  data.frame with required columns hemi, region, label (one row per
-  unique label). May contain additional columns for grouping or metadata
-  (e.g., lobe, network, Brodmann area).
+  data.frame with required columns hemi, region, label. `label` is the
+  key the palette and every geometry slot are joined on, so it must be
+  unique: a duplicated `label` is an error. May contain additional
+  columns for grouping or metadata (e.g., lobe, network, Brodmann area).
 
 - data:
 

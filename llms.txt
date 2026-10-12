@@ -57,7 +57,7 @@ query regions, filter views, and pipe operations together:
 
 aseg_small <- aseg() |>
   atlas_region_keep("hippocampus|amygdala|thalamus") |>
-  atlas_view_keep("coronal_3|axial_3") |>
+  atlas_view_keep("coronal_2|axial_3") |>
   atlas_view_gather()
 plot(aseg_small)
 ```
@@ -124,6 +124,8 @@ Create and inspect ggseg atlas objects.
 - [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   [`as_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   : Coerce to ggseg atlas
+- [`assert_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.md)
+  : Require a valid ggseg atlas, reporting why it is not
 
 ## Legacy conversion
 

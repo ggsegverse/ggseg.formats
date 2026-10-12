@@ -20,8 +20,9 @@ atlas_centerlines(atlas)
 
 ## Value
 
-data.frame with one row per tract, a `points` list-column of n x 3
-coordinate matrices and a matching `tangents` list-column
+A `ggseg_centerlines` data.frame with one row per tract, a `points`
+list-column of n x 3 coordinate matrices and a matching `tangents`
+list-column
 
 ## See also
 

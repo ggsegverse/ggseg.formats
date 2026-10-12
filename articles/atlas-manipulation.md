@@ -3,11 +3,6 @@
 ``` r
 
 library(ggseg.formats)
-# The atlas-manipulation helpers shown here operate on sf-backed atlas
-# geometry. Since the sf-optional milestone, sf is a Suggests dependency,
-# so load it explicitly here.
-library(sf)
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
 ```
 
 Say you are preparing a figure that focuses on the subcortical
@@ -21,36 +16,31 @@ single function call, and they all pipe together.
 
 ggseg.formats provides three groups of manipulation functions. **Region
 functions** (`atlas_region_*`) control which regions are active in the
-atlas. **View functions** (`atlas_view_*`) control the 2D sf
-geometry—which views are present and how they are arranged. **Core
-functions** (`atlas_core_*`) enrich the region metadata. All of them
-accept a `ggseg_atlas` as the first argument, return a new
-`ggseg_atlas`, and play nicely with the pipe.
+atlas. **View functions** (`atlas_view_*`) control the 2D geometry—which
+views are present and how they are arranged. **Core functions**
+(`atlas_core_*`) enrich the region metadata. All of them accept a
+`ggseg_atlas` as the first argument, return a new `ggseg_atlas`, and
+play nicely with the pipe.
 
 ## Keeping and removing regions
 
 [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-strips a region entirely—from core, palette, sf geometry, and 3D data.
+strips a region entirely—from core, palette, 2D geometry, and 3D data.
 The `pattern` argument is passed to
 [`grepl()`](https://rdrr.io/r/base/grep.html) with `ignore.case = TRUE`,
 so partial matches work:
 
 ``` r
 
-no_cc <- atlas_region_remove(dk(), "corpus callosum")
-#> Warning in atlas_region_remove(dk(), "corpus callosum"): No regions matched "corpus callosum".
-#> ℹ Nothing was removed.
-#> ! It matches the long-form region "corpus callosum", which this atlas used
-#>   before ggseg.formats 0.1.0, where region is now "corpuscallosum".
-#> ℹ Use `legacy_region_map()` for the full mapping.
-"corpus callosum" %in% atlas_regions(no_cc)
+no_cc <- atlas_region_remove(dk(), "corpuscallosum")
+"corpuscallosum" %in% atlas_regions(no_cc)
 #> [1] FALSE
 ```
 
 [`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
 is the inverse: it keeps only the regions that match and turns
-everything else into context geometry (sf is preserved for surface
-continuity, but non-matching regions leave core and palette):
+everything else into context geometry (the geometry is preserved for
+surface continuity, but non-matching regions leave core and palette):
 
 ``` r
 
@@ -90,7 +80,7 @@ Sometimes you want a region’s polygon to stay visible (rendered in grey)
 but not appear in the legend or carry data. This is what
 [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
 does. It removes the region from core, palette, and 3D data but leaves
-the sf geometry in place:
+the 2D geometry in place:
 
 ``` r
 
@@ -208,7 +198,7 @@ cleaned_sag <- atlas_view_remove_small(
 ```
 
 [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-removes a specific region’s sf geometry without touching core, palette,
+removes a specific region’s 2D geometry without touching core, palette,
 or 3D data. This is useful when a region’s 2D projection is misleading
 but you still want it in 3D:
 
@@ -231,10 +221,10 @@ repositions views side-by-side with a configurable gap:
 ``` r
 
 trimmed <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_3", "axial_3")) |>
+  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
   atlas_view_gather()
 atlas_views(trimmed)
-#> [1] "axial_3"  "sagittal"
+#> [1] "axial_3"   "coronal_2" "sagittal"
 ```
 
 [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
@@ -244,10 +234,10 @@ time. Views not mentioned in `order` are appended at the end:
 ``` r
 
 reordered <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_3", "axial_3")) |>
-  atlas_view_reorder(c("axial_3", "sagittal", "coronal_3"))
+  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
+  atlas_view_reorder(c("axial_3", "sagittal", "coronal_2"))
 atlas_views(reordered)
-#> [1] "axial_3"  "sagittal"
+#> [1] "axial_3"   "coronal_2" "sagittal"
 ```
 
 ## Adding metadata
@@ -262,18 +252,24 @@ of regions:
 
 network_info <- data.frame(
   region = c(
-    "superior frontal",
+    "superiorfrontal",
     "precuneus",
-    "inferior parietal",
-    "posterior cingulate"
+    "inferiorparietal",
+    "posteriorcingulate"
   ),
   network = "default mode"
 )
 enriched <- atlas_core_add(dk(), network_info)
 enriched$core[!is.na(enriched$core$network), c("region", "network")]
-#>       region      network
-#> 25 precuneus default mode
-#> 60 precuneus default mode
+#>                region      network
+#> 8    inferiorparietal default mode
+#> 23 posteriorcingulate default mode
+#> 25          precuneus default mode
+#> 28    superiorfrontal default mode
+#> 43   inferiorparietal default mode
+#> 58 posteriorcingulate default mode
+#> 60          precuneus default mode
+#> 63    superiorfrontal default mode
 ```
 
 The `by` argument defaults to `"region"` but you can join on any shared
@@ -287,7 +283,7 @@ compact two-view figure of deep grey matter structures:
 ``` r
 
 publication_aseg <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_3")) |>
+  atlas_view_keep(c("sagittal", "coronal_2")) |>
   atlas_region_contextual("ventricle|choroid|white|cc") |>
   atlas_view_remove_small(min_area = 30) |>
   atlas_view_gather(gap = 0.1)
@@ -299,7 +295,7 @@ publication_aseg
 #> Type: subcortical
 #> Regions: 11
 #> Hemispheres: left, NA, right
-#> Views: sagittal
+#> Views: coronal_2, sagittal
 #> Palette: ✔
 #> Rendering: ✔ ggseg
 #> ✔ ggseg3d (meshes)

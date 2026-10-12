@@ -30,6 +30,8 @@ Create and inspect ggseg atlas objects.
 - [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   [`as_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   : Coerce to ggseg atlas
+- [`assert_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.md)
+  : Require a valid ggseg atlas, reporting why it is not
 
 ## Legacy conversion
 

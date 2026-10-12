@@ -32,6 +32,11 @@ is_brain_atlas(x)
 
 logical
 
+## See also
+
+[`assert_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.md),
+which aborts with the reason instead of reducing it to `FALSE`.
+
 ## Examples
 
 ``` r

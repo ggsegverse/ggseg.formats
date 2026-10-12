@@ -33,8 +33,8 @@ brain_data_tract(sf = NULL, centerlines = NULL, meshes = NULL, ...)
 
 - meshes:
 
-  Deprecated. Use centerlines instead. If provided, will be converted to
-  centerlines format.
+  **\[deprecated\]** Use `centerlines` instead. If supplied, it is
+  converted to the centerlines format.
 
 - ...:
 

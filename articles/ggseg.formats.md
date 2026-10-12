@@ -3,10 +3,10 @@
 ``` r
 
 library(ggseg.formats)
-# Several examples below print or plot via the sf path. Since the
-# sf-optional milestone, sf is a Suggests dependency, so load it here.
-library(sf)
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
+# sf is a Suggests dependency since the sf-optional milestone. Only the two
+# chunks below that render through the sf path need it, so they are skipped
+# when it is unavailable rather than failing the whole vignette.
+has_sf <- requireNamespace("sf", quietly = TRUE)
 ```
 
 Everything in the ggsegverse ecosystem starts from a single object: the
@@ -68,7 +68,11 @@ region identity.
 
 ## Anatomy of an atlas
 
-The five slots are accessed with `$`:
+This section reaches into the five slots with `$` on purpose: its
+subject is the object layout, and `$` is the only way to show it.
+Everywhere else, use the accessors in [Querying an
+atlas](#querying-an-atlas) — they are the supported interface and keep
+working when the layout changes.
 
 ``` r
 
@@ -79,7 +83,8 @@ dk()$type
 ```
 
 `$atlas` is a short name (used to look up atlases by string) and `$type`
-is one of `"cortical"`, `"subcortical"`, or `"tract"`.
+is one of the values `atlas_types()` returns: `"cortical"`,
+`"subcortical"`, `"tract"`, or `"cerebellar"`.
 
 The `$palette` is a named character vector mapping labels to hex
 colours:
@@ -208,8 +213,10 @@ You can add your own metadata with
 
 ## Querying an atlas
 
-A set of accessor functions lets you pull information out without
-reaching into slots directly.
+A set of accessor functions lets you pull information out. This, not the
+`$` access shown above, is the supported way to read an atlas: it
+survives changes to the internal layout, and it is what the rest of the
+ggsegverse uses.
 
 Each of these returns one element per `core` row, in `core` row order,
 so they are row-aligned with each other: `atlas_labels(a)[i]`,
@@ -330,7 +337,11 @@ the `atlas_*()` extractors. These join core metadata and palette colours
 onto the raw geometry so you get a single, ready-to-use table.
 
 [`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md)
-returns an sf data frame for 2D rendering:
+returns an sf data frame for 2D rendering. It is the one extractor that
+requires sf;
+[`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md)
+is its sf-free counterpart and returns the same geometry in the
+`brain_polygons` representation the bundled atlases ship in:
 
 ``` r
 

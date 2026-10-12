@@ -115,6 +115,38 @@ which
 [`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
 records separately.
 
+### `label` must be unique
+
+`label` is the key the palette and every geometry slot are joined on, so
+from 0.1.0 a duplicated `label` in `core` is an error from
+[`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md).
+A duplicate fans one geometry row into several: the parcel is drawn more
+than once, and in 3D the repeated draw also darkens semi-transparent
+compositing. The bundled `aseg` carried `Thalamus` / `Thalamus Proper`
+alias rows this way.
+
+Keep one row per `label` and move the alias spelling into `names`. Read
+paths stay forgiving so already-published atlases keep working:
+[`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
+and
+[`convert_legacy_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/convert_legacy_brain_atlas.md)
+collapse alias rows with a warning,
+[`is_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
+reports `FALSE` without raising a condition, and ggseg3d drops the
+repeated rows at render time.
+
+### 2D coverage is not validated
+
+[`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
+does not check how much of `core` has 2D geometry. Partial coverage is
+normal: no single view holds every structure, and narrowing an atlas to
+one view with
+[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+leaves `core` whole while the geometry shrinks. Coverage below 90%
+raises a warning for information only; the atlas is valid either way. If
+you are *building* an atlas and want a coverage floor, that belongs in
+the construction pipeline (ggseg.extra), not in the schema.
+
 ## Migrating an atlas package to sf-optional
 
 Since the **sf-optional** milestone (ggseg 2.2), a `ggseg_atlas` stores

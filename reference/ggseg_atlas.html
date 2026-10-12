@@ -72,9 +72,10 @@ using ggseg (2D) and ggseg3d (3D).</p>
 
 
 <dt id="arg-core">core<a class="anchor" aria-label="anchor" href="#arg-core"></a></dt>
-<dd><p>data.frame with required columns hemi, region, label (one row per
-unique label). May contain additional columns for grouping or metadata
-(e.g., lobe, network, Brodmann area).</p></dd>
+<dd><p>data.frame with required columns hemi, region, label. <code>label</code> is
+the key the palette and every geometry slot are joined on, so it must be
+unique: a duplicated <code>label</code> is an error. May contain additional columns
+for grouping or metadata (e.g., lobe, network, Brodmann area).</p></dd>
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>

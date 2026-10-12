@@ -86,7 +86,12 @@ ggseg3d or a custom <code>brain_meshes</code> argument.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list with <code>vertices</code> (data.frame with x, y, z) and <code>faces</code>
-(data.frame with i, j, k), or NULL if the mesh is not available.</p>
+(data.frame with i, j, k), or NULL if the mesh is not available. The face
+indices of the bundled inflated surfaces are <strong>0-based</strong> (0 to
+<code>nrow(vertices) - 1</code>), matching <code><a href="get_cerebellar_mesh.html">get_cerebellar_mesh()</a></code>. Per-region
+subcortical meshes from <code><a href="ggseg_data_subcortical.html">ggseg_data_subcortical()</a></code> are 1-based instead, and
+a user-supplied <code>brain_meshes</code> is returned exactly as given, so a consumer
+must not assume a single base across mesh sources.</p>
     </div>
 
     <div class="section level2">

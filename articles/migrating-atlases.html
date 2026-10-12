@@ -179,6 +179,37 @@ in <code>core</code> row order, before calling
 the pre-0.1.0 <code>region</code> key, which
 <code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> records separately.</p>
 </div>
+<div class="section level3">
+<h3 id="label-must-be-unique">
+<code>label</code> must be unique<a class="anchor" aria-label="anchor" href="#label-must-be-unique"></a>
+</h3>
+<p><code>label</code> is the key the palette and every geometry slot are
+joined on, so from 0.1.0 a duplicated <code>label</code> in
+<code>core</code> is an error from <code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code>. A
+duplicate fans one geometry row into several: the parcel is drawn more
+than once, and in 3D the repeated draw also darkens semi-transparent
+compositing. The bundled <code>aseg</code> carried <code>Thalamus</code>
+/ <code>Thalamus Proper</code> alias rows this way.</p>
+<p>Keep one row per <code>label</code> and move the alias spelling into
+<code>names</code>. Read paths stay forgiving so already-published
+atlases keep working: <code><a href="../reference/as_ggseg_atlas.html">as_ggseg_atlas()</a></code> and
+<code><a href="../reference/convert_legacy_brain_atlas.html">convert_legacy_brain_atlas()</a></code> collapse alias rows with a
+warning, <code><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas()</a></code> reports <code>FALSE</code>
+without raising a condition, and ggseg3d drops the repeated rows at
+render time.</p>
+</div>
+<div class="section level3">
+<h3 id="d-coverage-is-not-validated">2D coverage is not validated<a class="anchor" aria-label="anchor" href="#d-coverage-is-not-validated"></a>
+</h3>
+<p><code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code> does not check how much of
+<code>core</code> has 2D geometry. Partial coverage is normal: no single
+view holds every structure, and narrowing an atlas to one view with
+<code><a href="../reference/atlas_manipulation.html">atlas_view_keep()</a></code> leaves <code>core</code> whole while the
+geometry shrinks. Coverage below 90% raises a warning for information
+only; the atlas is valid either way. If you are <em>building</em> an
+atlas and want a coverage floor, that belongs in the construction
+pipeline (ggseg.extra), not in the schema.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="migrating-an-atlas-package-to-sf-optional">Migrating an atlas package to sf-optional<a class="anchor" aria-label="anchor" href="#migrating-an-atlas-package-to-sf-optional"></a>

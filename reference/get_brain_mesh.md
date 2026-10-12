@@ -35,7 +35,15 @@ get_brain_mesh(
 ## Value
 
 A list with `vertices` (data.frame with x, y, z) and `faces` (data.frame
-with i, j, k), or NULL if the mesh is not available.
+with i, j, k), or NULL if the mesh is not available. The face indices of
+the bundled inflated surfaces are **0-based** (0 to
+`nrow(vertices) - 1`), matching
+[`get_cerebellar_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/get_cerebellar_mesh.md).
+Per-region subcortical meshes from
+[`ggseg_data_subcortical()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_subcortical.md)
+are 1-based instead, and a user-supplied `brain_meshes` is returned
+exactly as given, so a consumer must not assume a single base across
+mesh sources.
 
 ## Examples
 
