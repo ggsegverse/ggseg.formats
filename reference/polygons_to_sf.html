@@ -79,10 +79,18 @@ of data.frames containing <code>view</code>, <code>x</code>, <code>y</code>, <co
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An sf-class data frame with columns <code>label</code>, <code>view</code>, <code>geometry</code>
-(one row per label×view, geometry is MULTIPOLYGON).</p>
+    <p>An sf-class data frame with columns <code>label</code>, <code>view</code>, any extra
+nested columns, and <code>geometry</code> (one row per label×view, geometry is
+MULTIPOLYGON).</p>
 <p>Internal conversion primitive. For the atlas-level public API use
 <code><a href="as_sf_atlas.html">as_sf_atlas()</a></code> / <code><a href="atlas_sf.html">atlas_sf()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Nested columns beyond <code>x</code>, <code>y</code>, <code>group</code> and <code>subgroup</code> become attribute
+columns of the result. An sf row covers a whole label×view feature, so such
+a column takes its first value within that feature; a column that varies
+inside one feature loses the variation.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

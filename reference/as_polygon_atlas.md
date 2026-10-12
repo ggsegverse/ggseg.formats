@@ -24,10 +24,12 @@ A `ggseg_atlas` whose `$data$geom` is a `brain_polygons` object.
 
 ## Details
 
-Conversion is lossless, so a single representation is kept (no redundant
-sf alongside polygons). To rehydrate sf for geometric operations later,
-use
+A single representation is kept (no redundant sf alongside polygons). To
+rehydrate sf for geometric operations later, use
 [`as_sf_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_sf_atlas.md).
+Extra geometry columns are carried over; only columns named `x`, `y`,
+`group` or `subgroup` cannot be, since the nested coordinate table
+reserves those names, and they are dropped with a warning.
 
 This doubles as the backward-compatible path for sf-optional installs: a
 lite-only ggseg that meets a still-sf-backed atlas converts it on the

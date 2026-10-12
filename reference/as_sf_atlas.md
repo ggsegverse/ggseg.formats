@@ -29,8 +29,10 @@ A `ggseg_atlas` whose `$data$geom` is an sf object.
 
 ## Details
 
-Conversion is lossless, so a single representation is kept (no redundant
-polygons alongside sf).
+A single representation is kept (no redundant polygons alongside sf).
+Extra geometry columns are carried over; because an sf row covers a
+whole label×view feature, a column that varies within one feature keeps
+only its first value there.
 
 ## Examples
 

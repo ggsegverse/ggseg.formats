@@ -25,9 +25,18 @@ sf_to_polygons(sf_data)
 A data.frame with one row per `label` and a `geometry` list-column. Each
 nested element is a data.frame with columns `view`, `x`, `y`, `group`
 (disjoint polygon piece within a label/view), `subgroup` (ring within a
-piece; first = exterior, rest = holes).
+piece; first = exterior, rest = holes), plus any extra columns carried
+over from `sf_data`.
 
 Internal conversion primitive. For the atlas-level public API use
 [`as_polygon_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_polygon_atlas.md)
 /
 [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md).
+
+## Details
+
+Columns beyond `label`, `view` and `geometry` are carried into the
+nested table, repeated down the rows of the feature they came from. Only
+columns whose names collide with the nested coordinate columns (`x`,
+`y`, `group`, `subgroup`) cannot be carried; those are dropped with a
+warning.

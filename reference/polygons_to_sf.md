@@ -27,10 +27,18 @@ polygons_to_sf(polygons)
 
 ## Value
 
-An sf-class data frame with columns `label`, `view`, `geometry` (one row
-per label×view, geometry is MULTIPOLYGON).
+An sf-class data frame with columns `label`, `view`, any extra nested
+columns, and `geometry` (one row per label×view, geometry is
+MULTIPOLYGON).
 
 Internal conversion primitive. For the atlas-level public API use
 [`as_sf_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_sf_atlas.md)
 /
 [`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md).
+
+## Details
+
+Nested columns beyond `x`, `y`, `group` and `subgroup` become attribute
+columns of the result. An sf row covers a whole label×view feature, so
+such a column takes its first value within that feature; a column that
+varies inside one feature loses the variation.

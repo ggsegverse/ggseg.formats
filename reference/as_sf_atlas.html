@@ -83,8 +83,10 @@ atlas geometry; those sf operations themselves still require sf.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>Conversion is lossless, so a single representation is kept (no redundant
-polygons alongside sf).</p>
+    <p>A single representation is kept (no redundant polygons alongside sf). Extra
+geometry columns are carried over; because an sf row covers a whole
+label×view feature, a column that varies within one feature keeps only its
+first value there.</p>
     </div>
 
     <div class="section level2">

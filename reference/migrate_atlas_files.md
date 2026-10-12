@@ -9,7 +9,12 @@ store the geometry as sf instead.
 ## Usage
 
 ``` r
-migrate_atlas_files(path = "data", keep_sf = FALSE, quiet = FALSE)
+migrate_atlas_files(
+  path = "data",
+  keep_sf = FALSE,
+  quiet = FALSE,
+  force = FALSE
+)
 ```
 
 ## Arguments
@@ -27,6 +32,12 @@ migrate_atlas_files(path = "data", keep_sf = FALSE, quiet = FALSE)
 - quiet:
 
   If `TRUE`, suppress per-file status messages.
+
+- force:
+
+  If `TRUE`, migrate even when the conversion cannot carry every
+  geometry column across. The default `FALSE` aborts instead, naming the
+  columns and the file, because the files are rewritten in place.
 
 ## Value
 
