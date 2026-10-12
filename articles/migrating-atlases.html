@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9009</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,8 +96,8 @@ held a long-form display name
 (<code>"banks of superior temporal sulcus"</code>). From 0.1.0 it holds
 a short, hemisphere-free key derived from <code>label</code>
 (<code>"bankssts"</code>), and the long-form name lives in the new
-<code>names</code> column. <code>label</code> never changed and remains
-the stable join key.</p>
+<code>display</code> column. <code>label</code> never changed and
+remains the stable join key.</p>
 <p>Nothing errors when this bites. <code>merge(all.x = TRUE)</code> and
 the ggseg fill scale both yield <code>NA</code> for an unmatched region,
 which draws as a blank parcel — so the only symptom is a figure with
@@ -116,17 +116,17 @@ changed, so its map is the identity. <code>aseg</code>’s
 from <code>core</code>. For any other atlas the map is zero-length,
 because only the bundled four were re-keyed.</p>
 <div class="section level3">
-<h3 id="do-not-use-names-for-this">Do not use <code>names</code> for this<a class="anchor" aria-label="anchor" href="#do-not-use-names-for-this"></a>
+<h3 id="do-not-use-display-for-this">Do not use <code>display</code> for this<a class="anchor" aria-label="anchor" href="#do-not-use-display-for-this"></a>
 </h3>
-<p><code>names</code> is the curated display name, spelled to read well
-in a legend, and for several regions it deliberately differs from what
-0.0.4 shipped as <code>region</code>: <code>aseg</code> has
-<code>names</code> <code>"ventral diencephalon"</code> where 0.0.4 had
+<p><code>display</code> is the curated display name, spelled to read
+well in a legend, and for several regions it deliberately differs from
+what 0.0.4 shipped as <code>region</code>: <code>aseg</code> has
+<code>display</code> <code>"ventral diencephalon"</code> where 0.0.4 had
 <code>region</code> <code>"ventraldc"</code>, and
 <code>"corpus callosum posterior"</code> where 0.0.4 had
 <code>"cc posterior"</code>. <code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> reads a
 recorded table of the 0.0.4 values instead, so it stays correct however
-<code>names</code> is later improved.</p>
+<code>display</code> is later improved.</p>
 <p>If a pattern you pass to <code><a href="../reference/atlas_manipulation.html">atlas_region_remove()</a></code>,
 <code><a href="../reference/atlas_manipulation.html">atlas_region_keep()</a></code> or
 <code><a href="../reference/atlas_manipulation.html">atlas_region_contextual()</a></code> matches nothing, they now warn
@@ -137,15 +137,15 @@ instead.</p>
 <h3 id="the-accessors-return-rows-not-a-set">The accessors return rows, not a set<a class="anchor" aria-label="anchor" href="#the-accessors-return-rows-not-a-set"></a>
 </h3>
 <p><code><a href="../reference/atlas_regions.html">atlas_regions()</a></code>, <code><a href="../reference/atlas_labels.html">atlas_labels()</a></code> and
-<code><a href="../reference/atlas_names.html">atlas_names()</a></code> used to return a sorted set of unique,
+<code><a href="../reference/atlas_display.html">atlas_display()</a></code> used to return a sorted set of unique,
 non-<code>NA</code> values, so the three disagreed on length for the
 same atlas and could not be zipped. Each now returns its
 <code>core</code> column unchanged: one element per <code>core</code>
 row, in row order, repeats and <code>NA</code>s retained. So
 <code>atlas_labels(a)[i]</code>, <code>atlas_regions(a)[i]</code> and
-<code>atlas_names(a)[i]</code> describe the same row.</p>
+<code>atlas_display(a)[i]</code> describe the same row.</p>
 <p>In practice <code><a href="../reference/atlas_regions.html">atlas_regions()</a></code> and
-<code><a href="../reference/atlas_names.html">atlas_names()</a></code> now repeat values, once per hemisphere or
+<code><a href="../reference/atlas_display.html">atlas_display()</a></code> now repeat values, once per hemisphere or
 view row, and none of the three is sorted any more. Code that indexed
 the old output by position, or relied on it being a set, wants
 <code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> — and <code>sort(unique(x))</code> reproduces the
@@ -153,26 +153,26 @@ old value exactly. <code><a href="../reference/atlas_views.html">atlas_views()</
 separate axis, not a <code>core</code> column.</p>
 </div>
 <div class="section level3">
-<h3 id="adding-names-to-your-own-atlas">Adding <code>names</code> to your own atlas<a class="anchor" aria-label="anchor" href="#adding-names-to-your-own-atlas"></a>
+<h3 id="adding-display-to-your-own-atlas">Adding <code>display</code> to your own atlas<a class="anchor" aria-label="anchor" href="#adding-display-to-your-own-atlas"></a>
 </h3>
-<p><code>names</code> is part of the <code>core</code> schema from
+<p><code>display</code> is part of the <code>core</code> schema from
 0.1.0, but it arrived after about twenty atlas packages had been
 published without it, so it cannot be required. The policy is
 asymmetric:</p>
 <ul>
-<li>a <code>names</code> column that is not a character vector is an
+<li>a <code>display</code> column that is not a character vector is an
 error, because a half-filled column is worse than none;</li>
-<li>a missing <code>names</code> column is reported once per atlas per
+<li>a missing <code>display</code> column is reported once per atlas per
 session, as a message, by <code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code> only.</li>
 </ul>
 <p>Only the atlas author can add the column, so only the atlas author
 hears about it. Constructing or rebuilding an atlas is where that
 message appears. Plotting one, reading it through
 <code><a href="../reference/atlas_regions.html">atlas_regions()</a></code>, <code><a href="../reference/atlas_labels.html">atlas_labels()</a></code>,
-<code><a href="../reference/atlas_names.html">atlas_names()</a></code> or <code><a href="../reference/atlas_palette.html">atlas_palette()</a></code>, and
+<code><a href="../reference/atlas_display.html">atlas_display()</a></code> or <code><a href="../reference/atlas_palette.html">atlas_palette()</a></code>, and
 class-checking it with <code><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas()</a></code> are all silent —
-<code><a href="../reference/atlas_names.html">atlas_names()</a></code> simply returns <code>character(0)</code> when
-the column is absent.</p>
+<code><a href="../reference/atlas_display.html">atlas_display()</a></code> simply returns <code>character(0)</code>
+when the column is absent.</p>
 <p>To add it, give <code>core</code> one long-form display name per row,
 in <code>core</code> row order, before calling
 <code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code>. Spell it to read well in a legend; it is not
@@ -191,7 +191,7 @@ than once, and in 3D the repeated draw also darkens semi-transparent
 compositing. The bundled <code>aseg</code> carried <code>Thalamus</code>
 / <code>Thalamus Proper</code> alias rows this way.</p>
 <p>Keep one row per <code>label</code> and move the alias spelling into
-<code>names</code>. Read paths stay forgiving so already-published
+<code>display</code>. Read paths stay forgiving so already-published
 atlases keep working: <code><a href="../reference/as_ggseg_atlas.html">as_ggseg_atlas()</a></code> and
 <code><a href="../reference/convert_legacy_brain_atlas.html">convert_legacy_brain_atlas()</a></code> collapse alias rows with a
 warning, <code><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas()</a></code> reports <code>FALSE</code>

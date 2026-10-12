@@ -2,9 +2,9 @@
 
 Before version 0.1.0 the `region` column of the bundled atlases held a
 long-form display name. From 0.1.0 it holds a short, hemisphere-free key
-derived from `label`, and the long-form name lives in `names`. Joins and
-filters written against the old values therefore match nothing and fail
-silently: `merge(all.x = TRUE)` and the ggseg fill scale both yield
+derived from `label`, and the long-form name lives in `display`. Joins
+and filters written against the old values therefore match nothing and
+fail silently: `merge(all.x = TRUE)` and the ggseg fill scale both yield
 `NA`, which draws as a blank parcel rather than raising an error.
 
 ## Usage
@@ -35,27 +35,28 @@ mechanically:
     my_data$region <- unname(map[my_data$region])
 
 The mapping comes from a table of exactly what each bundled atlas
-shipped at 0.0.4, not from the atlas's current `names` column – `names`
-is the curated display name and several 0.0.4 `region` values were
-mechanically derived (`"ventraldc"`, `"cc posterior"`), so the two are
-deliberately not the same. Where two old names shared one `label`, as
-`"Thalamus"` and `"Thalamus Proper"` did in `aseg`, both still translate
-even though the alias row itself is gone from `core`.
+shipped at 0.0.4, not from the atlas's current `display` column –
+`display` is the curated display name and several 0.0.4 `region` values
+were mechanically derived (`"ventraldc"`, `"cc posterior"`), so the two
+are deliberately not the same. Where two old names shared one `label`,
+as `"Thalamus"` and `"Thalamus Proper"` did in `aseg`, both still
+translate even though the alias row itself is gone from `core`.
 
 ## See also
 
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
 for the curated display names,
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
 for the current keys.
 
 Other atlas accessors:
 [`atlas_centerlines()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.md),
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md),
 [`atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.md),
 [`atlas_geometry_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md),
+[`atlas_hemi()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_hemi.md),
 [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md),
 [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md),
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md),
 [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md),
 [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md),
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),

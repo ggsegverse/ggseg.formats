@@ -113,7 +113,7 @@ tracula()
 #> 8  midline  cc rostrum  cc.rostrum.bbr.prep  cc.rostrum
 #> 9  midline cc splenium cc.splenium.bbr.prep cc.splenium
 #> 10    left          af       lh.af.bbr.prep       lh.af
-#>                              names           group
+#>                            display           group
 #> 1              anterior commissure      commissure
 #> 2     corpus callosum body central corpus callosum
 #> 3    corpus callosum body parietal corpus callosum

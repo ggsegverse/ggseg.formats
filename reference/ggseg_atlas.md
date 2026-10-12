@@ -64,9 +64,9 @@ atlas <- ggseg_atlas(
   core = core,
   data = ggseg_data_cortical(vertices = vertices)
 )
-#> ℹ `core` has no names column.
-#> ℹ names holds the long-form display name and is part of the `core` schema; add
-#>   it when rebuilding "test".
-#> ℹ See `atlas_names()`.
+#> ℹ `core` has no display column.
+#> ℹ display holds the long-form display name and is part of the `core` schema;
+#>   add it when rebuilding "test".
+#> ℹ See `atlas_display()`.
 #> This message is displayed once per session.
 ```

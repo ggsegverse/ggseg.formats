@@ -95,23 +95,23 @@ suit()
 #> ── suit ggseg atlas ────────────────────────────────────────────────────────────
 #> Type: cerebellar
 #> Regions: 13
-#> Hemispheres: left, right, vermis
+#> Hemispheres: left, right, midline
 #> Views: flatmap, nuclei
 #> Palette: ✔
 #> Rendering: ✔ ggseg
 #> ✔ ggseg3d (meshes)
 #> ────────────────────────────────────────────────────────────────────────────────
-#>      hemi region        label        names
-#> 1    left   I_IV    left_I_IV lobules I-IV
-#> 2   right   I_IV   right_I_IV lobules I-IV
-#> 3    left      V       left_V     lobule V
-#> 4   right      V      right_V     lobule V
-#> 5    left     VI      left_VI    lobule VI
-#> 6  vermis     VI    vermis_VI    lobule VI
-#> 7   right     VI     right_VI    lobule VI
-#> 8    left  CrusI   left_CrusI       Crus I
-#> 9  vermis  CrusI vermis_CrusI       Crus I
-#> 10  right  CrusI  right_CrusI       Crus I
+#>       hemi region        label      display
+#> 1     left   I_IV    left_I_IV lobules I-IV
+#> 2    right   I_IV   right_I_IV lobules I-IV
+#> 3     left      V       left_V     lobule V
+#> 4    right      V      right_V     lobule V
+#> 5     left     VI      left_VI    lobule VI
+#> 6  midline     VI    vermis_VI    lobule VI
+#> 7    right     VI     right_VI    lobule VI
+#> 8     left  CrusI   left_CrusI       Crus I
+#> 9  midline  CrusI vermis_CrusI       Crus I
+#> 10   right  CrusI  right_CrusI       Crus I
 #> ... with 24 more rows
 atlas_regions(suit())
 #>  [1] "I_IV"       "I_IV"       "V"          "V"          "VI"        

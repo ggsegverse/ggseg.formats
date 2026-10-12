@@ -120,7 +120,7 @@ dk()
 #> 8  left        inferiorparietal        lh_inferiorparietal
 #> 9  left        inferiortemporal        lh_inferiortemporal
 #> 10 left        isthmuscingulate        lh_isthmuscingulate
-#>                                names         lobe
+#>                              display         lobe
 #> 1  banks of superior temporal sulcus     temporal
 #> 2          caudal anterior cingulate    cingulate
 #> 3              caudal middle frontal      frontal

@@ -46,7 +46,7 @@ dk()
 #> 8  left        inferiorparietal        lh_inferiorparietal
 #> 9  left        inferiortemporal        lh_inferiortemporal
 #> 10 left        isthmuscingulate        lh_isthmuscingulate
-#>                                names         lobe
+#>                              display         lobe
 #> 1  banks of superior temporal sulcus     temporal
 #> 2          caudal anterior cingulate    cingulate
 #> 3              caudal middle frontal      frontal
@@ -114,7 +114,7 @@ head(dk()$core)
 #> 4 left          corpuscallosum          lh_corpuscallosum
 #> 5 left                  cuneus                  lh_cuneus
 #> 6 left              entorhinal              lh_entorhinal
-#>                               names         lobe
+#>                             display         lobe
 #> 1 banks of superior temporal sulcus     temporal
 #> 2         caudal anterior cingulate    cingulate
 #> 3             caudal middle frontal      frontal
@@ -183,18 +183,18 @@ propagates changes to geometry and palette.
 
 The required columns are `region` (a short, hemisphere-free key),
 `label` (a unique identifier that links core to geometry and palette)
-and `names` (the curated long-form display name). Most atlases also
+and `display` (the curated long-form display name). Most atlases also
 carry `hemi`:
 
 ``` r
 
 str(dk()$core)
 #> Classes 'tbl_df', 'tbl' and 'data.frame':    70 obs. of  5 variables:
-#>  $ hemi  : chr  "left" "left" "left" "left" ...
-#>  $ region: chr  "bankssts" "caudalanteriorcingulate" "caudalmiddlefrontal" "corpuscallosum" ...
-#>  $ label : chr  "lh_bankssts" "lh_caudalanteriorcingulate" "lh_caudalmiddlefrontal" "lh_corpuscallosum" ...
-#>  $ names : chr  "banks of superior temporal sulcus" "caudal anterior cingulate" "caudal middle frontal" "corpus callosum" ...
-#>  $ lobe  : chr  "temporal" "cingulate" "frontal" "white matter" ...
+#>  $ hemi   : chr  "left" "left" "left" "left" ...
+#>  $ region : chr  "bankssts" "caudalanteriorcingulate" "caudalmiddlefrontal" "corpuscallosum" ...
+#>  $ label  : chr  "lh_bankssts" "lh_caudalanteriorcingulate" "lh_caudalmiddlefrontal" "lh_corpuscallosum" ...
+#>  $ display: chr  "banks of superior temporal sulcus" "caudal anterior cingulate" "caudal middle frontal" "corpus callosum" ...
+#>  $ lobe   : chr  "temporal" "cingulate" "frontal" "white matter" ...
 ```
 
 Some atlases include additional metadata columns. The `dk` atlas, for
@@ -220,9 +220,9 @@ ggsegverse uses.
 
 Each of these returns one element per `core` row, in `core` row order,
 so they are row-aligned with each other: `atlas_labels(a)[i]`,
-`atlas_regions(a)[i]` and `atlas_names(a)[i]` all describe the same row.
-Wrap a call in [`unique()`](https://rdrr.io/r/base/unique.html) when you
-want the distinct set instead.
+`atlas_regions(a)[i]` and `atlas_display(a)[i]` all describe the same
+row. Wrap a call in [`unique()`](https://rdrr.io/r/base/unique.html)
+when you want the distinct set instead.
 
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
 returns the region keys:
@@ -261,13 +261,13 @@ head(atlas_labels(dk()))
 #> [5] "lh_cuneus"                  "lh_entorhinal"
 ```
 
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
 returns the curated long-form display names — what you want for a figure
 legend:
 
 ``` r
 
-head(atlas_names(aseg()))
+head(atlas_display(aseg()))
 #> [1] "cerebellum cortex" "thalamus"          "caudate"          
 #> [4] "putamen"           "pallidum"          "brain stem"
 ```
@@ -277,7 +277,7 @@ head(atlas_names(aseg()))
 translates those old values to the current keys, which is what you need
 to fix a table or script written against an earlier release. It reads a
 recorded table of what each bundled atlas shipped at 0.0.4, so it is not
-the same thing as `names`:
+the same thing as `display`:
 
 ``` r
 
@@ -355,7 +355,7 @@ sf_data
 #> Bounding box:  xmin: 0.899055 ymin: 0.0853615 xmax: 1938.834 ymax: 146.1192
 #> CRS:           NA
 #> First 10 features:
-#>             label     view hemi     region      names    lobe
+#>             label     view hemi     region    display    lobe
 #> 180    lh_unknown inferior <NA>       <NA>       <NA>    <NA>
 #> 181    lh_unknown  lateral <NA>       <NA>       <NA>    <NA>
 #> 182    lh_unknown   medial <NA>       <NA>       <NA>    <NA>
@@ -399,7 +399,7 @@ vert_data
 #> 8         lh_inferiorparietal <int [484]> left        inferiorparietal
 #> 9         lh_inferiortemporal <int [271]> left        inferiortemporal
 #> 10        lh_isthmuscingulate <int [123]> left        isthmuscingulate
-#>                                names         lobe  colour
+#>                              display         lobe  colour
 #> 1  banks of superior temporal sulcus     temporal #196428
 #> 2          caudal anterior cingulate    cingulate #7D64A0
 #> 3              caudal middle frontal      frontal #641900
@@ -444,7 +444,7 @@ but with atlas-level columns (`atlas`, `type`) attached:
 
 df <- as.data.frame(dk())
 names(df)
-#>  [1] "label"    "view"     "hemi"     "region"   "names"    "lobe"    
+#>  [1] "label"    "view"     "hemi"     "region"   "display"  "lobe"    
 #>  [7] "geometry" "atlas"    "type"     "colour"
 ```
 

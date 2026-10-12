@@ -300,7 +300,7 @@ publication_aseg
 #> Rendering: ✔ ggseg
 #> ✔ ggseg3d (meshes)
 #> ────────────────────────────────────────────────────────────────────────────────
-#>    hemi            region                  label                names
+#>    hemi            region                  label              display
 #> 1  left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
 #> 2  left          thalamus          Left-Thalamus             thalamus
 #> 3  left           caudate           Left-Caudate              caudate

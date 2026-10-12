@@ -331,7 +331,7 @@ dk() |>
 #> Rendering: ✔ ggseg
 #> ✔ ggseg3d (vertices)
 #> ────────────────────────────────────────────────────────────────────────────────
-#>     hemi               region                   label                  names
+#>     hemi               region                   label                display
 #> 1   left  caudalmiddlefrontal  lh_caudalmiddlefrontal  caudal middle frontal
 #> 2   left lateralorbitofrontal lh_lateralorbitofrontal  lateral orbitofrontal
 #> 3   left  medialorbitofrontal  lh_medialorbitofrontal   medial orbitofrontal

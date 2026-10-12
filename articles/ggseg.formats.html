@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9009</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -124,7 +124,7 @@ atlas to see what that looks like:</p>
 <span><span class="co">#&gt; 8  left        inferiorparietal        lh_inferiorparietal</span></span>
 <span><span class="co">#&gt; 9  left        inferiortemporal        lh_inferiortemporal</span></span>
 <span><span class="co">#&gt; 10 left        isthmuscingulate        lh_isthmuscingulate</span></span>
-<span><span class="co">#&gt;                                names         lobe</span></span>
+<span><span class="co">#&gt;                              display         lobe</span></span>
 <span><span class="co">#&gt; 1  banks of superior temporal sulcus     temporal</span></span>
 <span><span class="co">#&gt; 2          caudal anterior cingulate    cingulate</span></span>
 <span><span class="co">#&gt; 3              caudal middle frontal      frontal</span></span>
@@ -182,7 +182,7 @@ or <code>structure</code>:</p>
 <span><span class="co">#&gt; 4 left          corpuscallosum          lh_corpuscallosum</span></span>
 <span><span class="co">#&gt; 5 left                  cuneus                  lh_cuneus</span></span>
 <span><span class="co">#&gt; 6 left              entorhinal              lh_entorhinal</span></span>
-<span><span class="co">#&gt;                               names         lobe</span></span>
+<span><span class="co">#&gt;                             display         lobe</span></span>
 <span><span class="co">#&gt; 1 banks of superior temporal sulcus     temporal</span></span>
 <span><span class="co">#&gt; 2         caudal anterior cingulate    cingulate</span></span>
 <span><span class="co">#&gt; 3             caudal middle frontal      frontal</span></span>
@@ -239,16 +239,16 @@ what regions an atlas contains. Every manipulation function updates core
 first and then propagates changes to geometry and palette.</p>
 <p>The required columns are <code>region</code> (a short,
 hemisphere-free key), <code>label</code> (a unique identifier that links
-core to geometry and palette) and <code>names</code> (the curated
+core to geometry and palette) and <code>display</code> (the curated
 long-form display name). Most atlases also carry <code>hemi</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">core</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    70 obs. of  5 variables:</span></span>
-<span><span class="co">#&gt;  $ hemi  : chr  "left" "left" "left" "left" ...</span></span>
-<span><span class="co">#&gt;  $ region: chr  "bankssts" "caudalanteriorcingulate" "caudalmiddlefrontal" "corpuscallosum" ...</span></span>
-<span><span class="co">#&gt;  $ label : chr  "lh_bankssts" "lh_caudalanteriorcingulate" "lh_caudalmiddlefrontal" "lh_corpuscallosum" ...</span></span>
-<span><span class="co">#&gt;  $ names : chr  "banks of superior temporal sulcus" "caudal anterior cingulate" "caudal middle frontal" "corpus callosum" ...</span></span>
-<span><span class="co">#&gt;  $ lobe  : chr  "temporal" "cingulate" "frontal" "white matter" ...</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ hemi   : chr  "left" "left" "left" "left" ...</span></span>
+<span><span class="co">#&gt;  $ region : chr  "bankssts" "caudalanteriorcingulate" "caudalmiddlefrontal" "corpuscallosum" ...</span></span>
+<span><span class="co">#&gt;  $ label  : chr  "lh_bankssts" "lh_caudalanteriorcingulate" "lh_caudalmiddlefrontal" "lh_corpuscallosum" ...</span></span>
+<span><span class="co">#&gt;  $ display: chr  "banks of superior temporal sulcus" "caudal anterior cingulate" "caudal middle frontal" "corpus callosum" ...</span></span>
+<span><span class="co">#&gt;  $ lobe   : chr  "temporal" "cingulate" "frontal" "white matter" ...</span></span></code></pre></div>
 <p>Some atlases include additional metadata columns. The <code>dk</code>
 atlas, for instance, has <code>lobe</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
@@ -268,8 +268,8 @@ rest of the ggsegverse uses.</p>
 <p>Each of these returns one element per <code>core</code> row, in
 <code>core</code> row order, so they are row-aligned with each other:
 <code>atlas_labels(a)[i]</code>, <code>atlas_regions(a)[i]</code> and
-<code>atlas_names(a)[i]</code> all describe the same row. Wrap a call in
-<code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> when you want the distinct set instead.</p>
+<code>atlas_display(a)[i]</code> all describe the same row. Wrap a call
+in <code><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique()</a></code> when you want the distinct set instead.</p>
 <p><code><a href="../reference/atlas_regions.html">atlas_regions()</a></code> returns the region keys:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_regions.html">atlas_regions</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
@@ -298,10 +298,10 @@ to join geometry):</p>
 <span><span class="co">#&gt; [1] "lh_bankssts"                "lh_caudalanteriorcingulate"</span></span>
 <span><span class="co">#&gt; [3] "lh_caudalmiddlefrontal"     "lh_corpuscallosum"         </span></span>
 <span><span class="co">#&gt; [5] "lh_cuneus"                  "lh_entorhinal"</span></span></code></pre></div>
-<p><code><a href="../reference/atlas_names.html">atlas_names()</a></code> returns the curated long-form display
+<p><code><a href="../reference/atlas_display.html">atlas_display()</a></code> returns the curated long-form display
 names — what you want for a figure legend:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_names.html">atlas_names</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_display.html">atlas_display</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "cerebellum cortex" "thalamus"          "caudate"          </span></span>
 <span><span class="co">#&gt; [4] "putamen"           "pallidum"          "brain stem"</span></span></code></pre></div>
 <p><code>region</code> held long-form names itself until version 0.1.0.
@@ -309,7 +309,7 @@ names — what you want for a figure legend:</p>
 current keys, which is what you need to fix a table or script written
 against an earlier release. It reads a recorded table of what each
 bundled atlas shipped at 0.0.4, so it is not the same thing as
-<code>names</code>:</p>
+<code>display</code>:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/legacy_region_map.html">legacy_region_map</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;         Brain Stem        cc anterior         cc central    cc mid anterior </span></span>
@@ -368,7 +368,7 @@ in:</p>
 <span><span class="co">#&gt; Bounding box:  xmin: 0.899055 ymin: 0.0853615 xmax: 1938.834 ymax: 146.1192</span></span>
 <span><span class="co">#&gt; CRS:           NA</span></span>
 <span><span class="co">#&gt; First 10 features:</span></span>
-<span><span class="co">#&gt;             label     view hemi     region      names    lobe</span></span>
+<span><span class="co">#&gt;             label     view hemi     region    display    lobe</span></span>
 <span><span class="co">#&gt; 180    lh_unknown inferior &lt;NA&gt;       &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 181    lh_unknown  lateral &lt;NA&gt;       &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;</span></span>
 <span><span class="co">#&gt; 182    lh_unknown   medial &lt;NA&gt;       &lt;NA&gt;       &lt;NA&gt;    &lt;NA&gt;</span></span>
@@ -408,7 +408,7 @@ rendering:</p>
 <span><span class="co">#&gt; 8         lh_inferiorparietal &lt;int [484]&gt; left        inferiorparietal</span></span>
 <span><span class="co">#&gt; 9         lh_inferiortemporal &lt;int [271]&gt; left        inferiortemporal</span></span>
 <span><span class="co">#&gt; 10        lh_isthmuscingulate &lt;int [123]&gt; left        isthmuscingulate</span></span>
-<span><span class="co">#&gt;                                names         lobe  colour</span></span>
+<span><span class="co">#&gt;                              display         lobe  colour</span></span>
 <span><span class="co">#&gt; 1  banks of superior temporal sulcus     temporal #196428</span></span>
 <span><span class="co">#&gt; 2          caudal anterior cingulate    cingulate #7D64A0</span></span>
 <span><span class="co">#&gt; 3              caudal middle frontal      frontal #641900</span></span>
@@ -445,7 +445,7 @@ attached:</p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "label"    "view"     "hemi"     "region"   "names"    "lobe"    </span></span>
+<span><span class="co">#&gt;  [1] "label"    "view"     "hemi"     "region"   "display"  "lobe"    </span></span>
 <span><span class="co">#&gt;  [7] "geometry" "atlas"    "type"     "colour"</span></span></code></pre></div>
 </div>
 <div class="section level2">

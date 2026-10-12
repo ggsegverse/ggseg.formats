@@ -175,12 +175,16 @@ Query atlas contents without reaching into slots directly.
 
 - [`atlas_centerlines()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.md)
   : Get atlas tract centerlines
+- [`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
+  : Extract the display-name column of an atlas
 - [`atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.md)
   : Get the raw 2D geometry of an atlas
 - [`atlas_geometry_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md)
   [`is_atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md)
   [`is_atlas_polygon()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md)
   : Classify or test an atlas's 2D geometry
+- [`atlas_hemi()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_hemi.md)
+  : Extract the hemisphere column of an atlas
 - [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   [`brain_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   : Extract the label column of an atlas
@@ -201,8 +205,6 @@ Query atlas contents without reaching into slots directly.
   : Manipulate brain atlas regions and views
 - [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md)
   : Get atlas meshes for 3D rendering
-- [`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
-  : Extract the long-form region name column of an atlas
 - [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md)
   : Get the palette of an atlas
 - [`atlas_plot_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_plot_palette.md)

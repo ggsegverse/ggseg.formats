@@ -23,11 +23,12 @@ data.frame with vertices ready for 3D rendering
 
 Other atlas accessors:
 [`atlas_centerlines()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.md),
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md),
 [`atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.md),
 [`atlas_geometry_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md),
+[`atlas_hemi()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_hemi.md),
 [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md),
 [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md),
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md),
 [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md),
 [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md),
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),
@@ -50,7 +51,7 @@ head(verts)
 #> 4          lh_corpuscallosum <int [198]> left          corpuscallosum
 #> 5                  lh_cuneus <int [102]> left                  cuneus
 #> 6              lh_entorhinal  <int [48]> left              entorhinal
-#>                               names         lobe  colour
+#>                             display         lobe  colour
 #> 1 banks of superior temporal sulcus     temporal #196428
 #> 2         caudal anterior cingulate    cingulate #7D64A0
 #> 3             caudal middle frontal      frontal #641900

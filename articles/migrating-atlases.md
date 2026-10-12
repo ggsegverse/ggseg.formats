@@ -14,7 +14,7 @@ atlas package’s geometry into the sf-optional format.
 Before 0.1.0 the `region` column of the bundled atlases held a long-form
 display name (`"banks of superior temporal sulcus"`). From 0.1.0 it
 holds a short, hemisphere-free key derived from `label` (`"bankssts"`),
-and the long-form name lives in the new `names` column. `label` never
+and the long-form name lives in the new `display` column. `label` never
 changed and remains the stable join key.
 
 Nothing errors when this bites. `merge(all.x = TRUE)` and the ggseg fill
@@ -37,16 +37,16 @@ translates too, to `"thalamus"`, even though the alias row it lived on
 is gone from `core`. For any other atlas the map is zero-length, because
 only the bundled four were re-keyed.
 
-### Do not use `names` for this
+### Do not use `display` for this
 
-`names` is the curated display name, spelled to read well in a legend,
+`display` is the curated display name, spelled to read well in a legend,
 and for several regions it deliberately differs from what 0.0.4 shipped
-as `region`: `aseg` has `names` `"ventral diencephalon"` where 0.0.4 had
-`region` `"ventraldc"`, and `"corpus callosum posterior"` where 0.0.4
-had `"cc posterior"`.
+as `region`: `aseg` has `display` `"ventral diencephalon"` where 0.0.4
+had `region` `"ventraldc"`, and `"corpus callosum posterior"` where
+0.0.4 had `"cc posterior"`.
 [`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
 reads a recorded table of the 0.0.4 values instead, so it stays correct
-however `names` is later improved.
+however `display` is later improved.
 
 If a pattern you pass to
 [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
@@ -61,17 +61,17 @@ pre-0.1.0 name, say which key to use instead.
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),
 [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
 and
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
 used to return a sorted set of unique, non-`NA` values, so the three
 disagreed on length for the same atlas and could not be zipped. Each now
 returns its `core` column unchanged: one element per `core` row, in row
 order, repeats and `NA`s retained. So `atlas_labels(a)[i]`,
-`atlas_regions(a)[i]` and `atlas_names(a)[i]` describe the same row.
+`atlas_regions(a)[i]` and `atlas_display(a)[i]` describe the same row.
 
 In practice
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
 and
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
 now repeat values, once per hemisphere or view row, and none of the
 three is sorted any more. Code that indexed the old output by position,
 or relied on it being a set, wants
@@ -80,16 +80,16 @@ reproduces the old value exactly.
 [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
 is unchanged: views are a separate axis, not a `core` column.
 
-### Adding `names` to your own atlas
+### Adding `display` to your own atlas
 
-`names` is part of the `core` schema from 0.1.0, but it arrived after
+`display` is part of the `core` schema from 0.1.0, but it arrived after
 about twenty atlas packages had been published without it, so it cannot
 be required. The policy is asymmetric:
 
-- a `names` column that is not a character vector is an error, because a
-  half-filled column is worse than none;
-- a missing `names` column is reported once per atlas per session, as a
-  message, by
+- a `display` column that is not a character vector is an error, because
+  a half-filled column is worse than none;
+- a missing `display` column is reported once per atlas per session, as
+  a message, by
   [`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
   only.
 
@@ -98,13 +98,13 @@ about it. Constructing or rebuilding an atlas is where that message
 appears. Plotting one, reading it through
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),
 [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md),
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
 or
 [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md),
 and class-checking it with
 [`is_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
 are all silent —
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md)
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
 simply returns `character(0)` when the column is absent.
 
 To add it, give `core` one long-form display name per row, in `core` row
@@ -125,8 +125,8 @@ than once, and in 3D the repeated draw also darkens semi-transparent
 compositing. The bundled `aseg` carried `Thalamus` / `Thalamus Proper`
 alias rows this way.
 
-Keep one row per `label` and move the alias spelling into `names`. Read
-paths stay forgiving so already-published atlases keep working:
+Keep one row per `label` and move the alias spelling into `display`.
+Read paths stay forgiving so already-published atlases keep working:
 [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
 and
 [`convert_legacy_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/convert_legacy_brain_atlas.md)

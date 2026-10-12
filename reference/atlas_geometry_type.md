@@ -28,10 +28,11 @@ atlas has no recognised 2D geometry. `is_atlas_sf()` /
 
 Other atlas accessors:
 [`atlas_centerlines()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.md),
+[`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md),
 [`atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.md),
+[`atlas_hemi()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_hemi.md),
 [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md),
 [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md),
-[`atlas_names()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.md),
 [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md),
 [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md),
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),

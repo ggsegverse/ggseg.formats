@@ -16,12 +16,13 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/aseg.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_hemi.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.html</loc></url>
-<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_names.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_plot_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.html</loc></url>
