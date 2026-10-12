@@ -38,15 +38,17 @@ polygons_unnest <- function(polygons) {
 
 #' Re-nest a flat coordinate table back into brain_polygons
 #'
-#' Keeps only the canonical columns and nests by `label`. Returns NULL for an
-#' empty table so callers can treat "all geometry removed" as no 2D data.
+#' Puts the canonical columns first, keeps any extra columns, and nests by
+#' `label`. Returns NULL for an empty table so callers can treat "all geometry
+#' removed" as no 2D data.
 #' @noRd
 #' @keywords internal
 polygons_renest <- function(flat) {
   if (is.null(flat) || nrow(flat) == 0) {
     return(NULL)
   }
-  flat <- flat[, c("label", "view", "x", "y", "group", "subgroup")]
+  canonical <- c("label", "view", polygon_coord_columns())
+  flat <- flat[, unique(c(canonical, names(flat))), drop = FALSE]
   out <- df_nest(as_tbl(flat), "label", "geometry")
   structure(out, class = unique(c("brain_polygons", class(out))))
 }

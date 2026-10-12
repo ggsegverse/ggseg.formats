@@ -21,8 +21,10 @@ you want to run sf operations (buffers, intersections, CRS transforms) on
 atlas geometry; those sf operations themselves still require sf.
 }
 \details{
-Conversion is lossless, so a single representation is kept (no redundant
-polygons alongside sf).
+A single representation is kept (no redundant polygons alongside sf). Extra
+geometry columns are carried over; because an sf row covers a whole
+label×view feature, a column that varies within one feature keeps only its
+first value there.
 }
 \examples{
 \dontshow{if (requireNamespace("sf", quietly = TRUE)) withAutoprint(\{ # examplesIf}

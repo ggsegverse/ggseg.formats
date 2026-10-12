@@ -15,7 +15,7 @@ brain_atlas(atlas, type, core, data, palette = NULL)
 \item{type}{atlas type: "cortical", "subcortical", "tract", or "cerebellar"}
 
 \item{core}{data.frame with required columns hemi, region, label (one row per
-unique region). May contain additional columns for grouping or metadata
+unique label). May contain additional columns for grouping or metadata
 (e.g., lobe, network, Brodmann area).}
 
 \item{data}{a ggseg_atlas_data object created by

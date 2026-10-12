@@ -98,3 +98,87 @@ describe("migrate_atlas_object()", {
     expect_null(migrate_atlas_object(atlas, keep_sf = FALSE))
   })
 })
+
+
+describe("migrate_atlas_files() column-loss guard", {
+  it("aborts when a conversion to polygons would lose columns", {
+    dir <- withr::local_tempdir()
+    atlas <- dk_sf_atlas()
+    geom <- as.data.frame(atlas_geom(atlas))
+    geom$group <- 1L
+    atlas$data$geom <- sf::st_as_sf(geom)
+    save(atlas, file = file.path(dir, "atlas.rda"))
+
+    expect_error(
+      migrate_atlas_files(dir, quiet = TRUE),
+      "would lose column"
+    )
+  })
+
+  it("leaves the file untouched when it aborts", {
+    dir <- withr::local_tempdir()
+    atlas <- dk_sf_atlas()
+    geom <- as.data.frame(atlas_geom(atlas))
+    geom$group <- 1L
+    atlas$data$geom <- sf::st_as_sf(geom)
+    f <- file.path(dir, "atlas.rda")
+    save(atlas, file = f)
+    before <- tools::md5sum(f)
+
+    expect_error(migrate_atlas_files(dir, quiet = TRUE))
+    expect_identical(tools::md5sum(f), before)
+  })
+
+  it("migrates with a warning when force = TRUE", {
+    dir <- withr::local_tempdir()
+    atlas <- dk_sf_atlas()
+    geom <- as.data.frame(atlas_geom(atlas))
+    geom$group <- 1L
+    atlas$data$geom <- sf::st_as_sf(geom)
+    save(atlas, file = file.path(dir, "atlas.rda"))
+
+    expect_warning(
+      migrated <- migrate_atlas_files(dir, quiet = TRUE, force = TRUE),
+      "would lose column"
+    )
+    expect_length(migrated, 1)
+
+    env <- new.env()
+    load(file.path(dir, "atlas.rda"), envir = env)
+    expect_s3_class(atlas_geom(env$atlas), "brain_polygons")
+  })
+
+  it("aborts when a conversion to sf would collapse a varying column", {
+    dir <- withr::local_tempdir()
+    atlas <- as_polygon_atlas(dk())
+    geom <- atlas_geom(atlas)
+    geom$geometry[[1]]$myannot <- c("a", rep("b", nrow(geom$geometry[[1]]) - 1))
+    atlas$data$geom <- geom
+    save(atlas, file = file.path(dir, "atlas.rda"))
+
+    expect_error(
+      migrate_atlas_files(dir, keep_sf = TRUE, quiet = TRUE),
+      "myannot"
+    )
+  })
+
+  it("carries a constant extra column into sf without complaint", {
+    dir <- withr::local_tempdir()
+    atlas <- as_polygon_atlas(dk())
+    geom <- atlas_geom(atlas)
+    geom$geometry <- lapply(geom$geometry, function(g) {
+      g$myannot <- "a"
+      g
+    })
+    atlas$data$geom <- geom
+    save(atlas, file = file.path(dir, "atlas.rda"))
+
+    expect_no_warning(
+      migrate_atlas_files(dir, keep_sf = TRUE, quiet = TRUE)
+    )
+
+    env <- new.env()
+    load(file.path(dir, "atlas.rda"), envir = env)
+    expect_true("myannot" %in% names(atlas_geom(env$atlas)))
+  })
+})

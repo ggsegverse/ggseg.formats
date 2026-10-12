@@ -17,6 +17,9 @@
 #' @param keep_sf If `TRUE`, the geometry is stored in `geom` as sf. Default
 #'   `FALSE` — the geometry is stored as `brain_polygons` (sf-optional).
 #' @param quiet If `TRUE`, suppress per-file status messages.
+#' @param force If `TRUE`, migrate even when the conversion cannot carry every
+#'   geometry column across. The default `FALSE` aborts instead, naming the
+#'   columns and the file, because the files are rewritten in place.
 #'
 #' @return Invisibly, a character vector of paths to the files that were
 #'   rewritten.
@@ -35,7 +38,12 @@
 #' load(file.path(dir, "dk_atlas.rda"))
 #' is_atlas_polygon(dk_atlas) # TRUE
 #' unlink(dir, recursive = TRUE)
-migrate_atlas_files <- function(path = "data", keep_sf = FALSE, quiet = FALSE) {
+migrate_atlas_files <- function(
+  path = "data",
+  keep_sf = FALSE,
+  quiet = FALSE,
+  force = FALSE
+) {
   if (!dir.exists(path)) {
     cli::cli_abort("Directory {.path {path}} does not exist.")
   }
@@ -50,7 +58,7 @@ migrate_atlas_files <- function(path = "data", keep_sf = FALSE, quiet = FALSE) {
 
   migrated <- character()
   for (f in rda_files) {
-    if (migrate_rda_file(f, keep_sf)) {
+    if (migrate_rda_file(f, keep_sf, force = force)) {
       migrated <- c(migrated, f)
       if (!quiet) {
         cli::cli_alert_success("Migrated {.file {basename(f)}}.")
@@ -76,7 +84,14 @@ migration_target_geom <- function(geom, keep_sf) {
   if (keep_sf) {
     if (inherits(geom, "brain_polygons")) polygons_to_sf(geom) else geom
   } else {
-    if (inherits(geom, "sf")) sf_to_polygons(geom) else geom
+    # check_migration_loss() has already reported the dropped columns, with the
+    # file and object named, so the converter's own warning is redundant here.
+    withCallingHandlers(
+      if (inherits(geom, "sf")) sf_to_polygons(geom) else geom,
+      ggseg_dropped_columns = function(w) {
+        invokeRestart("muffleWarning")
+      }
+    )
   }
 }
 
@@ -114,11 +129,17 @@ migrate_atlas_object <- function(obj, keep_sf) {
 #' Returns `TRUE` if the file was rewritten, `FALSE` if nothing changed.
 #' @noRd
 #' @keywords internal
-migrate_rda_file <- function(f, keep_sf) {
+migrate_rda_file <- function(f, keep_sf, force = FALSE) {
   env <- new.env(parent = emptyenv())
   nms <- load(f, envir = env)
   changed <- FALSE
   for (nm in nms) {
+    check_migration_loss(
+      migration_lost_columns(env[[nm]], keep_sf),
+      file = f,
+      object = nm,
+      force = force
+    )
     migrated <- migrate_atlas_object(env[[nm]], keep_sf)
     if (!is.null(migrated)) {
       env[[nm]] <- migrated
@@ -143,4 +164,89 @@ is_atlas_for_migration <- function(x) {
     is.list(x) &&
     !is.null(x$data) &&
     is.list(x$data)
+}
+
+
+#' Columns a migration of one loaded object cannot carry across
+#'
+#' Returns `character()` for objects the migration skips anyway.
+#' @noRd
+#' @keywords internal
+migration_lost_columns <- function(obj, keep_sf) {
+  if (!is_atlas_for_migration(obj)) {
+    return(character())
+  }
+  geom <- geom_from_data(obj$data)
+  if (is.null(geom)) {
+    return(character())
+  }
+  if (!keep_sf && inherits(geom, "sf")) {
+    return(reserved_coord_columns(geom))
+  }
+  if (keep_sf && inherits(geom, "brain_polygons")) {
+    return(varying_feature_columns(geom))
+  }
+  character()
+}
+
+
+#' Nested polygon columns that vary within one label x view feature
+#'
+#' An sf row covers a whole feature, so such a column cannot survive the
+#' conversion to sf intact.
+#' @noRd
+#' @keywords internal
+varying_feature_columns <- function(polygons) {
+  extras <- setdiff(
+    unique(unlist(lapply(polygons$geometry, names))),
+    c("view", polygon_coord_columns())
+  )
+  if (!length(extras)) {
+    return(character())
+  }
+  varies <- vapply(
+    extras,
+    function(nm) {
+      any(vapply(polygons$geometry, varies_within_view, logical(1), nm))
+    },
+    logical(1)
+  )
+  extras[varies]
+}
+
+
+#' Does `nm` take more than one value within any view of one nested table?
+#' @noRd
+#' @keywords internal
+varies_within_view <- function(geom, nm) {
+  if (!nm %in% names(geom)) {
+    return(FALSE)
+  }
+  counts <- tapply(
+    seq_len(nrow(geom)),
+    geom$view,
+    function(i) length(unique(geom[[nm]][i]))
+  )
+  any(unlist(counts) > 1L)
+}
+
+
+#' Refuse, or warn about, a migration that would lose columns
+#' @noRd
+#' @keywords internal
+check_migration_loss <- function(lost, file, object, force) {
+  if (!length(lost)) {
+    return(invisible(NULL))
+  }
+  msg <- "Migrating {.field {object}} in {.file {basename(file)}} would lose
+          column{?s} {.field {lost}}."
+  if (!force) {
+    cli::cli_abort(c(
+      msg,
+      "i" = "Pass {.code force = TRUE} to migrate anyway;
+             {.file {basename(file)}} is rewritten in place."
+    ))
+  }
+  cli::cli_warn(c(msg, "i" = "Migrating anyway because {.code force = TRUE}."))
+  invisible(NULL)
 }

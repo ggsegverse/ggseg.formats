@@ -7,7 +7,7 @@
 #' @param type atlas type: "cortical", "subcortical", "tract", or "cerebellar"
 #' @param palette named character vector of colours keyed by label
 #' @param core data.frame with required columns hemi, region, label (one row per
-#'   unique region). May contain additional columns for grouping or metadata
+#'   unique label). May contain additional columns for grouping or metadata
 #'   (e.g., lobe, network, Brodmann area).
 #' @param data a ggseg_atlas_data object created by
 #'   [ggseg_data_cortical()], [ggseg_data_subcortical()],
@@ -65,7 +65,7 @@ ggseg_atlas <- function(atlas, type, core, data, palette = NULL) {
 #' @export
 brain_atlas <- function(atlas, type, core, data, palette = NULL) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "brain_atlas()",
     "ggseg_atlas()"
   )
@@ -126,7 +126,7 @@ is_cerebellar_atlas <- function(x) {
 #' @export
 is_brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "is_brain_atlas()",
     "is_ggseg_atlas()"
   )

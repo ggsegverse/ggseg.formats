@@ -285,3 +285,52 @@ describe("migrate_atlas_files()", {
     expect_error(migrate_atlas_files("/no/such/dir"), "does not exist")
   })
 })
+
+
+describe("sf_to_polygons() non-canonical columns", {
+  it("carries extra columns into the nested geometry table", {
+    sf0 <- dk_sf_geom()
+    sf0$myannot <- paste0("ann_", seq_len(nrow(sf0)))
+    sf0$colour <- "#FF0000"
+
+    polys <- sf_to_polygons(sf0)
+    inner <- polys$geometry[[1]]
+
+    expect_named(
+      inner,
+      c("view", "x", "y", "group", "subgroup", "myannot", "colour")
+    )
+    expect_identical(unique(inner$colour), "#FF0000")
+  })
+
+  it("survives a round trip back to sf", {
+    sf0 <- dk_sf_geom()
+    sf0$myannot <- paste0("ann_", seq_len(nrow(sf0)))
+    sf0$colour <- "#FF0000"
+
+    back <- polygons_to_sf(sf_to_polygons(sf0))
+
+    expect_true(all(c("myannot", "colour") %in% names(back)))
+    i <- match(
+      paste(sf0$label, sf0$view),
+      paste(back$label, back$view)
+    )
+    expect_identical(back$myannot[i], sf0$myannot)
+    expect_identical(back$colour[i], sf0$colour)
+  })
+
+  it("drops columns whose names the coordinate table reserves", {
+    sf0 <- as.data.frame(dk_sf_geom())
+    sf0$x <- 1
+    sf0 <- sf::st_as_sf(sf0)
+
+    expect_warning(polys <- sf_to_polygons(sf0), "Dropping column")
+    expect_named(polys$geometry[[1]], c("view", "x", "y", "group", "subgroup"))
+    expect_false(all(polys$geometry[[1]]$x == 1))
+  })
+
+  it("keeps the sf_column attribute on the rebuilt sf table", {
+    back <- polygons_to_sf(atlas_polygons(dk()))
+    expect_identical(attr(back, "sf_column"), "geometry")
+  })
+})

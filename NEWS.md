@@ -9,7 +9,7 @@
   your own tables with the new `legacy_region_map()`; see
   `vignette("migrating-atlases")`.
 
-  ``` r
+  ```r
   my_data$region <- unname(legacy_region_map(dk())[my_data$region])
   ```
 
@@ -29,6 +29,7 @@
   function to set a region outright
   (`atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")`); a
   string that matches labels but changes no region now warns.
+
 - `atlas_regions()`, `atlas_labels()` and `atlas_names()` return their `core`
   column unchanged — one per `core` row, in row order, repeats and `NA`s kept —
   instead of a sorted set of unique values, so the three are now row-aligned.
@@ -82,6 +83,17 @@
 - `plot()` orders panels by view position, and splits a view by hemisphere where
   that is unambiguous rather than guessing from coordinate gaps. Of the bundled
   atlases only `suit()` changes (#18).
+- Geometry columns beyond `label`, `view` and `geometry` now survive conversion
+  between the sf and polygon representations, so `migrate_atlas_files()` no
+  longer silently deletes atlas metadata when it rewrites `data/*.rda`.
+- `migrate_atlas_files()` gains `force`: it aborts, naming the columns and the
+  file, when a migration cannot carry every column across.
+- `atlas_labels()` gains the `data.frame` method its `atlas_regions()` and
+  `atlas_names()` siblings already had.
+- `atlas_view_select()` warns and returns the atlas unchanged on a
+  geometry-less atlas, like the other view verbs, instead of aborting.
+- The five `brain_atlas`-rename deprecations stamped 0.2.0 now say 0.1.0, the
+  version they ship in.
 
 ### Internals
 
