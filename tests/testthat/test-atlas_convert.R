@@ -31,7 +31,7 @@ describe("convert_legacy_brain_atlas", {
           hemi = "left",
           region = "test",
           label = "lh_test",
-          names = "test"
+          display = "test"
         ),
         palette = c(lh_test = "#FF0000"),
         data = list(
@@ -104,7 +104,7 @@ describe("convert_legacy_brain_atlas", {
           hemi = "left",
           region = "test",
           label = "lh_test",
-          names = "test"
+          display = "test"
         ),
         palette = c(lh_test = "#FF0000"),
         data = list(sf = NULL, vertices = data.frame(label = "lh_test"))
@@ -194,7 +194,7 @@ describe("convert_legacy_brain_atlas", {
           hemi = "left",
           region = "test",
           label = "lh_test",
-          names = "test"
+          display = "test"
         )
         vdf <- data.frame(label = "lh_test")
         vdf$vertices <- list(1:10)
@@ -235,7 +235,7 @@ describe("convert_legacy_brain_atlas", {
           hemi = "left",
           region = "test",
           label = "lh_test",
-          names = "test"
+          display = "test"
         ),
         palette = c(lh_test = "#FF0000"),
         data = ggseg_data_cortical(geom = mock_sf, vertices = vdf)
@@ -429,7 +429,7 @@ describe("convert_legacy_brain_atlas 2D-only path", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     mock_2d <- structure(
       list(
@@ -503,7 +503,7 @@ describe("unify_legacy_atlases (deprecated)", {
       hemi = "left",
       region = "frontal",
       label = "lh_frontal",
-      names = "frontal"
+      display = "frontal"
     )
     mock_2d <- structure(
       list(
@@ -807,7 +807,7 @@ describe("convert_legacy_brain_atlas palette remap", {
       hemi = c("left", "left"),
       region = c("frontal", "parietal"),
       label = c("lh_frontal", "lh_parietal"),
-      names = c("frontal", "parietal")
+      display = c("frontal", "parietal")
     )
     old_palette <- c(frontal = "#FF0000", parietal = "#00FF00")
     old_atlas <- structure(

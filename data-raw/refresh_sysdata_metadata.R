@@ -1,7 +1,7 @@
 # Reapply the metadata tables in data-raw/*_metadata.R to the bundled atlases
 # inside R/sysdata.rda.
 #
-# The metadata tables are the source of truth for `region`, `names`,
+# The metadata tables are the source of truth for `region`, `display`,
 # `label_short` and the grouping column of each bundled atlas, but they are
 # merged in by the make_*_atlas.R pipelines, which rebuild the geometry from
 # scratch and need FreeSurfer, a fsaverage5 subject and a headless browser.
@@ -32,7 +32,10 @@ apply_metadata <- function(
   extra = character()
 ) {
   core <- atlas$core
-  cols <- intersect(c("region", "names", "label_short", extra), names(metadata))
+  cols <- intersect(
+    c("region", "display", "label_short", extra),
+    names(metadata)
+  )
   hit <- match(core[[core_key]], metadata[[meta_key]])
   if (anyNA(hit)) {
     cli::cli_abort(
@@ -44,10 +47,10 @@ apply_metadata <- function(
   }
   ordered <- c(
     intersect(
-      c("hemi", "region", "label", "label_short", "names"),
+      c("hemi", "region", "label", "label_short", "display"),
       names(core)
     ),
-    setdiff(names(core), c("hemi", "region", "label", "label_short", "names"))
+    setdiff(names(core), c("hemi", "region", "label", "label_short", "display"))
   )
   atlas$core <- core[, ordered, drop = FALSE]
   atlas

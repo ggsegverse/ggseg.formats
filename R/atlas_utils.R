@@ -3,7 +3,7 @@
 #' @param x brain atlas
 #' @return The `region` column of `core`, unchanged: one element per `core`
 #'   row, in `core` row order, with repeats and `NA`s retained. It is therefore
-#'   row-aligned with [atlas_labels()] and [atlas_names()]. Use `unique()` for
+#'   row-aligned with [atlas_labels()] and [atlas_display()]. Use `unique()` for
 #'   the distinct set. A zero-length character vector when the atlas carries no
 #'   `region` column.
 #' @examples
@@ -36,9 +36,9 @@ atlas_regions.data.frame <- function(x) {
 #' @param x brain atlas
 #' @return The `label` column of `core`, unchanged: one element per `core` row,
 #'   in `core` row order, with repeats and `NA`s retained. It is therefore
-#'   row-aligned with [atlas_regions()] and [atlas_names()]. Use `unique()` for
-#'   the distinct set. A zero-length character vector when the atlas carries no
-#'   `label` column.
+#'   row-aligned with [atlas_regions()] and [atlas_display()]. Use `unique()`
+#'   for the distinct set. A zero-length character vector when the atlas
+#'   carries no `label` column.
 #' @examples
 #' atlas_labels(dk())
 #' atlas_labels(aseg())
@@ -65,44 +65,82 @@ atlas_labels.data.frame <- function(x) {
 }
 
 
-#' Extract the long-form region name column of an atlas
+#' Extract the hemisphere column of an atlas
 #'
-#' The `names` column of `core` holds the long-form display name of each
-#' region, as against the short, hemisphere-free key in `region` and the atlas
-#' identifier in `label`. For the atlases bundled here it is also the `region`
-#' value shipped before the 0.1.0 re-keying, which is what makes that re-keying
+#' `hemi` records which side of the brain a row sits on, as one of `"left"`,
+#' `"right"` or `"midline"`, or `NA` where a side does not apply. It is a
+#' closed vocabulary, enforced at construction, because it is what consumers
+#' filter and facet on.
+#'
+#' @param x brain atlas
+#' @return The `hemi` column of `core`, unchanged: one element per `core` row,
+#'   in `core` row order, with repeats and `NA`s retained. A zero-length
+#'   character vector when the atlas carries no `hemi` column.
+#' @examples
+#' unique(atlas_hemi(dk()))
+#' unique(atlas_hemi(suit()))
+#'
+#' @export
+#' @seealso [atlas_regions()], [atlas_labels()], [atlas_display()]
+#' @family atlas accessors
+atlas_hemi <- function(x) {
+  UseMethod("atlas_hemi")
+}
+
+#' @export
+atlas_hemi.ggseg_atlas <- function(x) {
+  get_col(x$core, "hemi")
+}
+
+#' @export
+atlas_hemi.brain_atlas <- function(x) {
+  get_col(x$core, "hemi")
+}
+
+#' @export
+atlas_hemi.data.frame <- function(x) {
+  get_col(x, "hemi")
+}
+
+
+#' Extract the display-name column of an atlas
+#'
+#' The `display` column of `core` holds the long-form, human-readable name of
+#' each region, as against the short key in `region` and the atlas identifier
+#' in `label`. For the atlases bundled here it is also the `region` value
+#' shipped before the 0.1.0 re-keying, which is what makes that re-keying
 #' recoverable; see [legacy_region_map()].
 #'
 #' @param x brain atlas
-#' @return The `names` column of `core`, unchanged: one element per `core` row,
-#'   in `core` row order, with repeats and `NA`s retained. It is therefore
+#' @return The `display` column of `core`, unchanged: one element per `core`
+#'   row, in `core` row order, with repeats and `NA`s retained. It is therefore
 #'   row-aligned with [atlas_regions()] and [atlas_labels()]. Use `unique()` for
 #'   the distinct set. A zero-length character vector when the atlas carries no
-#'   `names` column.
+#'   `display` column.
 #' @examples
-#' atlas_names(dk())
-#' atlas_names(aseg())
+#' atlas_display(dk())
+#' atlas_display(aseg())
 #'
 #' @export
 #' @seealso [atlas_regions()], [atlas_labels()], [legacy_region_map()]
 #' @family atlas accessors
-atlas_names <- function(x) {
-  UseMethod("atlas_names")
+atlas_display <- function(x) {
+  UseMethod("atlas_display")
 }
 
 #' @export
-atlas_names.ggseg_atlas <- function(x) {
-  get_col(x$core, "names")
+atlas_display.ggseg_atlas <- function(x) {
+  get_col(x$core, "display")
 }
 
 #' @export
-atlas_names.brain_atlas <- function(x) {
-  get_col(x$core, "names")
+atlas_display.brain_atlas <- function(x) {
+  get_col(x$core, "display")
 }
 
 #' @export
-atlas_names.data.frame <- function(x) {
-  get_col(x, "names")
+atlas_display.data.frame <- function(x) {
+  get_col(x, "display")
 }
 
 
@@ -983,7 +1021,7 @@ legacy_region_hint <- function(atlas, pattern) {
 
 #' @noRd
 get_col <- function(x, type) {
-  type <- match.arg(type, c("label", "region", "names"))
+  type <- match.arg(type, c("label", "region", "display", "hemi"))
   if (!type %in% names(x)) {
     return(character(0))
   }
@@ -1122,7 +1160,7 @@ add_op_region_meta <- function(core, palette, into, colour) {
     core_row <- core[1, , drop = FALSE]
     core_row[] <- NA
     core_row$label <- into
-    for (col in intersect(c("region", "names"), names(core_row))) {
+    for (col in intersect(c("region", "display"), names(core_row))) {
       core_row[[col]] <- into
     }
     core <- rbind(core, core_row)
