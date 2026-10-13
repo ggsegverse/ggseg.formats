@@ -29,7 +29,7 @@ brain_data_tract(sf = NULL, centerlines = NULL, meshes = NULL, ...)
 
   - points: list-column of n x 3 matrices (centerline coordinates)
 
-  - tangents: list-column of n x 3 matrices (for orientation coloring)
+  - tangents: list-column of n x 3 matrices (for orientation colouring)
 
 - meshes:
 
