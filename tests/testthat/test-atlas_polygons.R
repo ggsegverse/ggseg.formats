@@ -60,11 +60,11 @@ describe("sfg_coords", {
       class = c("XY", "MULTIPOLYGON", "sfg")
     ))
     expect_identical(nrow(multi), 0L)
-    expect_identical(names(multi), c("x", "y", "group", "subgroup"))
+    expect_named(multi, c("x", "y", "group", "subgroup"))
 
     single <- sfg_coords(structure(list(), class = c("XY", "POLYGON", "sfg")))
     expect_identical(nrow(single), 0L)
-    expect_identical(names(single), c("x", "y", "group", "subgroup"))
+    expect_named(single, c("x", "y", "group", "subgroup"))
   })
 })
 
