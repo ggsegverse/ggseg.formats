@@ -685,13 +685,9 @@ describe("a missing display column is silent outside construction", {
 
 describe("legacy conversion back-fills display", {
   it("copies the legacy long-form region into display", {
-    skip_if_not_installed("sf")
-    sf_geom <- sf::st_sf(
-      label = "lh_frontal",
-      view = "lateral",
-      geometry = sf::st_sfc(sf::st_polygon(list(
-        cbind(c(0, 1, 1, 0, 0), c(0, 0, 1, 1, 0))
-      )))
+    geom <- rings_as_geom(
+      list(ring_square("lh_frontal", "lateral", 0, 0)),
+      polygons = TRUE
     )
     legacy <- structure(
       list(
@@ -703,7 +699,7 @@ describe("legacy conversion back-fills display", {
           region = "superior frontal gyrus",
           label = "lh_frontal"
         ),
-        data = ggseg_data_cortical(geom = sf_geom)
+        data = ggseg_data_cortical(geom = geom)
       ),
       class = "brain_atlas"
     )

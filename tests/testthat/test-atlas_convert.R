@@ -212,18 +212,10 @@ describe("convert_legacy_brain_atlas", {
     expect_identical(result$atlas, "old_atlas")
   })
 
-  it("extracts sf from data$sf when available", {
-    skip_if_not_installed("sf")
-    mock_sf <- sf::st_sf(
-      label = "lh_test",
-      view = "lateral",
-      geometry = sf::st_sfc(
-        sf::st_polygon(list(matrix(
-          c(0, 0, 1, 0, 1, 1, 0, 0),
-          ncol = 2,
-          byrow = TRUE
-        )))
-      )
+  it("extracts 2D geometry from the data slot when available", {
+    mock_geom <- rings_as_geom(
+      list(ring_square("lh_test", "lateral", 0, 0)),
+      polygons = TRUE
     )
     vdf <- data.frame(label = "lh_test")
     vdf$vertices <- list(1:10)
@@ -238,7 +230,7 @@ describe("convert_legacy_brain_atlas", {
           display = "test"
         ),
         palette = c(lh_test = "#FF0000"),
-        data = ggseg_data_cortical(geom = mock_sf, vertices = vdf)
+        data = ggseg_data_cortical(geom = mock_geom, vertices = vdf)
       ),
       class = "brain_atlas"
     )
@@ -418,12 +410,10 @@ describe("remap_palette_to_labels", {
 
 
 describe("convert_legacy_brain_atlas 2D-only path", {
-  it("creates atlas from 2D sf without vertex data", {
-    skip_if_not_installed("sf")
-    sf_geom <- sf::st_sf(
-      label = "lh_frontal",
-      view = "lateral",
-      geometry = sf::st_sfc(make_polygon())
+  it("creates atlas from 2D geometry without vertex data", {
+    geom <- rings_as_geom(
+      list(ring_square("lh_frontal", "lateral", 0, 0)),
+      polygons = TRUE
     )
     core <- data.frame(
       hemi = "left",
@@ -437,7 +427,7 @@ describe("convert_legacy_brain_atlas 2D-only path", {
         type = "cortical",
         palette = c(lh_frontal = "#FF0000"),
         core = core,
-        data = ggseg_data_cortical(geom = sf_geom)
+        data = ggseg_data_cortical(geom = geom)
       ),
       class = "brain_atlas"
     )
@@ -493,11 +483,9 @@ describe("convert_legacy_brain_atlas 2D-only path", {
 
 describe("unify_legacy_atlases (deprecated)", {
   it("warns and delegates to convert_legacy_brain_atlas", {
-    skip_if_not_installed("sf")
-    sf_geom <- sf::st_sf(
-      label = "lh_frontal",
-      view = "lateral",
-      geometry = sf::st_sfc(make_polygon())
+    geom <- rings_as_geom(
+      list(ring_square("lh_frontal", "lateral", 0, 0)),
+      polygons = TRUE
     )
     core <- data.frame(
       hemi = "left",
@@ -511,7 +499,7 @@ describe("unify_legacy_atlases (deprecated)", {
         type = "cortical",
         palette = c(lh_frontal = "#FF0000"),
         core = core,
-        data = ggseg_data_cortical(geom = sf_geom)
+        data = ggseg_data_cortical(geom = geom)
       ),
       class = "brain_atlas"
     )
@@ -797,11 +785,12 @@ describe("infer_vertices_from_meshes", {
 
 describe("convert_legacy_brain_atlas palette remap", {
   it("remaps palette when no label keys match core", {
-    skip_if_not_installed("sf")
-    sf_geom <- sf::st_sf(
-      label = c("lh_frontal", "lh_parietal"),
-      view = c("lateral", "lateral"),
-      geometry = sf::st_sfc(make_polygon(), make_polygon2())
+    geom <- rings_as_geom(
+      list(
+        ring_square("lh_frontal", "lateral", 0, 0),
+        ring_square("lh_parietal", "lateral", 2, 0)
+      ),
+      polygons = TRUE
     )
     core <- data.frame(
       hemi = c("left", "left"),
@@ -817,7 +806,7 @@ describe("convert_legacy_brain_atlas palette remap", {
         core = core,
         palette = old_palette,
         data = ggseg_data_cortical(
-          geom = sf_geom,
+          geom = geom,
           vertices = data.frame(
             label = c("lh_frontal", "lh_parietal"),
             vertices = I(list(1L:3L, 4L:6L))
@@ -944,7 +933,6 @@ describe("try_infer_vertices", {
   })
 
   it("returns NULL when inference fails but sf_data exists", {
-    skip_if_not_installed("sf")
     mock_3d <- data.frame(
       atlas = "test",
       hemi = "left",
@@ -958,10 +946,9 @@ describe("try_infer_vertices", {
     )
     mock_3d$ggseg_3d[[1]]$mesh <- list(NULL)
 
-    sf_geom <- sf::st_sf(
-      label = "lh_frontal",
-      view = "lateral",
-      geometry = sf::st_sfc(make_polygon())
+    geom <- rings_as_geom(
+      list(ring_square("lh_frontal", "lateral", 0, 0)),
+      polygons = TRUE
     )
 
     expect_warning(
@@ -969,7 +956,7 @@ describe("try_infer_vertices", {
         mock_3d,
         "inflated",
         NULL,
-        sf_data = sf_geom
+        sf_data = geom
       ),
       "Could not infer"
     )

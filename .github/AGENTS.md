@@ -163,6 +163,12 @@ The package and its full test suite must pass with `sf` **uninstalled**. See
   `expect_error(.., "message")`). Match error messages on a stable substring.
 - Keep test output clean (no stray prints/warnings); use `withr` for any state
   changes.
+- **Do not namespace testthat inside `it()` bodies** — `tests/testthat.R`
+  attaches it, so write `skip_if_not_installed("sf")`. The exception is a call
+  inside a **top-level function** in a `helper-*.R` or test file: `testthat` is
+  a Suggests, so `object_usage_linter` cannot resolve the bare symbol there and
+  CI fails with "no visible global function definition". Those few sites keep
+  the `testthat::` prefix; it is not decoration.
 
 ## CI gates (all must be green before merge)
 

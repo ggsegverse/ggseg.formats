@@ -1418,9 +1418,16 @@ view_reorder_poly <- function(atlas, order, gap) {
     return(atlas)
   }
   current_views <- unique(polygons_unnest(data_poly(atlas$data))$view)
-  if (!any(order %in% current_views)) {
+
+  # As in the sf path: views the request omits are appended, so an empty
+  # result means the atlas has no views rather than that the request missed.
+  order <- c(order, setdiff(current_views, order))
+  order <- order[order %in% current_views]
+  if (length(order) == 0) {
     cli::cli_warn("No matching views found in order specification")
+    return(atlas)
   }
+
   new_poly <- reorder_polygons(
     data_poly(atlas$data),
     order,

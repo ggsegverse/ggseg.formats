@@ -53,7 +53,6 @@ describe("ggseg_atlas class", {
   })
 
   it("aseg atlas works", {
-    skip_if_not_installed("sf")
     expect_true(is_ggseg_atlas(aseg()))
     df <- as.data.frame(aseg())
     expect_s3_class(df, "data.frame")

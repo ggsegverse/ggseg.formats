@@ -278,11 +278,14 @@ describe("ggseg_data_cortical() geometry", {
   })
 
   it("accepts sf input as geom", {
+    # An sf geom reaches validate_sf(), whose coercion half needs sf itself.
+    skip_if_not_installed("sf")
     d <- ggseg_data_cortical(geom = dk_sf_geom())
     expect_s3_class(d$geom, "sf")
   })
 
   it("converts a deprecated sf= argument to polygons", {
+    skip_if_not_installed("sf")
     withr::local_options(lifecycle_verbosity = "quiet")
     d <- ggseg_data_cortical(sf = dk_sf_geom())
     expect_s3_class(d$geom, "brain_polygons")

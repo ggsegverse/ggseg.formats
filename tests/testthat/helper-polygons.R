@@ -13,7 +13,6 @@ make_polygon2 <- function() {
 # brain_polygons format. Tests that need to exercise the sf path rebuild sf
 # geometry on the fly from the polygon atlas.
 dk_sf_atlas <- function() {
-  testthat::skip_if_not_installed("sf")
   as_sf_atlas(dk())
 }
 

@@ -59,10 +59,13 @@ describe("migrate_atlas_files()", {
 
   it("reports migrated files when quiet = FALSE", {
     dir <- withr::local_tempdir()
-    atlas <- dk_sf_atlas()
+    atlas <- as_polygon_atlas(dk())
     save(atlas, file = file.path(dir, "atlas.rda"))
 
-    expect_message(migrate_atlas_files(dir, quiet = FALSE), "Migrated")
+    expect_message(
+      migrate_atlas_files(dir, keep_sf = TRUE, quiet = FALSE),
+      "Migrated"
+    )
   })
 
   it("reports skipped files when quiet = FALSE", {
@@ -101,13 +104,17 @@ describe("migrate_atlas_object()", {
 
 
 describe("migrate_atlas_files() column-loss guard", {
+  # An sf atlas whose geometry carries a column the polygon format reserves.
+  # Built with sfheaders, so the guard itself is testable without sf.
+  sf_atlas_with_reserved_column <- function() {
+    atlas <- as_sf_atlas(dk())
+    atlas$data$geom$group <- 1L
+    atlas
+  }
+
   it("aborts when a conversion to polygons would lose columns", {
-    skip_if_not_installed("sf")
     dir <- withr::local_tempdir()
-    atlas <- dk_sf_atlas()
-    geom <- as.data.frame(atlas_geom(atlas))
-    geom$group <- 1L
-    atlas$data$geom <- sf::st_as_sf(geom)
+    atlas <- sf_atlas_with_reserved_column()
     save(atlas, file = file.path(dir, "atlas.rda"))
 
     expect_error(
@@ -117,12 +124,8 @@ describe("migrate_atlas_files() column-loss guard", {
   })
 
   it("leaves the file untouched when it aborts", {
-    skip_if_not_installed("sf")
     dir <- withr::local_tempdir()
-    atlas <- dk_sf_atlas()
-    geom <- as.data.frame(atlas_geom(atlas))
-    geom$group <- 1L
-    atlas$data$geom <- sf::st_as_sf(geom)
+    atlas <- sf_atlas_with_reserved_column()
     f <- file.path(dir, "atlas.rda")
     save(atlas, file = f)
     before <- tools::md5sum(f)
@@ -134,10 +137,7 @@ describe("migrate_atlas_files() column-loss guard", {
   it("migrates with a warning when force = TRUE", {
     skip_if_not_installed("sf")
     dir <- withr::local_tempdir()
-    atlas <- dk_sf_atlas()
-    geom <- as.data.frame(atlas_geom(atlas))
-    geom$group <- 1L
-    atlas$data$geom <- sf::st_as_sf(geom)
+    atlas <- sf_atlas_with_reserved_column()
     save(atlas, file = file.path(dir, "atlas.rda"))
 
     expect_warning(

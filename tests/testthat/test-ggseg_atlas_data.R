@@ -335,13 +335,10 @@ describe("print methods", {
   })
 
   it("summarises brain_polygons geometry in the 2D view listing", {
-    skip_if_not_installed("sf")
-    sf_geom <- sf::st_sf(
-      label = "lh_frontal",
-      view = "lateral",
-      geometry = sf::st_sfc(make_polygon())
+    polygons <- rings_as_geom(
+      list(ring_square("lh_frontal", "lateral", 0, 0)),
+      polygons = TRUE
     )
-    polygons <- sf_to_polygons(sf_geom)
     expect_s3_class(polygons, "brain_polygons")
 
     data <- ggseg_data_cortical(geom = polygons)

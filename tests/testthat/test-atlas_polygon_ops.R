@@ -192,11 +192,11 @@ describe("order_cells_spatially()", {
 
 describe("polygons_renest()", {
   it("keeps non-canonical columns and puts the canonical ones first", {
-    sf0 <- dk_sf_geom()
-    sf0$myannot <- paste0("ann_", seq_len(nrow(sf0)))
-    polys <- sf_to_polygons(sf0)
+    flat <- polygons_unnest(polys)
+    flat$myannot <- paste0("ann_", seq_len(nrow(flat)))
+    annotated <- polygons_renest(flat)
 
-    kept <- polygons_filter_view(polys, "lateral", keep = TRUE)
+    kept <- polygons_filter_view(annotated, "lateral", keep = TRUE)
 
     expect_named(
       kept$geometry[[1]],
