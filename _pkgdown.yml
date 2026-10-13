@@ -45,6 +45,8 @@ reference:
       - as_polygon_atlas
       - as_sf_atlas
       - migrate_atlas_files
+      - attach_sfc
+      - reorder_sfc
   - title: Atlas manipulation
     desc: |
       Pipe-friendly functions for subsetting regions, managing views, and enriching metadata. All return a new `ggseg_atlas`.
