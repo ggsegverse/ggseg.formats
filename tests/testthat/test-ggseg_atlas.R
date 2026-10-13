@@ -325,6 +325,65 @@ describe("deprecated wrappers", {
 })
 
 
+describe("the sf seam", {
+  it("attach_sfc() gives a frame sf's own accessors accept", {
+    skip_if_not_installed("sf")
+    g <- polygons_to_sf(atlas_geom(dk()))
+    geometry <- g$geometry
+    bare <- g
+    bare$geometry <- NULL
+    class(bare) <- "data.frame"
+
+    out <- attach_sfc(bare, geometry)
+
+    expect_s3_class(out, "sf")
+    expect_identical(attr(out, "sf_column"), "geometry")
+    expect_s3_class(out$geometry, "sfc")
+    expect_identical(sf::st_geometry(out), geometry)
+    expect_named(attr(out, "agr"), setdiff(names(out), "geometry"))
+  })
+
+  it("attach_sfc() puts the column where the caller asks", {
+    df <- data.frame(a = 1:2, b = 3:4, c = 5:6)
+    geometry <- structure(list(1, 2), class = c("sfc_POINT", "sfc"))
+
+    expect_named(
+      attach_sfc(df, geometry, after = 2L),
+      c("a", "b", "geometry", "c")
+    )
+    expect_named(
+      attach_sfc(df, geometry, after = 0L),
+      c("geometry", "a", "b", "c")
+    )
+  })
+
+  it("reorder_sfc() permutes and keeps the sfc attributes", {
+    skip_if_not_installed("sf")
+    geometry <- polygons_to_sf(atlas_geom(dk()))$geometry
+    i <- rev(seq_along(geometry))
+
+    out <- reorder_sfc(geometry, i)
+
+    expect_s3_class(out, "sfc")
+    expect_identical(attributes(out), attributes(geometry))
+    expect_identical(unclass(out)[[1]], unclass(geometry)[[length(geometry)]])
+  })
+
+  it("as.data.frame() keeps the geometry column an sfc", {
+    # Every base-R frame operation in the pipeline strips a different part of
+    # the sf representation when sf is not loaded, which left the result
+    # claiming to be sf over a bare list.
+    for (atlas in list(dk(), aseg())) {
+      out <- as.data.frame(atlas)
+      expect_s3_class(out, "sf")
+      expect_s3_class(out$geometry, "sfc")
+      expect_identical(attr(out, "sf_column"), "geometry")
+      expect_identical(nrow(out), length(out$geometry))
+    }
+  })
+})
+
+
 describe("as.data.frame.ggseg_atlas", {
   it("infers hemi from label prefixes", {
     skip_if_not_installed("sf")
