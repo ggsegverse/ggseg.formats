@@ -213,7 +213,7 @@
     },
     "SystemRequirements": null
   },
-  "fileSize": "3773.56KB",
+  "fileSize": "3775.916KB",
   "releaseNotes": "https://github.com/ggsegverse/ggseg.formats/blob/main/NEWS.md",
   "readme": "https://github.com/ggsegverse/ggseg.formats/blob/main/README.md",
   "contIntegration": ["https://github.com/ggsegverse/ggseg.formats/actions/workflows/R-CMD-check.yaml", "https://github.com/ggsegverse/ggseg.formats/actions/workflows/code-quality.yaml", "https://github.com/ggsegverse/ggseg.formats/actions/workflows/test-coverage.yaml"],
