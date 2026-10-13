@@ -239,11 +239,32 @@ as.list.ggseg_atlas <- function(x, ...) {
 #' @export
 as.data.frame.ggseg_atlas <- function(x, ...) {
   sf_data <- as_sf_for_data_frame(x)
-  result <- merge_core_into_sf(sf_data, x$core)
+
+  # Geometry travels out of band. Base merge(), cbind() and `[` each strip a
+  # different part of the sf representation when sf is not loaded, so every
+  # operation below runs on attributes only, paired back by `.ggseg_row`.
+  sf_column <- attr(sf_data, "sf_column")
+  if (is.null(sf_column)) {
+    sf_column <- "geometry"
+  }
+  geometry <- sf_data[[sf_column]]
+
+  result <- sf_data
+  result[[sf_column]] <- NULL
+  class(result) <- "data.frame"
+  result$.ggseg_row <- seq_len(nrow(result))
+
+  result <- merge_core_into_sf(result, x$core)
 
   if (x$type == "cortical") {
     result <- infer_cortical_hemi(result)
   }
+
+  # merge.sf moves the geometry column to the end of the merged frame, so with
+  # sf loaded it has always landed after the core columns and before the three
+  # added below. Insert it there, so the column order does not depend on
+  # whether sf happens to be installed.
+  geom_pos <- ncol(result) - 1L
 
   result$atlas <- x$atlas
   result$type <- x$type
@@ -254,7 +275,10 @@ as.data.frame.ggseg_atlas <- function(x, ...) {
 
   result <- order_context_behind(result, x$core$label)
 
-  sf::st_as_sf(result)
+  geometry <- reorder_sfc(geometry, result$.ggseg_row)
+  result$.ggseg_row <- NULL
+  rownames(result) <- NULL
+  attach_sfc(result, geometry, sf_column, after = geom_pos)
 }
 
 #' @importFrom graphics mtext par plot.new plot.window polygon polypath
@@ -399,13 +423,14 @@ as_sf_for_data_frame <- function(x) {
   if (!has_2d_slot) {
     cli::cli_abort("Cannot convert ggseg_atlas to data.frame: no 2D geometry.")
   }
-  require_sf("as.data.frame.ggseg_atlas()")
-
+  # The geom slot is already an sf-class frame in both representations --
+  # polygons_to_sf() builds one through sfheaders -- so that path needs no sf.
+  # The legacy fallback does: `x$data` is a plain frame whose geometry column
+  # has to be promoted, which only st_as_sf() can do.
   sf_data <- if (!is.null(geom)) {
-    sf::st_as_sf(
-      if (inherits(geom, "brain_polygons")) polygons_to_sf(geom) else geom
-    )
+    if (inherits(geom, "brain_polygons")) polygons_to_sf(geom) else geom
   } else {
+    require_sf("as.data.frame.ggseg_atlas()")
     sf::st_as_sf(x$data)
   }
 
