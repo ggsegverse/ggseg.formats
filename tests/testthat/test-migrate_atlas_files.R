@@ -48,9 +48,7 @@ describe("migrate_atlas_files()", {
 
   it("skips sf atlases when keep_sf = TRUE", {
     dir <- withr::local_tempdir()
-    # as_sf_atlas() rather than dk_sf_atlas(): the helper skips without sf,
-    # but writing sf goes through sfheaders and no conversion runs here.
-    atlas <- as_sf_atlas(dk())
+    atlas <- dk_sf_atlas()
     save(atlas, file = file.path(dir, "atlas.rda"))
 
     expect_identical(

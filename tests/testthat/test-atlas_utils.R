@@ -1325,8 +1325,8 @@ describe("atlas_view_select", {
 # atlas_view_remove_small ----
 
 describe("atlas_view_remove_small", {
-  n_pieces <- function(atlas) {
-    flat <- polygons_unnest(atlas_polygons(atlas))
+  n_pieces <- function(x) {
+    flat <- polygons_unnest(if (is_ggseg_atlas(x)) atlas_polygons(x) else x)
     length(unique(paste(flat$label, flat$view)))
   }
 
@@ -1413,11 +1413,7 @@ describe("atlas_view_remove_small", {
     )
     expect_null(result$data$sf)
 
-    n_geoms <- function(p) {
-      flat <- polygons_unnest(p)
-      length(unique(paste(flat$label, flat$view)))
-    }
-    expect_lt(n_geoms(result$data$geom), n_geoms(poly$data$geom))
+    expect_lt(n_pieces(result$data$geom), n_pieces(poly$data$geom))
   })
 })
 
@@ -1909,16 +1905,20 @@ describe("atlas_view_reorder", {
     )
   }
 
-  # sf-only: the polygon path errors in reposition_flat() on zero-row
-  # geometry instead of warning (ggseg.formats bug, see issue #57 notes).
-  it("warns when the sf geometry has no rows (empty views)", {
-    atlas <- make_multiview_atlas()
-    atlas$data$geom <- atlas$data$geom[0, ]
-    expect_warning(
-      atlas_view_reorder(atlas, "lateral"),
-      "No matching views"
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0("warns when the geometry has no rows [", rep_name(polygons), "]"),
+      {
+        atlas <- make_multiview_atlas(polygons = polygons)
+        atlas$data$geom <- atlas$data$geom[0, ]
+        expect_warning(
+          result <- atlas_view_reorder(atlas, "lateral"),
+          "No matching views"
+        )
+        expect_identical(result, atlas)
+      }
     )
-  })
+  }
 })
 
 
