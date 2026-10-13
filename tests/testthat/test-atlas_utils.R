@@ -1519,21 +1519,10 @@ describe("atlas_view_reorder", {
       ),
       {
         atlas <- make_multiview_atlas(polygons = polygons)
-        # the polygon path adds a second warning the sf path does not emit
-        if (polygons) {
-          expect_warning(
-            expect_warning(
-              result <- atlas_view_reorder(atlas, "nonexistent"),
-              "names no view in this atlas"
-            ),
-            "No matching views found"
-          )
-        } else {
-          expect_warning(
-            result <- atlas_view_reorder(atlas, "nonexistent"),
-            "names no view in this atlas"
-          )
-        }
+        expect_warning(
+          result <- atlas_view_reorder(atlas, "nonexistent"),
+          "names no view in this atlas"
+        )
         expect_length(atlas_views(result), 3)
       }
     )
@@ -2656,17 +2645,26 @@ describe("view_remove_region_poly removing all geometry", {
 
 
 describe("view_reorder_poly with no matching views", {
-  it("warns and still returns a polygon atlas", {
+  it("warns once and still returns a polygon atlas", {
     poly <- as_polygon_atlas(dk())
     expect_warning(
-      expect_warning(
-        result <- atlas_view_reorder(poly, "zzz_nope"),
-        "names no view in this atlas"
-      ),
-      "No matching views",
-      fixed = TRUE
+      result <- atlas_view_reorder(poly, "zzz_nope"),
+      "names no view in this atlas"
     )
     expect_null(result$data$sf)
+    expect_s3_class(atlas_geom(result), "brain_polygons")
+  })
+
+  it("warns and returns unchanged once every view is gone, like the sf path", {
+    poly <- suppressWarnings(
+      atlas_view_remove(as_polygon_atlas(dk()), views = atlas_views(dk()))
+    )
+    expect_null(atlas_geom(poly))
+    expect_warning(
+      result <- atlas_view_reorder(poly, "lateral"),
+      "no 2D geometry"
+    )
+    expect_identical(result, poly)
   })
 })
 
