@@ -50,6 +50,17 @@ sf_to_polygons <- function(sf_data) {
     cli::cli_abort("{.arg sf_data} missing columns: {.field {miss}}.")
   }
 
+  # validate_sf() rejects empty geometry at construction, but an atlas
+  # deserialised from .rda was never constructed here, so it can still carry
+  # one. Without this the per-row assembly below fails on a length mismatch.
+  empty_geom <- lengths(sf_data$geometry) == 0
+  if (any(empty_geom)) {
+    cli::cli_abort(c(
+      "All sf entries must contain geometry.",
+      "i" = "Empty geometry for: {.val {sf_data$label[empty_geom]}}."
+    ))
+  }
+
   dropped <- reserved_coord_columns(sf_data)
   if (length(dropped)) {
     cli::cli_warn(

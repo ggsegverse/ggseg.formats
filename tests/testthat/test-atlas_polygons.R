@@ -1,3 +1,23 @@
+describe("sf_to_polygons() on empty geometry", {
+  it("names the labels whose geometry is empty", {
+    skip_if_not_installed("sf")
+    sf_data <- sf::st_sf(
+      label = c("filled", "hollow"),
+      view = c("lateral", "lateral"),
+      geometry = sf::st_sfc(
+        sf::st_multipolygon(list(list(
+          rbind(c(0, 0), c(1, 0), c(1, 1), c(0, 1), c(0, 0))
+        ))),
+        sf::st_multipolygon()
+      )
+    )
+
+    expect_error(sf_to_polygons(sf_data), "must contain geometry")
+    expect_error(sf_to_polygons(sf_data), "hollow")
+  })
+})
+
+
 describe("sfg_coords", {
   it("reads a MULTIPOLYGON's pieces and rings without sf", {
     df <- data.frame(
