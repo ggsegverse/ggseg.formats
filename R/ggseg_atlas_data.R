@@ -172,7 +172,7 @@ ggseg_data_cerebellar <- function(
 #'   \itemize{
 #'     \item label: tract identifier (character)
 #'     \item points: list-column of n x 3 matrices (centerline coordinates)
-#'     \item tangents: list-column of n x 3 matrices (for orientation coloring)
+#'     \item tangents: list-column of n x 3 matrices (for orientation colouring)
 #'   }
 #' @param meshes `r lifecycle::badge("deprecated")` Use `centerlines` instead.
 #'   If supplied, it is converted to the centerlines format.

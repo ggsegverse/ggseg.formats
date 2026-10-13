@@ -190,7 +190,7 @@ validate_tract_metadata <- function(metadata, label) {
   if (length(missing) > 0 && length(missing) < length(recommended)) {
     cli::cli_warn(
       "Mesh metadata for {.val {label}} missing: {.field {missing}}. ",
-      "Orientation coloring may not work."
+      "Orientation colouring may not work."
     )
   }
 }
