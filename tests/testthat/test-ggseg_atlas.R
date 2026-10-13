@@ -1,5 +1,5 @@
 make_poly <- function(coords) {
-  testthat::skip_if_not_installed("sf")
+  skip_if_not_installed("sf")
   sf::st_polygon(list(matrix(coords, ncol = 2, byrow = TRUE)))
 }
 

@@ -1,10 +1,10 @@
 make_polygon <- function(coords = c(0, 0, 1, 0, 1, 1, 0, 0)) {
-  testthat::skip_if_not_installed("sf")
+  skip_if_not_installed("sf")
   sf::st_polygon(list(matrix(coords, ncol = 2, byrow = TRUE)))
 }
 
 make_polygon2 <- function() {
-  testthat::skip_if_not_installed("sf")
+  skip_if_not_installed("sf")
   coords <- c(2, 0, 3, 0, 3, 1, 2, 0)
   sf::st_polygon(list(matrix(coords, ncol = 2, byrow = TRUE)))
 }
@@ -47,7 +47,7 @@ ring_square <- function(label, view, x_off, y_off, size = 1) {
 }
 
 rings_as_sf <- function(spec) {
-  testthat::skip_if_not_installed("sf")
+  skip_if_not_installed("sf")
   sf::st_sf(
     label = vapply(spec, `[[`, character(1), "label"),
     view = vapply(spec, `[[`, character(1), "view"),

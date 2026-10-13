@@ -163,6 +163,9 @@ The package and its full test suite must pass with `sf` **uninstalled**. See
   `expect_error(.., "message")`). Match error messages on a stable substring.
 - Keep test output clean (no stray prints/warnings); use `withr` for any state
   changes.
+- **Do not namespace testthat in tests.** `tests/testthat.R` attaches it, so
+  write `skip_if_not_installed("sf")`, not `testthat::skip_if_not_installed()`
+  — including in `helper-*.R`, which is sourced after testthat is attached.
 
 ## CI gates (all must be green before merge)
 
