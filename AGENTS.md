@@ -108,7 +108,39 @@ pattern — don’t break the existing ones.
     message pointing to the polygon alternative
     ([`as_polygon_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_polygon_atlas.md)),
     **or**
-2.  Branch on `has_sf()` when a graceful fallback exists.
+2.  Branch on `has_sf()` when a graceful fallback exists, **or**
+3.  Not use `sf` at all, which is usually the right answer.
+
+**When a gate is warranted.** `sf` is required only for computation that
+needs GEOS, GDAL or PROJ: `st_difference`, `st_intersection`,
+`st_union`, `st_sym_difference`, `st_make_valid`, `st_area`, `st_bbox`,
+`st_cast`, and CRS transforms. Everything else — reading coordinates out
+of a geometry, building a geometry, restoring the `sf` class and its
+`sf_column` attribute — goes through `sfheaders`, which is an Imports
+and has no system dependencies. Reach for
+[`sfheaders::sfg_to_df()`](https://dcooley.github.io/sfheaders/reference/sfg_to_df.html)
+/ `sfc_to_df()` to read and the `sf_*()` / `sfc_*()` / `sfg_*()`
+constructors to build. A gate in front of work that only reads or builds
+geometry is a bug, not caution: it refuses something the package can do.
+
+Two paths may keep a gate even though they touch no GEOS, because
+handing back an `sf` object is their entire purpose and a caller who
+wants one wants `sf` too:
+[`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md)
+and `as.data.frame.ggseg_atlas()`.
+
+**Never rely on an `sf::` call for its namespace-load side effect.**
+Calling `sf::anything()` loads the `sf` namespace, which registers
+`merge.sf`, `[.sf` and the rest. Code *below* such a call can therefore
+depend on those methods without naming them, and deleting the call —
+even one whose return value is provably an identity — silently drops the
+`sf` class and `sf_column` attribute from a later
+[`merge()`](https://rdrr.io/r/base/merge.html) or `[`. This has already
+shipped once and been reverted. When a path must return an `sf`-classed
+object without `sf`, set the class and `sf_column` attribute explicitly,
+as
+[`polygons_to_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/polygons_to_sf.md)
+does.
 
 In tests, gate sf-only assertions with `skip_if_not_installed("sf")`,
 and use `local_mocked_bindings(has_sf = function() FALSE)` to exercise
