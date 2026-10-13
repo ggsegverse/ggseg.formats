@@ -19,7 +19,7 @@ determines the rendering path used downstream.}
 \itemize{
 \item label: tract identifier (character)
 \item points: list-column of n x 3 matrices (centerline coordinates)
-\item tangents: list-column of n x 3 matrices (for orientation coloring)
+\item tangents: list-column of n x 3 matrices (for orientation colouring)
 }}
 
 \item{meshes}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}} Use \code{centerlines} instead.

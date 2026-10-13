@@ -42,6 +42,7 @@ Config/Needs/gp:
     ggplot2,
     hexSticker
 Encoding: UTF-8
+Language: en-GB
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/ggsegverse/ggseg.formats, https://ggsegverse.github.io/ggseg.formats/
 BugReports: https://github.com/ggsegverse/ggseg.formats/issues
