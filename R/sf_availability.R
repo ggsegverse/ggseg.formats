@@ -97,7 +97,7 @@ reorder_sfc <- function(geometry, i) {
 #' @keywords internal
 #' @noRd
 require_sf <- function(what) {
-  if (!rlang::is_installed("sf")) {
+  if (!has_sf()) {
     cli::cli_abort(c(
       "{what} requires the {.pkg sf} package, which is not installed.",
       "i" = "Install with {.run install.packages(\"sf\")}, or use the

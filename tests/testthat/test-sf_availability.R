@@ -21,10 +21,16 @@ describe("require_sf()", {
   })
 
   it("aborts with a pointer to the polygon alternative when sf is missing", {
-    local_mocked_bindings(
-      is_installed = function(...) FALSE,
-      .package = "rlang"
-    )
+    local_mocked_bindings(has_sf = function() FALSE)
     expect_error(require_sf("atlas_sf()"), "sf")
+    expect_error(require_sf("atlas_sf()"), "as_polygon_atlas")
+  })
+
+  it("asks has_sf(), so mocking it is enough to exercise the no-sf path", {
+    local_mocked_bindings(has_sf = function() FALSE)
+    expect_error(require_sf("an operation"), "requires the")
+
+    local_mocked_bindings(has_sf = function() TRUE)
+    expect_true(require_sf("an operation"))
   })
 })
