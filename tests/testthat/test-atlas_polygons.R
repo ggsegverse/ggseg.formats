@@ -1,3 +1,74 @@
+describe("sf_to_polygons() on empty geometry", {
+  it("names the labels whose geometry is empty", {
+    skip_if_not_installed("sf")
+    sf_data <- sf::st_sf(
+      label = c("filled", "hollow"),
+      view = c("lateral", "lateral"),
+      geometry = sf::st_sfc(
+        sf::st_multipolygon(list(list(
+          rbind(c(0, 0), c(1, 0), c(1, 1), c(0, 1), c(0, 0))
+        ))),
+        sf::st_multipolygon()
+      )
+    )
+
+    expect_error(sf_to_polygons(sf_data), "must contain geometry")
+    expect_error(sf_to_polygons(sf_data), "hollow")
+  })
+})
+
+
+describe("sfg_coords", {
+  it("reads a MULTIPOLYGON's pieces and rings without sf", {
+    df <- data.frame(
+      pc = c(rep(1, 10), rep(2, 5)),
+      ring = c(rep(1, 5), rep(2, 5), rep(1, 5)),
+      x = c(0, 4, 4, 0, 0, 1, 2, 2, 1, 1, 6, 8, 8, 6, 6),
+      y = c(0, 0, 4, 4, 0, 1, 1, 2, 2, 1, 0, 0, 2, 2, 0)
+    )
+    geom <- sfheaders::sfg_multipolygon(
+      df,
+      x = "x",
+      y = "y",
+      polygon_id = "pc",
+      linestring_id = "ring"
+    )
+    out <- sfg_coords(geom)
+
+    expect_identical(out$group, as.integer(df$pc))
+    expect_identical(out$subgroup, as.integer(df$ring))
+    expect_identical(out$x, df$x)
+    expect_identical(out$y, df$y)
+  })
+
+  it("puts every ring of a POLYGON in one piece", {
+    df <- data.frame(
+      ring = c(rep(1, 5), rep(2, 5)),
+      x = c(0, 4, 4, 0, 0, 1, 2, 2, 1, 1),
+      y = c(0, 0, 4, 4, 0, 1, 1, 2, 2, 1)
+    )
+    geom <- sfheaders::sfg_polygon(df, x = "x", y = "y", linestring_id = "ring")
+    out <- sfg_coords(geom)
+
+    expect_identical(unique(out$group), 1L)
+    expect_identical(out$subgroup, as.integer(df$ring))
+  })
+
+  it("returns a zero-row frame for an empty geometry, for either sfg class", {
+    multi <- sfg_coords(structure(
+      list(),
+      class = c("XY", "MULTIPOLYGON", "sfg")
+    ))
+    expect_identical(nrow(multi), 0L)
+    expect_named(multi, c("x", "y", "group", "subgroup"))
+
+    single <- sfg_coords(structure(list(), class = c("XY", "POLYGON", "sfg")))
+    expect_identical(nrow(single), 0L)
+    expect_named(single, c("x", "y", "group", "subgroup"))
+  })
+})
+
+
 describe("sf_to_polygons()", {
   it("returns one row per label with a nested geometry list-column", {
     skip_if_not_installed("sf")

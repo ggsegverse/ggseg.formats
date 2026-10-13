@@ -38,19 +38,6 @@ as_polygon_atlas <- function(atlas) {
     ))
   }
   if (!inherits(geom, "brain_polygons")) {
-    if (!has_sf()) {
-      msg <- c(
-        "Cannot convert an sf-backed atlas to the polygon format without the
-         {.pkg sf} package.",
-        "Install {.pkg sf} to convert on the fly with
-         {.run install.packages(\"sf\")}.",
-        "Atlas maintainers: run {.fn ggseg.formats::migrate_atlas_files} over
-         the package {.path data/} directory once to ship atlases in the
-         sf-optional polygon format."
-      )
-      names(msg) <- c("", "i", "i")
-      cli::cli_abort(msg)
-    }
     geom <- sf_to_polygons(geom)
   }
 

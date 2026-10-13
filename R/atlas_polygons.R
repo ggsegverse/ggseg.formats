@@ -50,10 +50,16 @@ sf_to_polygons <- function(sf_data) {
     cli::cli_abort("{.arg sf_data} missing columns: {.field {miss}}.")
   }
 
-  # Gated after the argument checks: a malformed input must report what is
-  # wrong with it, not a missing optional dependency. The coordinate
-  # extraction below is the part that genuinely needs sf.
-  require_sf("sf_to_polygons()")
+  # validate_sf() rejects empty geometry at construction, but an atlas
+  # deserialised from .rda was never constructed here, so it can still carry
+  # one. Without this the per-row assembly below fails on a length mismatch.
+  empty_geom <- lengths(sf_data$geometry) == 0
+  if (any(empty_geom)) {
+    cli::cli_abort(c(
+      "All sf entries must contain geometry.",
+      "i" = "Empty geometry for: {.val {sf_data$label[empty_geom]}}."
+    ))
+  }
 
   dropped <- reserved_coord_columns(sf_data)
   if (length(dropped)) {
@@ -69,15 +75,14 @@ sf_to_polygons <- function(sf_data) {
   carried <- setdiff(names(sf_data), c(required, dropped))
 
   per_row <- lapply(seq_len(nrow(sf_data)), function(i) {
-    geom <- sf_data$geometry[[i]]
-    co <- sf::st_coordinates(geom)
+    co <- sfg_coords(sf_data$geometry[[i]])
     row <- data.frame(
       label = unname(sf_data$label[i]),
       view = unname(sf_data$view[i]),
-      x = unname(co[, "X"]),
-      y = unname(co[, "Y"]),
-      group = as.integer(co[, "L2"]),
-      subgroup = as.integer(co[, "L1"])
+      x = co$x,
+      y = co$y,
+      group = co$group,
+      subgroup = co$subgroup
     )
     for (nm in carried) {
       row[[nm]] <- rep(unname(sf_data[[nm]][i]), nrow(row))
@@ -88,6 +93,34 @@ sf_to_polygons <- function(sf_data) {
   combined <- df_bind_rows(per_row)
   out <- df_nest(combined, "label", "geometry")
   structure(out, class = c("brain_polygons", class(out)))
+}
+
+
+#' Read one sfg's coordinates without sf
+#'
+#' `sfheaders::sfg_to_df()` covers what `sf::st_coordinates()` was used for
+#' here, so reading an sf atlas needs no sf installation. Two shapes it does
+#' not handle directly: it errors on an empty geometry, and it omits
+#' `polygon_id` for a `POLYGON`, whose rings all belong to one piece. The
+#' caller still cannot assemble a row from no coordinates, so an empty
+#' geometry reaches `sf_to_polygons()` as a zero-row frame and fails there.
+#' @noRd
+sfg_coords <- function(geom) {
+  df <- if (length(geom) == 0) {
+    data.frame(x = numeric(), y = numeric(), linestring_id = integer())
+  } else {
+    sfheaders::sfg_to_df(geom)
+  }
+  data.frame(
+    x = df$x,
+    y = df$y,
+    group = if (is.null(df$polygon_id)) {
+      rep(1L, nrow(df))
+    } else {
+      as.integer(df$polygon_id)
+    },
+    subgroup = as.integer(df$linestring_id)
+  )
 }
 
 

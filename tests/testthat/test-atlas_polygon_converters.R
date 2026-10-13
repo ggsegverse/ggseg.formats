@@ -37,10 +37,14 @@ describe("as_polygon_atlas()", {
     expect_error(as_polygon_atlas(atlas), "no 2D geometry")
   })
 
-  it("points sf-backed atlases at migrate_atlas_files() when sf is missing", {
+  it("converts an sf-backed atlas with sf unavailable", {
+    # sf_to_polygons() reads coordinates through sfheaders, so this no longer
+    # needs sf; atlas_polygons() always reached the same conversion ungated.
     sf_atlas <- dk_sf_atlas()
     local_mocked_bindings(has_sf = function() FALSE)
-    expect_error(as_polygon_atlas(sf_atlas), "migrate_atlas_files")
+    out <- as_polygon_atlas(sf_atlas)
+    expect_s3_class(atlas_geom(out), "brain_polygons")
+    expect_identical(atlas_labels(out), atlas_labels(sf_atlas))
   })
 })
 
