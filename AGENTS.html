@@ -135,6 +135,8 @@
 <strong>100% line coverage is a CI gate.</strong> Ship every new function, branch, and conditional with a test that exercises it, in the same change. “Add tests later” is not acceptable here.</li>
 <li>Prefer focused expectations (<code>expect_s3_class</code>, <code>expect_identical</code>, <code>expect_error(.., "message")</code>). Match error messages on a stable substring.</li>
 <li>Keep test output clean (no stray prints/warnings); use <code>withr</code> for any state changes.</li>
+<li>
+<strong>Do not namespace testthat inside <code>it()</code> bodies</strong> — <code>tests/testthat.R</code> attaches it, so write <code>skip_if_not_installed("sf")</code>. The exception is a call inside a <strong>top-level function</strong> in a <code>helper-*.R</code> or test file: <code>testthat</code> is a Suggests, so <code>object_usage_linter</code> cannot resolve the bare symbol there and CI fails with “no visible global function definition”. Those few sites keep the <code>testthat::</code> prefix; it is not decoration.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="ci-gates-all-must-be-green-before-merge">CI gates (all must be green before merge)<a class="anchor" aria-label="anchor" href="#ci-gates-all-must-be-green-before-merge"></a></h2>
