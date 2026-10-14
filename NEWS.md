@@ -2,6 +2,15 @@
 
 ## ggseg.formats (development version)
 
+### New features
+
+- `attach_sfc()` and `reorder_sfc()` are exported. They are the seam that lets a
+  data frame carry `sf` geometry without `sf` installed: attribute-space work
+  happens with the geometry detached, and these put it back. `merge()`,
+  `cbind()`, `[` and dplyr's joins each drop a different part of the `sf`
+  representation when `sf` is not loaded, and `tibble` rejects an `sfc` column
+  outright, so a consumer doing its own joins needs them.
+
 ### Breaking changes
 
 - `core$hemi` is a closed vocabulary: `"left"`, `"right"`, `"midline"`, or
