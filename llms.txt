@@ -256,6 +256,16 @@ migrate atlas files.
 
   Migrate atlas `.rda` files to the sf-optional polygon format
 
+- [`attach_sfc()`](https://ggsegverse.github.io/ggseg.formats/reference/attach_sfc.md)
+  :
+
+  Attach an `sfc` column and class a data frame as `sf`, without sf
+
+- [`reorder_sfc()`](https://ggsegverse.github.io/ggseg.formats/reference/reorder_sfc.md)
+  :
+
+  Reorder an `sfc` without sf
+
 ## Atlas manipulation
 
 Pipe-friendly functions for subsetting regions, managing views, and
