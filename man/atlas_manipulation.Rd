@@ -240,9 +240,10 @@ in a view is removed when its combined area is too small, and context
 geometries (labels not in core) are never removed. With
 \code{scope = "piece"} individual disconnected pieces are removed while the
 rest of the region stays -- use this to clear stray specks left by
-volumetric projection. A region's largest piece in a view is always kept,
-so no region disappears, and context is cleaned too. Optionally scope to
-specific views. Views are re-packed via \code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any
+volumetric projection. A region's largest piece anywhere in the atlas is
+always kept, so no region disappears -- a speck in one view goes when
+the same region is drawn properly in another. Context is cleaned too.
+Optionally scope to specific views. Views are re-packed via \code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any
 view shrank.
 
 \item \code{atlas_view_select()}: Keep each region only in the views that show

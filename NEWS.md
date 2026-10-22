@@ -13,6 +13,13 @@
 
 ### Breaking changes
 
+- `atlas_view_remove_small(scope = "piece")` keeps a region's largest piece
+  anywhere in the atlas, where it kept the largest in each view. A region
+  whose only piece in one view is a speck of a few square units now loses it,
+  because the same region is still drawn properly in another view and the
+  guard exists so no region disappears, not so every view keeps something.
+  An atlas built with this verb may draw fewer specks than it did.
+
 - `core$hemi` is a closed vocabulary: `"left"`, `"right"`, `"midline"`, or
   `NA` where a side does not apply. Anything else is an error at
   construction, because `hemi` is what plots filter and facet on, so an
