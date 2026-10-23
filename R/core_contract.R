@@ -210,3 +210,43 @@ rebuild_atlas_core <- function(atlas, core) {
     palette = atlas$palette
   )
 }
+
+
+#' Map a legacy `hemi` spelling onto the vocabulary
+#'
+#' `hemi` is a closed vocabulary -- `"left"`, `"right"`, `"midline"` or `NA`
+#' -- and two spellings predate it. `"middle"` was an earlier name for the
+#' midline, and `"vermis"` is a cerebellar structure rather than a side, so
+#' both map onto `"midline"`. The finer distinction belongs in a column of
+#' its own.
+#'
+#' An atlas carrying one cannot be constructed, so it cannot be passed
+#' through any verb that validates -- including
+#' [migrate_atlas_display()]. This repairs `core` directly for that reason.
+#'
+#' @param atlas A `ggseg_atlas`, or a list shaped like one that no longer
+#'   validates.
+#' @return `atlas`, with `hemi` in the vocabulary.
+#' @examples
+#' atlas <- dk()
+#' atlas$core$hemi[1] <- "middle"
+#' unique(migrate_atlas_hemi(atlas)$core$hemi)
+#' @export
+migrate_atlas_hemi <- function(atlas) {
+  if (!is.list(atlas) || is.null(atlas$core)) {
+    cli::cli_abort("{.arg atlas} must be a list with a {.field core}.")
+  }
+  hemi <- as.character(atlas$core$hemi)
+  atlas$core$hemi <- legacy_hemi_map[hemi] |>
+    unname() |>
+    (\(mapped) ifelse(is.na(mapped), hemi, mapped))()
+  atlas
+}
+
+#' Legacy `hemi` spellings and what they mean
+#' @noRd
+legacy_hemi_map <- c(
+  middle = "midline",
+  vermis = "midline",
+  mid = "midline"
+)

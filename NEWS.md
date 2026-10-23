@@ -22,6 +22,11 @@
   and `"^cortex"` silently matched nothing for as long as a pipeline bug
   left the backdrop undrawn.
 
+- `migrate_atlas_hemi()` maps the legacy `hemi` spellings onto the
+  vocabulary: `"middle"` and `"vermis"` both mean `"midline"`. An atlas
+  carrying one cannot be constructed, so no verb that validates can reach
+  it; this repairs `core` directly for that reason.
+
 - `migrate_atlas_display()` gives an atlas built before `display` existed
   its display names, recovering the source's own name from the label. A
   curated name is never replaced: `dk` publishes

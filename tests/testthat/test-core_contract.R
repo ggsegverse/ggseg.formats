@@ -117,3 +117,41 @@ describe("migrate_atlas_display()", {
     )
   })
 })
+
+
+describe("migrate_atlas_hemi()", {
+  it("maps the legacy spellings onto the vocabulary", {
+    atlas <- dk()
+    atlas$core$hemi[1] <- "middle"
+    atlas$core$hemi[2] <- "vermis"
+
+    expect_setequal(
+      unique(migrate_atlas_hemi(atlas)$core$hemi),
+      c("left", "right", "midline")
+    )
+  })
+
+  it("leaves a conforming atlas alone", {
+    atlas <- dk()
+    expect_identical(migrate_atlas_hemi(atlas)$core$hemi, atlas$core$hemi)
+  })
+
+  it("repairs an atlas that can no longer be constructed", {
+    # `ggsegAal`'s `.aal3_cerebellum` carries "middle", so every verb that
+    # validates refuses it -- including the display migration. Repairing
+    # `core` directly is the only way in.
+    atlas <- dk()
+    atlas$core$hemi[1] <- "middle"
+    expect_error(
+      assert_ggseg_atlas(atlas),
+      class = "ggseg.formats_invalid_atlas"
+    )
+    expect_no_error(assert_ggseg_atlas(migrate_atlas_hemi(atlas)))
+  })
+
+  it("keeps NA, which means no side applies", {
+    atlas <- dk()
+    atlas$core$hemi[1] <- NA_character_
+    expect_true(is.na(migrate_atlas_hemi(atlas)$core$hemi[1]))
+  })
+})
