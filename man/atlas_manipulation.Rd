@@ -243,8 +243,8 @@ rest of the region stays -- use this to clear stray specks left by
 volumetric projection. A region's largest piece anywhere in the atlas is
 always kept, so no region disappears -- a speck in one view goes when
 the same region is drawn properly in another. Context is cleaned too.
-Optionally scope to specific views. Views are re-packed via \code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any
-view shrank.
+Optionally scope to specific views. Views are re-packed via
+\code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any view shrank.
 
 \item \code{atlas_view_select()}: Keep each region only in the views that show
 it well.
