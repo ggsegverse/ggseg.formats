@@ -155,3 +155,45 @@ describe("migrate_atlas_hemi()", {
     expect_true(is.na(migrate_atlas_hemi(atlas)$core$hemi[1]))
   })
 })
+
+
+describe("context() and regions()", {
+  it("select exactly the backdrop, and exactly the regions", {
+    atlas <- aseg()
+    ctx <- context()(atlas)
+    reg <- regions()(atlas)
+
+    expect_true(all(grepl(ctx, atlas_context(atlas))))
+    expect_false(any(grepl(ctx, atlas$core$label)))
+    expect_true(all(grepl(reg, atlas$core$label)))
+    expect_false(any(grepl(reg, atlas_context(atlas))))
+  })
+
+  it("matches nothing when there is no backdrop", {
+    # An empty alternation would match everything, which would quietly
+    # polish the parcels with the backdrop's settings.
+    atlas <- atlas_context_remove(dk())
+    expect_false(any(grepl(context()(atlas), atlas$core$label)))
+  })
+
+  it("escapes a label that holds regex metacharacters", {
+    # FreeSurfer spells its medial wall
+    # `Background+FreeSurfer_Defined_Medial_Wall`; an unescaped `+` would
+    # make the pattern match something else entirely.
+    pattern <- labels_to_pattern("Background+FreeSurfer_Defined_Medial_Wall")
+    expect_true(grepl(pattern, "Background+FreeSurfer_Defined_Medial_Wall"))
+    expect_false(grepl(pattern, "BackgrounddFreeSurfer_Defined_Medial_Wall"))
+  })
+
+  it("is accepted by a geometry verb in place of a pattern", {
+    atlas <- aseg()
+    expect_no_error(
+      atlas_view_remove_small(
+        atlas,
+        min_area = 1,
+        scope = "piece",
+        exclude = context()
+      )
+    )
+  })
+})

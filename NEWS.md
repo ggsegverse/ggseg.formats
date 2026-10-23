@@ -17,6 +17,14 @@
   one structure seen twice, and no hemisphere-free name exists to recover.
   Consumers had no way to ask which they had short of testing for it.
 
+- `context()` and `regions()` select an atlas's backdrop, or its parcels,
+  anywhere a geometry verb takes `labels` or `exclude`. Build scripts had
+  been writing `"^cortex"` by hand, which is a guess about what the pipeline
+  named the backdrop: measured across the library, it misses the backdrop in
+  109 of the 121 objects that have one, and a pattern matching nothing is
+  silent. `atlas_view_remove_small()` resolves a function selector now, as
+  the `ggseg.extra` verbs already did.
+
 - `atlas_context()` returns the labels an atlas draws but does not treat as
   regions -- the anatomical backdrop. Callers had been matching on names,
   and `"^cortex"` silently matched nothing for as long as a pipeline bug

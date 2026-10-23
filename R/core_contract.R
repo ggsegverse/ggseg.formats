@@ -250,3 +250,90 @@ legacy_hemi_map <- c(
   vermis = "midline",
   mid = "midline"
 )
+
+
+#' Select an atlas's backdrop, or its regions, in a geometry verb
+#'
+#' The geometry verbs take `labels` and `exclude` as patterns, and a
+#' backdrop has to be addressed separately from the parcels: what makes a
+#' cortical silhouette read as a brain is its sulci, which are fine detail,
+#' so it wants gentler simplification and a smoothing method that does not
+#' fill them.
+#'
+#' Build scripts had been writing the pattern by hand, as `"^cortex"`. That
+#' is a guess about what the pipeline named the backdrop, and it was wrong
+#' twice over: the name varies across the library -- `cortex_`, `cortex`,
+#' `lh_unknown`, `lh_Background+FreeSurfer_Defined_Medial_Wall` -- and a
+#' pattern matching nothing is silent, so those steps did nothing at all for
+#' as long as a pipeline bug left the backdrop undrawn.
+#'
+#' These ask the atlas instead. The lookup table decides what is backdrop
+#' when the atlas is built; this is how that decision is read back.
+#'
+#' @return A function of an atlas returning a pattern, which `labels` and
+#'   `exclude` accept.
+#' @name selectors
+#' @examples
+#' # gentler on the backdrop than on the parcels
+#' \dontrun{
+#' atlas |>
+#'   atlas_simplify(keep = 0.5, labels = context()) |>
+#'   atlas_simplify(keep = 0.25, exclude = context())
+#' }
+#' @rdname selectors
+#' @seealso [atlas_context()]
+#' @export
+context <- function() {
+  function(atlas) {
+    labels_to_pattern(atlas_context(atlas))
+  }
+}
+
+#' @rdname selectors
+#' @export
+regions <- function() {
+  function(atlas) {
+    labels_to_pattern(as.character(atlas$core$label))
+  }
+}
+
+
+#' An anchored alternation matching exactly these labels
+#'
+#' A label may hold regex metacharacters -- the FreeSurfer medial wall is
+#' spelled `Background+FreeSurfer_Defined_Medial_Wall` -- so each is escaped
+#' before it goes into the pattern.
+#'
+#' An empty set has to match nothing, where `"^(|)$"` would match everything
+#' and quietly polish the parcels with the backdrop's settings. `"$x"` is a
+#' character after the end of the string, which nothing satisfies, and
+#' unlike a negative lookahead it is valid in the default engine.
+#' @noRd
+labels_to_pattern <- function(labels) {
+  if (length(labels) == 0L) {
+    return("$x")
+  }
+  escaped <- gsub("([][^$.|?*+(){}\\])", "\\\\\\1", labels)
+  paste0("^(", paste(escaped, collapse = "|"), ")$")
+}
+
+
+#' Resolve a label selector to a pattern
+#'
+#' `labels` and `exclude` take a pattern, or a function of the atlas
+#' returning one -- which is what [context()] and [regions()] are.
+#' @noRd
+resolve_label_pattern <- function(selector, atlas) {
+  if (!is.function(selector)) {
+    return(selector)
+  }
+  pattern <- selector(atlas)
+  if (!is.character(pattern) || length(pattern) != 1L) {
+    cli::cli_abort(c(
+      "A function given as {.arg labels} or {.arg exclude} must return one
+      pattern.",
+      "x" = "It returned {.obj_type_friendly {pattern}}."
+    ))
+  }
+  pattern
+}

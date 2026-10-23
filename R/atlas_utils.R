@@ -749,6 +749,8 @@ atlas_view_remove_small <- function(
   exclude = NULL
 ) {
   scope <- match.arg(scope)
+  labels <- resolve_label_pattern(labels, atlas)
+  exclude <- resolve_label_pattern(exclude, atlas)
 
   if (!is.null(labels) && !is.null(exclude)) {
     cli::cli_abort(
