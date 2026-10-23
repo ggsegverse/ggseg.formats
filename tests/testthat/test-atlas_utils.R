@@ -641,6 +641,24 @@ describe("atlas_region_op", {
     expect_identical(area_of(r, "ribbon"), 100 - 16)
   })
 
+  it("x and y accept selectors", {
+    # The backdrop is context (not in core), which is what context() picks
+    # out; wm stays a region, so regions() picks it.
+    base <- make_op_atlas()
+    base$core <- base$core[base$core$label != "cortex", , drop = FALSE]
+    base$palette <- base$palette[names(base$palette) != "cortex"]
+
+    r <- atlas_region_op(
+      base,
+      x = context(),
+      y = regions(),
+      action = "difference",
+      into = "ribbon"
+    )
+    expect_identical(holes_of(r, "ribbon"), 1)
+    expect_identical(area_of(r, "ribbon"), 100 - 16)
+  })
+
   it("intersection keeps only the overlap", {
     r <- atlas_region_op(
       make_op_atlas(),

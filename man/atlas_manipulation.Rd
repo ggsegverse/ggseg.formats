@@ -93,7 +93,8 @@ pattern like \code{"Thalamus"} then also matches focus labels such as
 \code{"hypothalamus"}; set \code{FALSE} (and/or anchor the pattern) when that
 matters.}
 
-\item{x, y}{For \code{atlas_region_op()}: patterns selecting the two operands.}
+\item{x, y}{For \code{atlas_region_op()}: patterns selecting the two operands,
+or a selector such as \code{\link[=context]{context()}} or \code{\link[=regions]{regions()}}.}
 
 \item{action}{For \code{atlas_region_op()}: the boolean operation to apply.}
 

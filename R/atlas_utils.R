@@ -366,7 +366,8 @@ atlas_region_contextual <- function(
 #'   engine, so this is the one manipulation helper that always requires `sf`
 #'   installed; a polygon-only atlas is rehydrated for the operation and the
 #'   result is returned in polygon form.
-#' @param x,y For `atlas_region_op()`: patterns selecting the two operands.
+#' @param x,y For `atlas_region_op()`: patterns selecting the two operands,
+#'   or a selector such as [context()] or [regions()].
 #' @param action For `atlas_region_op()`: the boolean operation to apply.
 #' @param into For `atlas_region_op()`: label for the result region.
 #' @param colour For `atlas_region_op()`: optional fill for `into`. When
@@ -393,8 +394,18 @@ atlas_region_op <- function(
   sf_data <- resolved$sf_data
   was_polygon_only <- resolved$was_polygon_only
 
-  x_labels <- region_op_labels(x, atlas$core, sf_data, match_on)
-  y_labels <- region_op_labels(y, atlas$core, sf_data, match_on)
+  x_labels <- region_op_labels(
+    resolve_label_pattern(x, atlas),
+    atlas$core,
+    sf_data,
+    match_on
+  )
+  y_labels <- region_op_labels(
+    resolve_label_pattern(y, atlas),
+    atlas$core,
+    sf_data,
+    match_on
+  )
 
   # Boolean geometry ops need a geometry engine (GEOS, via sf); there is no
   # pure-polygon equivalent. A polygon-only atlas is rehydrated to sf for the
