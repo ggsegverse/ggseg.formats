@@ -1663,11 +1663,32 @@ check_select_threshold <- function(threshold) {
 #' left and right sides are selected together rather than competing.
 #' @return Logical matrix, labels by views.
 #' @noRd
+# `flat` holds core geometry only, so a view drawing nothing but context
+# contributes no column. Such a view is still a view of the atlas, and scoring
+# it as zero area is what drops it: it loses every comparison, and the
+# `area_by_view > 0` guard excludes it whatever the threshold.
+area_with_empty_views <- function(area_by_view, view_names) {
+  empty <- setdiff(view_names, colnames(area_by_view))
+  if (length(empty) > 0) {
+    area_by_view <- cbind(
+      area_by_view,
+      matrix(
+        0,
+        nrow = nrow(area_by_view),
+        ncol = length(empty),
+        dimnames = list(rownames(area_by_view), empty)
+      )
+    )
+  }
+  area_by_view[, view_names, drop = FALSE]
+}
+
+
 view_selection_matrix <- function(atlas, flat, view_names, threshold, weights) {
   areas <- polygon_geometry_areas(flat)
 
   area_by_view <- tapply(areas$area, list(areas$label, areas$view), sum)
-  area_by_view <- area_by_view[, view_names, drop = FALSE]
+  area_by_view <- area_with_empty_views(area_by_view, view_names)
   area_by_view[is.na(area_by_view)] <- 0
 
   weights <- view_hemisphere_weights(atlas, flat, view_names, weights)
@@ -1707,6 +1728,13 @@ apply_view_selection <- function(atlas, keep, view_names) {
         views = drop_views
       )
     }
+  }
+
+  # Removing every region from a view leaves the view itself behind, drawing
+  # nothing but context. A view that keeps no region is dropped whole.
+  empty_views <- view_names[colSums(keep) == 0]
+  if (length(empty_views)) {
+    atlas <- atlas_view_remove(atlas, empty_views)
   }
   atlas
 }

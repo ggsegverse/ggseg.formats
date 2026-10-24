@@ -11,6 +11,13 @@
   representation when `sf` is not loaded, and `tibble` rejects an `sfc` column
   outright, so a consumer doing its own joins needs them.
 
+### Bug fixes
+
+- `atlas_view_select()` no longer errors on an atlas with a view that draws
+  only context. Such a view contributes no column to the scoring matrix, which
+  was then indexed by every declared view. It now scores zero and is dropped,
+  as is any view the selection empties of regions.
+
 ### Breaking changes
 
 - `core$hemi` is a closed vocabulary: `"left"`, `"right"`, `"midline"`, or
