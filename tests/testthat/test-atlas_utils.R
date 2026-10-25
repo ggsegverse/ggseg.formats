@@ -587,7 +587,7 @@ describe("atlas_view_keep", {
       max(xs) - min(xs)
     }
     kept <- atlas_view_keep(atlas, views[c(1, 3)])
-    expect_equal(span(kept), span(atlas_view_gather(kept)))
+    expect_identical(span(kept), span(atlas_view_gather(kept)))
     expect_lt(span(kept), span(atlas))
   })
 })

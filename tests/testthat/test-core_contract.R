@@ -43,7 +43,7 @@ describe("atlas_undrawn()", {
     views <- atlas_views(atlas)
     one <- atlas_view_keep(atlas, views[1])
     undrawn <- atlas_undrawn(one)
-    expect_true(length(undrawn) > 0)
+    expect_gt(length(undrawn), 0)
     expect_true(all(undrawn %in% atlas$core$label))
     expect_false(any(undrawn %in% atlas_undrawn(atlas)))
   })
@@ -56,7 +56,7 @@ describe("atlas_undrawn()", {
 describe("atlas_context()", {
   it("returns the labels drawn but not held as regions", {
     ctx <- atlas_context(aseg())
-    expect_true(length(ctx) > 0)
+    expect_gt(length(ctx), 0)
     expect_false(any(ctx %in% aseg()$core$label))
   })
 

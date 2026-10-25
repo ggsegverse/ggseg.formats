@@ -116,57 +116,6 @@ atlas_context <- function(atlas) {
 }
 
 
-#' Every label an atlas's 2D geometry draws, whichever backend holds it
-#' @noRd
-drawn_labels <- function(atlas) {
-  poly <- data_poly(atlas$data)
-  if (!is.null(poly)) {
-    return(unique(as.character(poly$label)))
-  }
-  sf_data <- data_sf(atlas$data)
-  if (!is.null(sf_data)) {
-    return(unique(as.character(sf_data$label)))
-  }
-  character(0)
-}
-
-
-#' Strip the hemisphere affix a label carries over its source name
-#'
-#' A label is the source's own name with a hemisphere affix put on it by the
-#' pipeline, so taking that affix off recovers the source name exactly.
-#'
-#' One leading affix and one trailing one come off, which is what produced
-#' every display name in the library today. The rule is asymmetric on
-#' purpose: a leading affix may be the source's own, as in Glasser's
-#' `L_V1_ROI` under the label `lh_L_V1_ROI`, and only the pipeline's is
-#' taken, so the display name is `L_V1_ROI` and not `V1_ROI`. A trailing one
-#' is taken, so `G_Frontal_Sup-1-L` becomes `G_Frontal_Sup-1` and both
-#' hemispheres read the same in a legend, where `hemi` tells them apart.
-#'
-#' Stripping until nothing
-#' is left would invent a name the source never used, and for a parcellation
-#' that names its parcels per hemisphere it would invent a correspondence
-#' between two unrelated parcels. Such an atlas is per-hemisphere by its
-#' source's choice, which [atlas_region_semantics()] reports rather than
-#' strips away.
-#'
-#' Never strips a name to nothing: a structure genuinely called `Left` keeps
-#' its name.
-#' @param label Character vector of labels.
-#' @noRd
-strip_hemi_affix <- function(label) {
-  prefix <- paste0(
-    "^(Left|Right|left|right|LEFT|RIGHT|lh|rh|LH|RH|L|R|",
-    "Vermis|vermis|Midline|midline)[-_. ]+"
-  )
-  suffix <- "[-_. ]+(left|right|lh|rh|l|r|vermis|midline)$"
-  out <- sub(prefix, "", label)
-  out <- sub(suffix, "", out, ignore.case = TRUE)
-  ifelse(nzchar(out), out, label)
-}
-
-
 #' Give an atlas built before `display` existed its display names
 #'
 #' `display` holds the source's own name for a region, and an atlas built
@@ -196,19 +145,6 @@ migrate_atlas_display <- function(atlas, overwrite = FALSE) {
   core <- atlas$core
   core$display <- strip_hemi_affix(as.character(core$label))
   rebuild_atlas_core(atlas, core)
-}
-
-
-#' Replace an atlas's core, keeping everything else
-#' @noRd
-rebuild_atlas_core <- function(atlas, core) {
-  ggseg_atlas(
-    atlas = atlas$atlas,
-    type = atlas$type,
-    core = core,
-    data = atlas$data,
-    palette = atlas$palette
-  )
 }
 
 
@@ -289,12 +225,106 @@ context <- function() {
   }
 }
 
+
 #' @rdname selectors
 #' @export
 regions <- function() {
   function(atlas) {
     labels_to_pattern(as.character(atlas$core$label))
   }
+}
+
+
+#' The regions an atlas names but never draws
+#'
+#' A region in `core` with no geometry in any view is invisible: it joins,
+#' it carries a colour, and nothing appears. It is the failure mode of
+#' choosing which slabs to keep, and it is silent -- the atlas validates,
+#' plots without complaint, and simply omits the region.
+#'
+#' Build scripts narrow a pipeline's slabs to the few that read well. That
+#' choice is a measurement of the geometry underneath it, so it goes stale
+#' when the geometry changes. Asserting on this after the narrowing turns a
+#' silent omission into a failed build.
+#'
+#' @param atlas A `ggseg_atlas`.
+#' @return The `core` labels with no geometry in any view, as a character
+#'   vector; empty when every region is drawn somewhere.
+#' @seealso [atlas_view_keep()] and [atlas_view_remove()], which narrow the
+#'   views this checks.
+#' @examples
+#' atlas_undrawn(aseg())
+#' @export
+#' @family atlas accessors
+atlas_undrawn <- function(atlas) {
+  if (!is_ggseg_atlas(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
+  }
+  setdiff(as.character(atlas$core$label), drawn_labels(atlas))
+}
+
+
+#' Every label an atlas's 2D geometry draws, whichever backend holds it
+#' @noRd
+drawn_labels <- function(atlas) {
+  poly <- data_poly(atlas$data)
+  if (!is.null(poly)) {
+    return(unique(as.character(poly$label)))
+  }
+  sf_data <- data_sf(atlas$data)
+  if (!is.null(sf_data)) {
+    return(unique(as.character(sf_data$label)))
+  }
+  character(0)
+}
+
+
+#' Strip the hemisphere affix a label carries over its source name
+#'
+#' A label is the source's own name with a hemisphere affix put on it by the
+#' pipeline, so taking that affix off recovers the source name exactly.
+#'
+#' One leading affix and one trailing one come off, which is what produced
+#' every display name in the library today. The rule is asymmetric on
+#' purpose: a leading affix may be the source's own, as in Glasser's
+#' `L_V1_ROI` under the label `lh_L_V1_ROI`, and only the pipeline's is
+#' taken, so the display name is `L_V1_ROI` and not `V1_ROI`. A trailing one
+#' is taken, so `G_Frontal_Sup-1-L` becomes `G_Frontal_Sup-1` and both
+#' hemispheres read the same in a legend, where `hemi` tells them apart.
+#'
+#' Stripping until nothing
+#' is left would invent a name the source never used, and for a parcellation
+#' that names its parcels per hemisphere it would invent a correspondence
+#' between two unrelated parcels. Such an atlas is per-hemisphere by its
+#' source's choice, which [atlas_region_semantics()] reports rather than
+#' strips away.
+#'
+#' Never strips a name to nothing: a structure genuinely called `Left` keeps
+#' its name.
+#' @param label Character vector of labels.
+#' @noRd
+strip_hemi_affix <- function(label) {
+  prefix <- paste0(
+    "^(Left|Right|left|right|LEFT|RIGHT|lh|rh|LH|RH|L|R|",
+    "Vermis|vermis|Midline|midline)[-_. ]+"
+  )
+  suffix <- "[-_. ]+(left|right|lh|rh|l|r|vermis|midline)$"
+  out <- sub(prefix, "", label)
+  out <- sub(suffix, "", out, ignore.case = TRUE)
+  ifelse(nzchar(out), out, label)
+}
+
+
+#' Replace an atlas's core, keeping everything else
+#' @noRd
+rebuild_atlas_core <- function(atlas, core) {
+  ggseg_atlas(
+    atlas = atlas$atlas,
+    type = atlas$type,
+    core = core,
+    data = atlas$data,
+    palette = atlas$palette
+  )
 }
 
 
@@ -336,33 +366,4 @@ resolve_label_pattern <- function(selector, atlas) {
     ))
   }
   pattern
-}
-
-
-#' The regions an atlas names but never draws
-#'
-#' A region in `core` with no geometry in any view is invisible: it joins,
-#' it carries a colour, and nothing appears. It is the failure mode of
-#' choosing which slabs to keep, and it is silent -- the atlas validates,
-#' plots without complaint, and simply omits the region.
-#'
-#' Build scripts narrow a pipeline's slabs to the few that read well. That
-#' choice is a measurement of the geometry underneath it, so it goes stale
-#' when the geometry changes. Asserting on this after the narrowing turns a
-#' silent omission into a failed build.
-#'
-#' @param atlas A `ggseg_atlas`.
-#' @return The `core` labels with no geometry in any view, as a character
-#'   vector; empty when every region is drawn somewhere.
-#' @seealso [atlas_view_keep()] and [atlas_view_remove()], which narrow the
-#'   views this checks.
-#' @examples
-#' atlas_undrawn(aseg())
-#' @export
-#' @family atlas accessors
-atlas_undrawn <- function(atlas) {
-  if (!is_ggseg_atlas(atlas)) {
-    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
-  }
-  setdiff(as.character(atlas$core$label), drawn_labels(atlas))
 }

@@ -17,6 +17,7 @@ reference:
   - title: ggseg atlas
     desc: Create and inspect ggseg atlas objects.
     contents:
+      - core_contract
       - starts_with("ggseg_")
       - starts_with("is_ggseg")
       - starts_with("as_ggseg")
@@ -26,6 +27,8 @@ reference:
     contents:
       - convert_legacy_brain_atlas
       - contains("brain_")
+      - migrate_atlas_display
+      - migrate_atlas_hemi
   - title: Accessors
     desc: Query atlas contents without reaching into slots directly.
     contents:
@@ -54,6 +57,7 @@ reference:
       - atlas_manipulation
       - atlas_structure_reorder
       - relabel_atlas
+      - selectors
   - title: Bundled atlases
     desc: Ready-to-use atlases shipped with the package.
     contents:
