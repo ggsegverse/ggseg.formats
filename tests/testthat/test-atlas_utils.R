@@ -578,6 +578,21 @@ describe("atlas_region_contextual", {
 })
 
 
+describe("atlas_view_keep", {
+  it("re-packs the layout, as atlas_view_remove does", {
+    atlas <- aseg()
+    views <- atlas_views(atlas)
+    span <- function(x) {
+      xs <- unlist(lapply(atlas_geom(x)$geometry, `[[`, "x"))
+      max(xs) - min(xs)
+    }
+    kept <- atlas_view_keep(atlas, views[c(1, 3)])
+    expect_equal(span(kept), span(atlas_view_gather(kept)))
+    expect_lt(span(kept), span(atlas))
+  })
+})
+
+
 # atlas_region_op ----
 
 describe("atlas_region_op", {

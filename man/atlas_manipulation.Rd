@@ -230,6 +230,8 @@ data. Remaining views are re-packed via \code{\link[=atlas_view_gather]{atlas_vi
 the layout stays tight.
 
 \item \code{atlas_view_keep()}: Keep only views matching pattern.
+Remaining views are re-packed via \code{\link[=atlas_view_gather]{atlas_view_gather()}} so the layout
+stays tight, as \code{\link[=atlas_view_remove]{atlas_view_remove()}} does.
 
 \item \code{atlas_view_remove_region()}: Remove specific region geometry from sf
 data only. Core, palette, and 3D data are unchanged. Views are

@@ -653,6 +653,8 @@ atlas_view_remove <- function(atlas, views) {
 
 
 #' @describeIn atlas_manipulation Keep only views matching pattern.
+#'   Remaining views are re-packed via [atlas_view_gather()] so the layout
+#'   stays tight, as [atlas_view_remove()] does.
 #' @export
 #' @family atlas manipulations
 atlas_view_keep <- function(atlas, views) {
@@ -665,8 +667,9 @@ atlas_view_keep <- function(atlas, views) {
     new_poly <- polygons_filter_view(data_poly(atlas$data), views, keep = TRUE)
     if (is.null(new_poly)) {
       cli::cli_warn("No views matched pattern, 2D geometry will be NULL")
+      return(set_atlas_polygons(atlas, new_poly))
     }
-    return(set_atlas_polygons(atlas, new_poly))
+    return(atlas_view_gather(set_atlas_polygons(atlas, new_poly)))
   }
 
   pattern <- paste(views, collapse = "|")
@@ -679,7 +682,11 @@ atlas_view_keep <- function(atlas, views) {
   }
 
   new_data <- rebuild_atlas_data(atlas, new_sf)
-  rebuild_atlas(atlas, new_data)
+  kept <- rebuild_atlas(atlas, new_data)
+  if (is.null(new_sf)) {
+    return(kept)
+  }
+  atlas_view_gather(kept)
 }
 
 
