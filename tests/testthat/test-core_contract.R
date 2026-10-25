@@ -32,6 +32,27 @@ describe("atlas_region_semantics()", {
 })
 
 
+describe("atlas_undrawn()", {
+  it("is empty when every region is drawn", {
+    expect_length(atlas_undrawn(aseg()), 0L)
+    expect_length(atlas_undrawn(dk()), 0L)
+  })
+
+  it("names the regions left behind when views are narrowed", {
+    atlas <- aseg()
+    views <- atlas_views(atlas)
+    one <- atlas_view_keep(atlas, views[1])
+    undrawn <- atlas_undrawn(one)
+    expect_true(length(undrawn) > 0)
+    expect_true(all(undrawn %in% atlas$core$label))
+    expect_false(any(undrawn %in% atlas_undrawn(atlas)))
+  })
+
+  it("errors on a non-atlas", {
+    expect_error(atlas_undrawn(data.frame(x = 1)), "ggseg_atlas")
+  })
+})
+
 describe("atlas_context()", {
   it("returns the labels drawn but not held as regions", {
     ctx <- atlas_context(aseg())

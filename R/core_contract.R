@@ -337,3 +337,32 @@ resolve_label_pattern <- function(selector, atlas) {
   }
   pattern
 }
+
+
+#' The regions an atlas names but never draws
+#'
+#' A region in `core` with no geometry in any view is invisible: it joins,
+#' it carries a colour, and nothing appears. It is the failure mode of
+#' choosing which slabs to keep, and it is silent -- the atlas validates,
+#' plots without complaint, and simply omits the region.
+#'
+#' Build scripts narrow a pipeline's slabs to the few that read well. That
+#' choice is a measurement of the geometry underneath it, so it goes stale
+#' when the geometry changes. Asserting on this after the narrowing turns a
+#' silent omission into a failed build.
+#'
+#' @param atlas A `ggseg_atlas`.
+#' @return The `core` labels with no geometry in any view, as a character
+#'   vector; empty when every region is drawn somewhere.
+#' @seealso [atlas_view_keep()] and [atlas_view_remove()], which narrow the
+#'   views this checks.
+#' @examples
+#' atlas_undrawn(aseg())
+#' @export
+#' @family atlas accessors
+atlas_undrawn <- function(atlas) {
+  if (!is_ggseg_atlas(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
+  }
+  setdiff(as.character(atlas$core$label), drawn_labels(atlas))
+}
