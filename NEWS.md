@@ -15,9 +15,9 @@
 
 - `atlas_view_select()` no longer errors on an atlas with a view that draws
   only context. Such a view contributes no column to the scoring matrix, which
-  was then indexed by every declared view. It now scores zero and is dropped,
-  as is any view the selection empties of regions. The new `drop_empty`
-  argument leaves them in place instead, drawing their context alone.
+  was then indexed by every declared view. It now scores zero, and the view is
+  left alone: `atlas_view_select()` chooses which views draw a region and does
+  not remove views.
 
 ### Breaking changes
 

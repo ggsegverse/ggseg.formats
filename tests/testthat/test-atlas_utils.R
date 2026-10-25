@@ -1175,7 +1175,7 @@ describe("atlas_view_select", {
   for (polygons in c(FALSE, TRUE)) {
     it(
       paste0(
-        "drops a view that draws only context [",
+        "survives a view that draws only context [",
         rep_name(polygons),
         "]"
       ),
@@ -1188,62 +1188,15 @@ describe("atlas_view_select", {
 
         expect_message(result <- atlas_view_select(atlas))
 
-        expect_false("coronal" %in% atlas_views(result))
-        expect_setequal(
-          atlas_views(result),
-          c("axial_1", "axial_2", "sagittal")
-        )
-      }
-    )
-  }
-
-  for (polygons in c(FALSE, TRUE)) {
-    it(
-      paste0(
-        "keeps a context-only view when asked not to drop it [",
-        rep_name(polygons),
-        "]"
-      ),
-      {
-        atlas <- make_view_select_atlas(
-          polygons = polygons,
-          context_only_view = TRUE
-        )
-        expect_message(
-          result <- atlas_view_select(atlas, drop_empty = FALSE)
-        )
-
         expect_true("coronal" %in% atlas_views(result))
         expect_setequal(atlas_views(result), atlas_views(atlas))
       }
     )
   }
 
-  for (polygons in c(FALSE, TRUE)) {
-    it(
-      paste0(
-        "keeps a view the threshold empties when asked not to drop it [",
-        rep_name(polygons),
-        "]"
-      ),
-      {
-        atlas <- make_view_select_atlas(polygons = polygons)
-        expect_message(
-          dropped <- atlas_view_select(atlas, threshold = 1)
-        )
-        expect_message(
-          kept <- atlas_view_select(atlas, threshold = 1, drop_empty = FALSE)
-        )
-
-        expect_setequal(atlas_views(kept), atlas_views(atlas))
-        expect_true(length(atlas_views(kept)) >= length(atlas_views(dropped)))
-      }
-    )
-  }
-
   # A view survives only while something still carries it. Context geometry
   # holds a view open after its regions leave; without any, the view goes with
-  # its last region whatever `drop_empty` says.
+  # its last region.
   make_contextless_atlas <- function() {
     # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
     square <- function(label, view, x_off, size) {
@@ -1294,30 +1247,10 @@ describe("atlas_view_select", {
     )
   })
 
-  it("cannot keep a view nothing carries, even with drop_empty = FALSE", {
-    atlas <- make_contextless_atlas()
-    expect_message(
-      result <- atlas_view_select(atlas, threshold = 1, drop_empty = FALSE)
-    )
-    expect_setequal(atlas_views(result), "axial_1")
-  })
-
-  it("rejects a non-boolean drop_empty", {
-    atlas <- make_view_select_atlas()
-    expect_error(
-      atlas_view_select(atlas, drop_empty = "yes"),
-      "must be"
-    )
-    expect_error(
-      atlas_view_select(atlas, drop_empty = NA),
-      "must be"
-    )
-  })
-
   for (polygons in c(FALSE, TRUE)) {
     it(
       paste0(
-        "drops a context-only view at every threshold [",
+        "survives a context-only view at every threshold [",
         rep_name(polygons),
         "]"
       ),
@@ -1330,7 +1263,7 @@ describe("atlas_view_select", {
           expect_message(
             result <- atlas_view_select(atlas, threshold = threshold)
           )
-          expect_false("coronal" %in% atlas_views(result))
+          expect_true("coronal" %in% atlas_views(result))
         }
       }
     )
