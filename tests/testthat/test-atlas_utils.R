@@ -1241,6 +1241,67 @@ describe("atlas_view_select", {
     )
   }
 
+  # A view survives only while something still carries it. Context geometry
+  # holds a view open after its regions leave; without any, the view goes with
+  # its last region whatever `drop_empty` says.
+  make_contextless_atlas <- function() {
+    # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
+    square <- function(label, view, x_off, size) {
+      ring(
+        label,
+        view,
+        c(x_off, 0, x_off + size, 0, x_off + size, size, x_off, size, x_off, 0)
+      )
+    }
+    spec <- rbind(
+      data.frame(label = "lh_a", view = "axial_1", size = 4),
+      data.frame(label = "rh_a", view = "axial_1", size = 4),
+      data.frame(label = "lh_a", view = "axial_2", size = 1),
+      data.frame(label = "rh_a", view = "axial_2", size = 1)
+    )
+    x_off <- (match(spec$view, c("axial_1", "axial_2")) - 1) *
+      40 +
+      seq_len(nrow(spec)) * 0.01
+    rings <- Map(square, spec$label, spec$view, x_off, spec$size)
+    core <- data.frame(
+      hemi = c("left", "right"),
+      region = c("a", "a"),
+      label = c("lh_a", "rh_a"),
+      display = c("a", "a")
+    )
+    ggseg_atlas(
+      atlas = "test",
+      type = "cortical",
+      core = core,
+      palette = setNames(c("#FF0000", "#00FF00"), core$label),
+      data = ggseg_data_cortical(geom = rings_as_geom(rings, FALSE))
+    )
+    # nolint end
+  }
+
+  it("loses a view that has no context left to hold it open", {
+    atlas <- make_contextless_atlas()
+    expect_setequal(atlas_views(atlas), c("axial_1", "axial_2"))
+
+    expect_message(result <- atlas_view_select(atlas, threshold = 1))
+    expect_setequal(atlas_views(result), "axial_1")
+  })
+
+  it("does not warn when an emptied view has already gone", {
+    atlas <- make_contextless_atlas()
+    expect_no_warning(
+      expect_message(atlas_view_select(atlas, threshold = 1))
+    )
+  })
+
+  it("cannot keep a view nothing carries, even with drop_empty = FALSE", {
+    atlas <- make_contextless_atlas()
+    expect_message(
+      result <- atlas_view_select(atlas, threshold = 1, drop_empty = FALSE)
+    )
+    expect_setequal(atlas_views(result), "axial_1")
+  })
+
   it("rejects a non-boolean drop_empty", {
     atlas <- make_view_select_atlas()
     expect_error(

@@ -834,8 +834,9 @@ atlas_view_remove_small <- function(
 #' @param drop_empty For `atlas_view_select()`: whether to remove views that
 #'   end up drawing no regions. Covers both a view that never held any --
 #'   a slab carrying only a silhouette -- and one the threshold empties by
-#'   moving its regions elsewhere. `FALSE` keeps every view, leaving the
-#'   emptied ones as context alone.
+#'   moving its regions elsewhere. `FALSE` leaves them in place, drawing their
+#'   context alone. It cannot keep a view that has no context: nothing then
+#'   carries the view once its last region goes, so it disappears either way.
 #' @export
 atlas_view_select <- function(
   atlas,
@@ -1741,8 +1742,10 @@ apply_view_selection <- function(atlas, keep, view_names, drop_empty) {
   }
 
   # Removing every region from a view leaves the view itself behind, drawing
-  # nothing but context. A view that keeps no region is dropped whole.
-  empty_views <- view_names[colSums(keep) == 0]
+  # nothing but context. A view that keeps no region is dropped whole. A view
+  # with no context to hold it open has already gone with its last region, so
+  # only the ones still standing are removed.
+  empty_views <- intersect(view_names[colSums(keep) == 0], atlas_views(atlas))
   if (drop_empty && length(empty_views)) {
     atlas <- atlas_view_remove(atlas, empty_views)
   }

@@ -138,8 +138,9 @@ automatic hemisphere-coverage weighting for the views named.}
 \item{drop_empty}{For \code{atlas_view_select()}: whether to remove views that
 end up drawing no regions. Covers both a view that never held any --
 a slab carrying only a silhouette -- and one the threshold empties by
-moving its regions elsewhere. \code{FALSE} keeps every view, leaving the
-emptied ones as context alone.}
+moving its regions elsewhere. \code{FALSE} leaves them in place, drawing their
+context alone. It cannot keep a view that has no context: nothing then
+carries the view once its last region goes, so it disappears either way.}
 
 \item{gap}{Proportional gap between views (default 0.15 = 15\% of max width).}
 
