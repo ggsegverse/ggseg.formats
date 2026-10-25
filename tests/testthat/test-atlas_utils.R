@@ -1200,6 +1200,62 @@ describe("atlas_view_select", {
   for (polygons in c(FALSE, TRUE)) {
     it(
       paste0(
+        "keeps a context-only view when asked not to drop it [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        atlas <- make_view_select_atlas(
+          polygons = polygons,
+          context_only_view = TRUE
+        )
+        expect_message(
+          result <- atlas_view_select(atlas, drop_empty = FALSE)
+        )
+
+        expect_true("coronal" %in% atlas_views(result))
+        expect_setequal(atlas_views(result), atlas_views(atlas))
+      }
+    )
+  }
+
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "keeps a view the threshold empties when asked not to drop it [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        atlas <- make_view_select_atlas(polygons = polygons)
+        expect_message(
+          dropped <- atlas_view_select(atlas, threshold = 1)
+        )
+        expect_message(
+          kept <- atlas_view_select(atlas, threshold = 1, drop_empty = FALSE)
+        )
+
+        expect_setequal(atlas_views(kept), atlas_views(atlas))
+        expect_true(length(atlas_views(kept)) >= length(atlas_views(dropped)))
+      }
+    )
+  }
+
+  it("rejects a non-boolean drop_empty", {
+    atlas <- make_view_select_atlas()
+    expect_error(
+      atlas_view_select(atlas, drop_empty = "yes"),
+      "must be"
+    )
+    expect_error(
+      atlas_view_select(atlas, drop_empty = NA),
+      "must be"
+    )
+  })
+
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
         "drops a context-only view at every threshold [",
         rep_name(polygons),
         "]"

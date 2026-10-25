@@ -816,8 +816,9 @@ atlas_view_remove_small <- function(
 #'   `region` in `core`, so bilateral structures stay together -- assigning
 #'   left and right independently splits pairs across panels, which reads as
 #'   an error rather than a choice. Every region is guaranteed to survive in
-#'   at least one view, and context geometry (labels absent from `core`, such
-#'   as a cortical outline) is never touched.
+#'   at least one view. Context geometry (labels absent from `core`, such as a
+#'   cortical outline) never competes for a view, but a view left holding
+#'   nothing else is removed with it unless `drop_empty = FALSE`.
 #'
 #'   Single-hemisphere views are the awkward case: a sagittal panel cuts one
 #'   hemisphere while axial and coronal panels show both, so on raw area it
@@ -830,13 +831,22 @@ atlas_view_remove_small <- function(
 #' @param weights For `atlas_view_select()`: optional named numeric vector of
 #'   per-view multipliers applied before comparing areas. Overrides the
 #'   automatic hemisphere-coverage weighting for the views named.
+#' @param drop_empty For `atlas_view_select()`: whether to remove views that
+#'   end up drawing no regions. Covers both a view that never held any --
+#'   a slab carrying only a silhouette -- and one the threshold empties by
+#'   moving its regions elsewhere. `FALSE` keeps every view, leaving the
+#'   emptied ones as context alone.
 #' @export
 atlas_view_select <- function(
   atlas,
   threshold = 0.5,
-  weights = NULL
+  weights = NULL,
+  drop_empty = TRUE
 ) {
   check_select_threshold(threshold)
+  if (!rlang::is_bool(drop_empty)) {
+    cli::cli_abort("{.arg drop_empty} must be {.code TRUE} or {.code FALSE}.")
+  }
 
   if (is.null(geom_from_data(atlas$data))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to select")
@@ -853,7 +863,7 @@ atlas_view_select <- function(
 
   view_names <- atlas_views(atlas)
   keep <- view_selection_matrix(atlas, flat, view_names, threshold, weights)
-  atlas <- apply_view_selection(atlas, keep, view_names)
+  atlas <- apply_view_selection(atlas, keep, view_names, drop_empty)
 
   cli::cli_alert_info(
     "Regions drawn per view: \\
@@ -1717,7 +1727,7 @@ view_selection_matrix <- function(atlas, flat, view_names, threshold, weights) {
 
 #' Drop each label from the views its selection matrix rules out
 #' @noRd
-apply_view_selection <- function(atlas, keep, view_names) {
+apply_view_selection <- function(atlas, keep, view_names, drop_empty) {
   for (label in rownames(keep)) {
     drop_views <- view_names[!keep[label, ]]
     if (length(drop_views)) {
@@ -1733,7 +1743,7 @@ apply_view_selection <- function(atlas, keep, view_names) {
   # Removing every region from a view leaves the view itself behind, drawing
   # nothing but context. A view that keeps no region is dropped whole.
   empty_views <- view_names[colSums(keep) == 0]
-  if (length(empty_views)) {
+  if (drop_empty && length(empty_views)) {
     atlas <- atlas_view_remove(atlas, empty_views)
   }
   atlas

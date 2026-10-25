@@ -70,7 +70,7 @@ atlas_view_remove_small(
   exclude = NULL
 )
 
-atlas_view_select(atlas, threshold = 0.5, weights = NULL)
+atlas_view_select(atlas, threshold = 0.5, weights = NULL, drop_empty = TRUE)
 
 atlas_view_gather(atlas, gap = 0.15)
 
@@ -134,6 +134,12 @@ Higher values are more aggressive.}
 \item{weights}{For \code{atlas_view_select()}: optional named numeric vector of
 per-view multipliers applied before comparing areas. Overrides the
 automatic hemisphere-coverage weighting for the views named.}
+
+\item{drop_empty}{For \code{atlas_view_select()}: whether to remove views that
+end up drawing no regions. Covers both a view that never held any --
+a slab carrying only a silhouette -- and one the threshold empties by
+moving its regions elsewhere. \code{FALSE} keeps every view, leaving the
+emptied ones as context alone.}
 
 \item{gap}{Proportional gap between views (default 0.15 = 15\% of max width).}
 
@@ -258,8 +264,9 @@ Regions are compared as a whole, across all the labels that share a
 \code{region} in \code{core}, so bilateral structures stay together -- assigning
 left and right independently splits pairs across panels, which reads as
 an error rather than a choice. Every region is guaranteed to survive in
-at least one view, and context geometry (labels absent from \code{core}, such
-as a cortical outline) is never touched.
+at least one view. Context geometry (labels absent from \code{core}, such as a
+cortical outline) never competes for a view, but a view left holding
+nothing else is removed with it unless \code{drop_empty = FALSE}.
 
 Single-hemisphere views are the awkward case: a sagittal panel cuts one
 hemisphere while axial and coronal panels show both, so on raw area it
