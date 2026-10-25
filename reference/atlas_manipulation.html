@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9011</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9012</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -295,9 +295,10 @@ in a view is removed when its combined area is too small, and context
 geometries (labels not in core) are never removed. With
 <code>scope = "piece"</code> individual disconnected pieces are removed while the
 rest of the region stays – use this to clear stray specks left by
-volumetric projection. A region's largest piece in a view is always kept,
-so no region disappears, and context is cleaned too. Optionally scope to
-specific views. Views are re-packed via <code>atlas_view_gather()</code> in case any
+volumetric projection. A region's largest piece anywhere in the atlas is
+always kept, so no region disappears – a speck in one view goes when
+the same region is drawn properly in another. Context is cleaned too.
+Optionally scope to specific views. Views are re-packed via <code>atlas_view_gather()</code> in case any
 view shrank.</p></li>
 <li><p><code>atlas_view_select()</code>: Keep each region only in the views that show
 it well.</p>
