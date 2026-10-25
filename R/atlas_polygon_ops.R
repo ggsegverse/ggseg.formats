@@ -259,13 +259,17 @@ polygons_remove_small_pieces <- function(
 
   region_key <- vapply(
     strsplit(names(areas), "\r", fixed = TRUE),
-    function(p) {
-      paste(p[1:2], collapse = "\r")
-    },
-    character(1)
+    `[`,
+    character(1),
+    1
   )
 
-  # Never drop a region's largest piece in a view, so nothing vanishes.
+  # Never drop a region's largest piece anywhere in the atlas, so no region
+  # vanishes. Held per region rather than per region and view: a region whose
+  # only piece in one view is a speck of a few square units is still drawn,
+  # properly, in another -- and keeping the speck put a lone 15-unit square
+  # outside the brain outline in `adhd200_400_subcortical`, where the same
+  # region covers 256 units in the axial view.
   largest <- tapply(areas, region_key, max)[region_key]
   drop <- areas < min_area & areas < largest
 

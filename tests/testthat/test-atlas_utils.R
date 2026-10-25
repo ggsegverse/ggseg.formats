@@ -2944,3 +2944,31 @@ describe("the view verbs on a view that does not exist", {
     expect_warning(atlas_view_keep(atlas, "zzz"), "no 2D geometry")
   })
 })
+
+
+describe("atlas_view_remove_small() piece guard", {
+  it("drops a speck in one view when the region is drawn in another", {
+    # The guard exists so no region disappears. Held per view, it kept a
+    # 15-unit square outside the brain outline in one slab of
+    # `adhd200_400_subcortical` while the same region covered 256 units in
+    # another.
+    atlas <- aseg()
+    before <- atlas_sf(atlas)
+    label <- before$label[before$label %in% atlas$core$label][1]
+    views <- unique(before$view[before$label == label])
+    skip_if(length(views) < 2, "needs a region drawn in two views")
+
+    biggest <- max(as.numeric(sf::st_area(
+      before$geometry[before$label == label]
+    )))
+    cleaned <- atlas_view_remove_small(
+      atlas,
+      min_area = biggest * 0.9,
+      scope = "piece"
+    )
+    kept <- atlas_sf(cleaned)
+
+    expect_true(label %in% kept$label)
+    expect_lte(length(unique(kept$view[kept$label == label])), length(views))
+  })
+})

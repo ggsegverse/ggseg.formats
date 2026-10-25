@@ -725,10 +725,11 @@ atlas_view_remove_region <- function(
 #'   geometries (labels not in core) are never removed. With
 #'   `scope = "piece"` individual disconnected pieces are removed while the
 #'   rest of the region stays -- use this to clear stray specks left by
-#'   volumetric projection. A region's largest piece in a view is always kept,
-#'   so no region disappears, and context is cleaned too. Optionally scope to
-#'   specific views. Views are re-packed via [atlas_view_gather()] in case any
-#'   view shrank.
+#'   volumetric projection. A region's largest piece anywhere in the atlas is
+#'   always kept, so no region disappears -- a speck in one view goes when
+#'   the same region is drawn properly in another. Context is cleaned too.
+#'   Optionally scope to specific views. Views are re-packed via
+#'   [atlas_view_gather()] in case any view shrank.
 #' @param scope Whether `min_area` applies to a label's whole geometry in a
 #'   view (`"region"`, the default) or to each disconnected piece
 #'   (`"piece"`).
