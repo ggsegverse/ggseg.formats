@@ -1092,7 +1092,10 @@ describe("atlas_view_remove_region", {
 # and as a sliver in axial_2; `temporal` is the other way round. The sagittal
 # view holds left labels only, at the same size as the large drawings, so it
 # is only competitive once single-hemisphere views are weighted up.
-make_view_select_atlas <- function(polygons = FALSE) {
+make_view_select_atlas <- function(
+  polygons = FALSE,
+  context_only_view = FALSE
+) {
   # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
   square <- function(label, view, x_off, size) {
     ring(
@@ -1129,7 +1132,16 @@ make_view_select_atlas <- function(polygons = FALSE) {
     data.frame(label = "outline", view = "sagittal", size = 9)
   )
 
-  x_off <- (match(spec$view, c("axial_1", "axial_2", "sagittal")) - 1) *
+  all_views <- c("axial_1", "axial_2", "sagittal")
+  if (context_only_view) {
+    spec <- rbind(
+      spec,
+      data.frame(label = "outline", view = "coronal", size = 9)
+    )
+    all_views <- c(all_views, "coronal")
+  }
+
+  x_off <- (match(spec$view, all_views) - 1) *
     40 +
     seq_len(nrow(spec)) * 0.01
   rings <- Map(square, spec$label, spec$view, x_off, spec$size)
@@ -1158,6 +1170,53 @@ describe("atlas_view_select", {
   views_of <- function(atlas, label) {
     flat <- polygons_unnest(atlas_polygons(atlas))
     sort(unique(flat$view[flat$label == label]))
+  }
+
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "drops a view that draws only context [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        atlas <- make_view_select_atlas(
+          polygons = polygons,
+          context_only_view = TRUE
+        )
+        expect_true("coronal" %in% atlas_views(atlas))
+
+        expect_message(result <- atlas_view_select(atlas))
+
+        expect_false("coronal" %in% atlas_views(result))
+        expect_setequal(
+          atlas_views(result),
+          c("axial_1", "axial_2", "sagittal")
+        )
+      }
+    )
+  }
+
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "drops a context-only view at every threshold [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        atlas <- make_view_select_atlas(
+          polygons = polygons,
+          context_only_view = TRUE
+        )
+        for (threshold in c(0, 0.5, 1)) {
+          expect_message(
+            result <- atlas_view_select(atlas, threshold = threshold)
+          )
+          expect_false("coronal" %in% atlas_views(result))
+        }
+      }
+    )
   }
 
   for (polygons in c(FALSE, TRUE)) {
