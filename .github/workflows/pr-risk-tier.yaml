@@ -1,0 +1,26 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+name: pr-risk-tier.yaml
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-risk-tier:
+    uses: ggsegverse/.github/.github/workflows/pr-risk-tier.yaml@main
+    secrets: inherit
+    with:
+      # ggseg.formats defines the ggseg_atlas contract that every downstream
+      # package and atlas builds on, so its core files carry release-level risk
+      # even when the diff is a single line.
+      extra-t2-paths: |
+        R/core_contract.R
+        R/ggseg_atlas.R
+        R/validation.R
+        R/coercion.R
+        R/compat_dataframe.R
+        R/legacy_region_map.R
+        R/sysdata.rda
