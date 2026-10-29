@@ -93,6 +93,24 @@ Must match the specified type.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>an object of class 'ggseg_atlas'</p>
     </div>
+    <div class="section level2">
+    <h2 id="the-type-vocabulary-is-closed">The type vocabulary is closed<a class="anchor" aria-label="anchor" href="#the-type-vocabulary-is-closed"></a></h2>
+
+
+
+<p><code>type</code> accepts exactly four values, and the constructor rejects any other.
+This is deliberate rather than a limitation waiting to be lifted. Between
+them, cortical, subcortical, tract and cerebellar cover the major ways a
+brain is drawn on a 2D surface, and 3D is covered by meshes.</p>
+<p>A type is not merely a label: it implies a geometry form, a view vocabulary
+and a rendering contract that both <code>ggseg</code> and <code>ggseg3d</code> must implement. An
+atlas carrying a type no renderer knows how to draw is one that cannot be
+plotted, so the vocabulary is governed rather than open. The ecosystem is
+open to adding a type, but adding one is a discussion to raise with the
+maintainers first, not something a contributing package can do on its own.
+Atlases <em>of the existing types</em> need no such discussion: that path is open,
+documented, and is how every distributed atlas package was built.</p>
+    </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>

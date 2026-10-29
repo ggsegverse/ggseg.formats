@@ -46,6 +46,24 @@ brain_atlas(atlas, type, core, data, palette = NULL)
 
 an object of class 'ggseg_atlas'
 
+## The type vocabulary is closed
+
+`type` accepts exactly four values, and the constructor rejects any
+other. This is deliberate rather than a limitation waiting to be lifted.
+Between them, cortical, subcortical, tract and cerebellar cover the
+major ways a brain is drawn on a 2D surface, and 3D is covered by
+meshes.
+
+A type is not merely a label: it implies a geometry form, a view
+vocabulary and a rendering contract that both `ggseg` and `ggseg3d` must
+implement. An atlas carrying a type no renderer knows how to draw is one
+that cannot be plotted, so the vocabulary is governed rather than open.
+The ecosystem is open to adding a type, but adding one is a discussion
+to raise with the maintainers first, not something a contributing
+package can do on its own. Atlases *of the existing types* need no such
+discussion: that path is open, documented, and is how every distributed
+atlas package was built.
+
 ## Examples
 
 ``` r
