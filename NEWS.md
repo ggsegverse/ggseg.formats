@@ -50,6 +50,10 @@
   representation when `sf` is not loaded, and `tibble` rejects an `sfc` column
   outright, so a consumer doing its own joins needs them.
 
+- `?ggseg_atlas` now states why the `type` vocabulary is closed. Adding an
+  atlas of an existing type is open; adding a type is a discussion with the
+  maintainers, because a type implies a rendering contract in both renderers.
+
 ### Bug fixes
 
 - `atlas_view_select()` no longer errors on an atlas with a view that draws

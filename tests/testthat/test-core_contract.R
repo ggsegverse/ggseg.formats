@@ -218,3 +218,30 @@ describe("context() and regions()", {
     )
   })
 })
+
+describe("the published dispatch surface", {
+  it("is exactly the set of methods consumers may rely on", {
+    # REVIEW.md treats a narrowed or dropped S3 method as a breaking change,
+    # because ggseg, ggseg3d, ggseg.extra and every atlas package dispatch
+    # through these generics. Enumerating the surface here is what makes that
+    # rule enforceable: a method added or removed changes this snapshot, so it
+    # cannot pass review unremarked. Previously the surface was written out in
+    # REVIEW.md by hand, and had drifted from NAMESPACE.
+    surface <- vapply(
+      c(
+        "as_ggseg_atlas",
+        "atlas_display",
+        "atlas_hemi",
+        "atlas_labels",
+        "atlas_regions",
+        "atlas_type"
+      ),
+      function(generic) {
+        methods <- as.character(utils::methods(generic))
+        paste(sort(substring(methods, nchar(generic) + 2L)), collapse = ", ")
+      },
+      character(1)
+    )
+    expect_snapshot(print(surface))
+  })
+})

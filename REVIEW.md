@@ -19,9 +19,12 @@ Report these as **Important**:
   `type`/`hemi`/`side`, or the structure of the nested geometry columns — without a
   `lifecycle` deprecation path
 - An S3 method added, removed, or narrowed for a class the package already supports.
-  `as_ggseg_atlas`, `atlas_display`, `atlas_hemi`, `atlas_labels`, `atlas_regions`, and
-  `atlas_type` each dispatch on `brain_atlas`, `data.frame`, `ggseg_atlas`, and `ggseg3d_atlas`;
-  dropping one of those silently is a break
+  The published dispatch surface is recorded in
+  `tests/testthat/_snaps/core_contract.md`, under "the published dispatch surface", and is
+  generated from the live methods rather than listed here — a surface written out by hand
+  drifts from `NAMESPACE` and then silently licenses the break it was meant to catch.
+  **A diff to that snapshot is the finding**: it means a consumer's dispatch changed, and the
+  PR must say which consumer and why. Accepting the new snapshot without that is the failure.
 - Wrong results returned silently — a region renamed, dropped, reordered, or mapped to the
   wrong hemisphere while the object still validates
 - A bundled atlas (`dk`, `aseg`, `tracula`, `suit`) whose region count, labels, or palette no
