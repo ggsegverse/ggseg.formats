@@ -323,7 +323,8 @@ rebuild_atlas_core <- function(atlas, core) {
     type = atlas$type,
     core = core,
     data = atlas$data,
-    palette = atlas$palette
+    palette = atlas$palette,
+    provenance = atlas$provenance
   )
 }
 

@@ -58,6 +58,7 @@ relabel_atlas <- function(atlas, mapping) {
     type = atlas$type,
     palette = palette,
     core = core,
-    data = data
+    data = data,
+    provenance = atlas$provenance
   )
 }

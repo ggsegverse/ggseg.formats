@@ -6,6 +6,9 @@
 #' @param atlas atlas short name, length one
 #' @param type atlas type: "cortical", "subcortical", "tract", or "cerebellar"
 #' @param palette named character vector of colours keyed by label
+#' @param provenance optional named list recording how the atlas was built.
+#'   Must carry `pipeline` and `created` when supplied; see
+#'   [set_atlas_provenance()]. `NULL` for an atlas whose build is unrecorded.
 #' @param core data.frame with required columns hemi, region, label. `label` is
 #'   the key the palette and every geometry slot are joined on, so it must be
 #'   unique: a duplicated `label` is an error. May contain additional columns
@@ -51,7 +54,14 @@
 #'   core = core,
 #'   data = ggseg_data_cortical(vertices = vertices)
 #' )
-ggseg_atlas <- function(atlas, type, core, data, palette = NULL) {
+ggseg_atlas <- function(
+  atlas,
+  type,
+  core,
+  data,
+  palette = NULL,
+  provenance = NULL
+) {
   type <- match.arg(type, atlas_types())
 
   validate_ggseg_atlas_inputs(atlas, core, data, type)
@@ -62,14 +72,26 @@ ggseg_atlas <- function(atlas, type, core, data, palette = NULL) {
     palette <- validate_palette(palette, core)
   }
 
+  provenance <- validate_provenance(provenance)
+
+  slots <- list(
+    atlas = atlas,
+    type = type,
+    palette = palette,
+    core = core,
+    data = data
+  )
+  # Added only when there is something to record. An atlas with no build
+  # record is then byte-identical to one built before provenance existed, so
+  # every stored atlas still round-trips through this constructor unchanged and
+  # identical() keeps working against the published library. A sixth slot that
+  # was always present would have made that false for all 140 objects.
+  if (!is.null(provenance)) {
+    slots$provenance <- provenance
+  }
+
   structure(
-    list(
-      atlas = atlas,
-      type = type,
-      palette = palette,
-      core = core,
-      data = data
-    ),
+    slots,
     class = c(
       paste0(type, "_atlas"),
       "ggseg_atlas",
@@ -413,7 +435,8 @@ atlas_structure_defect <- function(x) {
         type = x$type,
         core = x$core,
         data = x$data,
-        palette = x$palette
+        palette = x$palette,
+        provenance = x$provenance
       )
       NULL
     })),

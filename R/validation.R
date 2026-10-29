@@ -344,3 +344,43 @@ validate_palette <- function(palette, core) {
 
   palette
 }
+
+
+#' Check a provenance record
+#'
+#' `NULL` passes: most of the distributed library predates provenance, and
+#' rejecting those atlases would make the column unaddable. Anything else must
+#' name what built the atlas and when, because a record that says only
+#' "a pipeline did this" answers nothing a reader could act on.
+#'
+#' @param value A named list or `NULL`.
+#' @return `value`, unchanged.
+#' @noRd
+validate_provenance <- function(value) {
+  if (is.null(value)) {
+    return(NULL)
+  }
+  if (!is.list(value) || is.null(names(value)) || any(!nzchar(names(value)))) {
+    cli::cli_abort(c(
+      "{.arg provenance} must be a named list or {.code NULL}.",
+      "i" = "See {.fun set_atlas_provenance}."
+    ))
+  }
+  required <- c("pipeline", "created")
+  absent <- setdiff(required, names(value))
+  if (length(absent)) {
+    cli::cli_abort(c(
+      "{.arg provenance} is missing {.field {absent}}.",
+      "i" = "A build record states what built the atlas and when."
+    ))
+  }
+  if (!is.character(value$pipeline) || length(value$pipeline) != 1L) {
+    cli::cli_abort("{.field pipeline} must be a single string.")
+  }
+  created_ok <- inherits(value$created, "Date") ||
+    (is.character(value$created) && length(value$created) == 1L)
+  if (!created_ok) {
+    cli::cli_abort("{.field created} must be a single string or a {.cls Date}.")
+  }
+  value
+}

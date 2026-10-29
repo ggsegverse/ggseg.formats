@@ -88,7 +88,8 @@ as_ggseg_atlas.list <- function(x) {
       type = x$type,
       palette = x$palette,
       core = x$core,
-      data = x$data
+      data = x$data,
+      provenance = x$provenance
     ))
   }
 
@@ -159,7 +160,8 @@ convert_legacy_brain_data <- function(x) {
     type = type,
     palette = palette,
     core = core,
-    data = data
+    data = data,
+    provenance = x$provenance
   )
 }
 
@@ -198,7 +200,8 @@ convert_legacy_structure <- function(x) {
     type = type,
     palette = x$palette,
     core = core,
-    data = data
+    data = data,
+    provenance = x$provenance
   )
 }
 
