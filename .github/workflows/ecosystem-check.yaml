@@ -52,7 +52,11 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    name: cross-package smoke
+    # The name must contain "ecosystem" or "revdep": pr-risk-tier resolves the
+    # T2 revdep obligation by matching check-run names against that regex, so a
+    # job called anything else passes without ever satisfying the gate it is
+    # meant to satisfy.
+    name: ecosystem smoke (cross-package)
 
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
