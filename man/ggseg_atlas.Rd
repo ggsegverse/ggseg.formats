@@ -33,6 +33,24 @@ an object of class 'ggseg_atlas'
 Creates an object of class 'ggseg_atlas' for plotting brain parcellations
 using ggseg (2D) and ggseg3d (3D).
 }
+\section{The type vocabulary is closed}{
+
+
+\code{type} accepts exactly four values, and the constructor rejects any other.
+This is deliberate rather than a limitation waiting to be lifted. Between
+them, cortical, subcortical, tract and cerebellar cover the major ways a
+brain is drawn on a 2D surface, and 3D is covered by meshes.
+
+A type is not merely a label: it implies a geometry form, a view vocabulary
+and a rendering contract that both \code{ggseg} and \code{ggseg3d} must implement. An
+atlas carrying a type no renderer knows how to draw is one that cannot be
+plotted, so the vocabulary is governed rather than open. The ecosystem is
+open to adding a type, but adding one is a discussion to raise with the
+maintainers first, not something a contributing package can do on its own.
+Atlases \emph{of the existing types} need no such discussion: that path is open,
+documented, and is how every distributed atlas package was built.
+}
+
 \examples{
 core <- data.frame(
   hemi = c("left", "left"),
