@@ -1,6 +1,19 @@
 name: ggseg Ecosystem Check
 
+# Two jobs with deliberately different costs.
+#
+# `smoke` runs on every pull request: it installs the suite and drives one
+# atlas through both renderers, asserting they agree. Cheap, ubuntu-only, and
+# it is the only automatic check in the ecosystem that exercises more than one
+# package in a single process.
+#
+# `check` is the full 5-combination R CMD check of all four packages. Too slow
+# for a pull request, so it stays on dispatch and a weekly schedule.
+
 on:
+  pull_request:
+  schedule:
+    - cron: "17 4 * * 0"
   workflow_dispatch:
     inputs:
       ggseg_formats_repo:
@@ -37,7 +50,82 @@ on:
         default: 'main'
 
 jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    name: cross-package smoke
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      RGL_USE_NULL: true
+
+    steps:
+      # On a pull request the dispatch inputs are empty, so each ref falls back
+      # to main. ggseg.formats falls back to the triggering ref instead: the
+      # point is to render the consumers against *this* branch's foundation.
+      - name: Checkout ggseg.formats
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.ggseg_formats_repo || github.repository }}
+          ref: ${{ inputs.ggseg_formats_ref || github.event.pull_request.head.sha || github.sha }}
+          path: ggseg.formats
+
+      - name: Checkout ggseg
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.ggseg_repo || 'ggsegverse/ggseg' }}
+          ref: ${{ inputs.ggseg_ref || 'main' }}
+          path: ggseg
+
+      - name: Checkout ggseg3d
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.ggseg3d_repo || 'ggsegverse/ggseg3d' }}
+          ref: ${{ inputs.ggseg3d_ref || 'main' }}
+          path: ggseg3d
+
+      - name: Checkout ggseg.extra
+        uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.ggsegextra_repo || 'ggsegverse/ggseg.extra' }}
+          ref: ${{ inputs.ggsegextra_ref || 'main' }}
+          path: ggseg.extra
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - name: Install pak
+        run: |
+          install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
+        shell: Rscript {0}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev libproj-dev libgeos-dev libudunits2-dev libmagick++-dev libglpk-dev libharfbuzz-dev libfribidi-dev
+
+      - name: Install the suite in dependency order
+        run: |
+          pak::local_install_deps("ggseg.formats", dependencies = TRUE)
+          pak::local_install("ggseg.formats")
+          pak::local_install_deps("ggseg", dependencies = TRUE)
+          pak::local_install("ggseg")
+          pak::local_install_deps("ggseg3d", dependencies = TRUE)
+          pak::local_install("ggseg3d")
+          pak::pak("drmowinckels/freesurfer@refactor")
+          pak::local_install_deps("ggseg.extra", dependencies = TRUE)
+          pak::local_install("ggseg.extra")
+        shell: Rscript {0}
+
+      - name: Drive one atlas through both renderers
+        run: Rscript ggseg.formats/.github/scripts/ecosystem-smoke.R
+
   check:
+    # Not on pull requests: five full R CMD checks of four packages is a
+    # release-time gate, not per-PR feedback. `smoke` covers pull requests.
+    if: github.event_name != 'pull_request'
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
 
@@ -59,29 +147,29 @@ jobs:
       - name: Checkout ggseg.formats
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.ggseg_formats_repo }}
-          ref: ${{ inputs.ggseg_formats_ref }}
+          repository: ${{ inputs.ggseg_formats_repo || 'ggsegverse/ggseg.formats' }}
+          ref: ${{ inputs.ggseg_formats_ref || 'main' }}
           path: ggseg.formats
 
       - name: Checkout ggseg
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.ggseg_repo }}
-          ref: ${{ inputs.ggseg_ref }}
+          repository: ${{ inputs.ggseg_repo || 'ggsegverse/ggseg' }}
+          ref: ${{ inputs.ggseg_ref || 'main' }}
           path: ggseg
 
       - name: Checkout ggseg3d
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.ggseg3d_repo }}
-          ref: ${{ inputs.ggseg3d_ref }}
+          repository: ${{ inputs.ggseg3d_repo || 'ggsegverse/ggseg3d' }}
+          ref: ${{ inputs.ggseg3d_ref || 'main' }}
           path: ggseg3d
 
       - name: Checkout ggseg.extra
         uses: actions/checkout@v6
         with:
-          repository: ${{ inputs.ggsegextra_repo }}
-          ref: ${{ inputs.ggsegextra_ref }}
+          repository: ${{ inputs.ggsegextra_repo || 'ggsegverse/ggseg.extra' }}
+          ref: ${{ inputs.ggsegextra_ref || 'main' }}
           path: ggseg.extra
 
       - name: Setup Pandoc
