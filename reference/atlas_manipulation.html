@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -139,7 +139,8 @@ matters.</p></dd>
 
 
 <dt id="arg-x-y">x, y<a class="anchor" aria-label="anchor" href="#arg-x-y"></a></dt>
-<dd><p>For <code>atlas_region_op()</code>: patterns selecting the two operands.</p></dd>
+<dd><p>For <code>atlas_region_op()</code>: patterns selecting the two operands,
+or a selector such as <code><a href="selectors.html">context()</a></code> or <code><a href="selectors.html">regions()</a></code>.</p></dd>
 
 
 <dt id="arg-action">action<a class="anchor" aria-label="anchor" href="#arg-action"></a></dt>
@@ -285,7 +286,9 @@ atlas core.</p></li>
 <li><p><code>atlas_view_remove()</code>: Remove views matching pattern from sf
 data. Remaining views are re-packed via <code>atlas_view_gather()</code> so
 the layout stays tight.</p></li>
-<li><p><code>atlas_view_keep()</code>: Keep only views matching pattern.</p></li>
+<li><p><code>atlas_view_keep()</code>: Keep only views matching pattern.
+Remaining views are re-packed via <code>atlas_view_gather()</code> so the layout
+stays tight, as <code>atlas_view_remove()</code> does.</p></li>
 <li><p><code>atlas_view_remove_region()</code>: Remove specific region geometry from sf
 data only. Core, palette, and 3D data are unchanged. Views are
 re-packed via <code>atlas_view_gather()</code> in case any view shrank.</p></li>
@@ -298,8 +301,8 @@ rest of the region stays – use this to clear stray specks left by
 volumetric projection. A region's largest piece anywhere in the atlas is
 always kept, so no region disappears – a speck in one view goes when
 the same region is drawn properly in another. Context is cleaned too.
-Optionally scope to specific views. Views are re-packed via <code>atlas_view_gather()</code> in case any
-view shrank.</p></li>
+Optionally scope to specific views. Views are re-packed via
+<code>atlas_view_gather()</code> in case any view shrank.</p></li>
 <li><p><code>atlas_view_select()</code>: Keep each region only in the views that show
 it well.</p>
 <p>A slice or projection slab catches a structure in cross-section as readily

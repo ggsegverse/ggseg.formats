@@ -4,6 +4,8 @@
 
 Create and inspect ggseg atlas objects.
 
+- [`core_contract`](https://ggsegverse.github.io/ggseg.formats/reference/core_contract.md)
+  : What an atlas's three name columns mean
 - [`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
   [`brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
   : Constructor for ggseg atlas
@@ -41,32 +43,42 @@ Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
   [`unify_legacy_atlases()`](https://ggsegverse.github.io/ggseg.formats/reference/convert_legacy_brain_atlas.md)
   **\[superseded\]** : Convert legacy ggseg atlases to ggseg_atlas
   format
+
 - [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   [`as_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   : Coerce to ggseg atlas
+
 - [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   [`brain_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   : Extract the label column of an atlas
+
 - [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
   [`brain_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
   : Extract the region column of an atlas
+
 - [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
+
 - [`get_brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/get_brain_mesh.md)
   : Get brain surface mesh
+
 - [`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
   [`brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md)
   : Constructor for ggseg atlas
+
 - [`ggseg_data_cortical()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_cortical.md)
   [`brain_data_cortical()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_cortical.md)
   : Create cortical atlas data
+
 - [`ggseg_data_subcortical()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_subcortical.md)
   [`brain_data_subcortical()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_subcortical.md)
   : Create subcortical atlas data
+
 - [`ggseg_data_tract()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_tract.md)
   [`brain_data_tract()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_tract.md)
   : Create tract atlas data
+
 - [`is_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_cortical_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_subcortical_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
@@ -75,25 +87,44 @@ Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
   [`is_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   : Check ggseg atlas class
 
+- [`migrate_atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/migrate_atlas_display.md)
+  :
+
+  Give an atlas built before `display` existed its display names
+
+- [`migrate_atlas_hemi()`](https://ggsegverse.github.io/ggseg.formats/reference/migrate_atlas_hemi.md)
+  :
+
+  Map a legacy `hemi` spelling onto the vocabulary
+
 ## Accessors
 
 Query atlas contents without reaching into slots directly.
 
 - [`atlas_centerlines()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.md)
   : Get atlas tract centerlines
+
+- [`atlas_context()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_context.md)
+  : The labels an atlas draws but does not treat as regions
+
 - [`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
   : Extract the display-name column of an atlas
+
 - [`atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.md)
   : Get the raw 2D geometry of an atlas
+
 - [`atlas_geometry_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md)
   [`is_atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md)
   [`is_atlas_polygon()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.md)
   : Classify or test an atlas's 2D geometry
+
 - [`atlas_hemi()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_hemi.md)
   : Extract the hemisphere column of an atlas
+
 - [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   [`brain_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   : Extract the label column of an atlas
+
 - [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
   [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
   [`atlas_region_op()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
@@ -109,30 +140,50 @@ Query atlas contents without reaching into slots directly.
   [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
   [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
   : Manipulate brain atlas regions and views
+
 - [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md)
   : Get atlas meshes for 3D rendering
+
 - [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md)
   : Get the palette of an atlas
+
 - [`atlas_plot_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_plot_palette.md)
   : Get a plottable palette for an atlas
+
 - [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md)
   : Get atlas polygons for 2D rendering
+
+- [`atlas_region_semantics()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_region_semantics.md)
+  :
+
+  Does this atlas's `region` aggregate across hemispheres?
+
 - [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
   [`brain_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
   : Extract the region column of an atlas
+
 - [`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md)
   : Get atlas data for 2D rendering
+
 - [`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md)
   : Reorder the structures of an atlas
+
 - [`atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_type.md)
   : Detect atlas type
+
+- [`atlas_undrawn()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_undrawn.md)
+  : The regions an atlas names but never draws
+
 - [`atlas_vertices()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_vertices.md)
   : Get atlas vertices for 3D rendering
+
 - [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
+
 - [`get_cerebellar_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/get_cerebellar_mesh.md)
   : Get SUIT cerebellar surface mesh
+
 - [`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
   : Map pre-0.1.0 region names to current region keys
 
@@ -196,6 +247,9 @@ enriching metadata. All return a new `ggseg_atlas`.
   : Reorder the structures of an atlas
 - [`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md)
   : Re-key an atlas's labels
+- [`context()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md)
+  [`regions()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md)
+  : Select an atlas's backdrop, or its regions, in a geometry verb
 
 ## Bundled atlases
 

@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9012</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9013</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,6 +54,13 @@
 
 
       <dl><dt>
+
+          <code><a href="core_contract.html">core_contract</a></code>
+
+        </dt>
+        <dd>What an atlas's three name columns mean</dd>
+
+        <dt>
 
           <code><a href="ggseg_atlas.html">ggseg_atlas()</a></code> <code><a href="ggseg_atlas.html">brain_atlas()</a></code>
 
@@ -201,6 +208,20 @@
 
         </dt>
         <dd>Check ggseg atlas class</dd>
+
+        <dt>
+
+          <code><a href="migrate_atlas_display.html">migrate_atlas_display()</a></code>
+
+        </dt>
+        <dd>Give an atlas built before <code>display</code> existed its display names</dd>
+
+        <dt>
+
+          <code><a href="migrate_atlas_hemi.html">migrate_atlas_hemi()</a></code>
+
+        </dt>
+        <dd>Map a legacy <code>hemi</code> spelling onto the vocabulary</dd>
       </dl></div><div class="section level2">
       <h2 id="accessors">Accessors<a class="anchor" aria-label="anchor" href="#accessors"></a></h2>
 
@@ -217,6 +238,13 @@
 
         </dt>
         <dd>Get atlas tract centerlines</dd>
+
+        <dt>
+
+          <code><a href="atlas_context.html">atlas_context()</a></code>
+
+        </dt>
+        <dd>The labels an atlas draws but does not treat as regions</dd>
 
         <dt>
 
@@ -290,6 +318,13 @@
 
         <dt>
 
+          <code><a href="atlas_region_semantics.html">atlas_region_semantics()</a></code>
+
+        </dt>
+        <dd>Does this atlas's <code>region</code> aggregate across hemispheres?</dd>
+
+        <dt>
+
           <code><a href="atlas_regions.html">atlas_regions()</a></code> <code><a href="atlas_regions.html">brain_regions()</a></code>
 
         </dt>
@@ -315,6 +350,13 @@
 
         </dt>
         <dd>Detect atlas type</dd>
+
+        <dt>
+
+          <code><a href="atlas_undrawn.html">atlas_undrawn()</a></code>
+
+        </dt>
+        <dd>The regions an atlas names but never draws</dd>
 
         <dt>
 
@@ -440,6 +482,13 @@
 
         </dt>
         <dd>Re-key an atlas's labels</dd>
+
+        <dt>
+
+          <code><a href="selectors.html">context()</a></code> <code><a href="selectors.html">regions()</a></code>
+
+        </dt>
+        <dd>Select an atlas's backdrop, or its regions, in a geometry verb</dd>
       </dl></div><div class="section level2">
       <h2 id="bundled-atlases">Bundled atlases<a class="anchor" aria-label="anchor" href="#bundled-atlases"></a></h2>
 

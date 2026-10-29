@@ -91,7 +91,11 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 
 - x, y:
 
-  For `atlas_region_op()`: patterns selecting the two operands.
+  For `atlas_region_op()`: patterns selecting the two operands, or a
+  selector such as
+  [`context()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md)
+  or
+  [`regions()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md).
 
 - action:
 
@@ -262,7 +266,9 @@ Modified `ggseg_atlas` object
   Remaining views are re-packed via `atlas_view_gather()` so the layout
   stays tight.
 
-- `atlas_view_keep()`: Keep only views matching pattern.
+- `atlas_view_keep()`: Keep only views matching pattern. Remaining views
+  are re-packed via `atlas_view_gather()` so the layout stays tight, as
+  `atlas_view_remove()` does.
 
 - `atlas_view_remove_region()`: Remove specific region geometry from sf
   data only. Core, palette, and 3D data are unchanged. Views are

@@ -35,6 +35,7 @@ Other atlas accessors:
 [`atlas_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md),
 [`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md),
 [`atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_type.md),
+[`atlas_undrawn()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_undrawn.md),
 [`atlas_vertices()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_vertices.md),
 [`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
 
