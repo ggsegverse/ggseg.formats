@@ -1,0 +1,51 @@
+# Release-time gate: do the distributed atlases still render against this
+# ggseg.formats?
+#
+# revdep-check.yaml covers the three core consumers under CRAN rules, which is
+# right for them — their geometry snapshots track one ggseg.formats build and
+# would false-fail against a changed upstream. But that leaves a hole: the only
+# place in the ecosystem where a single atlas is driven through BOTH ggseg and
+# ggseg3d is each atlas package's own tests/testthat/test-data.R, and those
+# render tests are vdiffr snapshots. vdiffr passes cran = FALSE to
+# expect_snapshot_file(), so under CRAN rules they skip.
+#
+# So this job runs the same reusable workflow with cran-rules: false, where the
+# snapshots are the point rather than the noise. A snapshot diff here means the
+# foundation changed how an atlas draws, which is exactly what a contract
+# change must not do silently — accept it only with a reason in the PR.
+#
+# Deliberate (workflow_dispatch): 31 R CMD checks is a pre-release gate, not
+# per-PR feedback. Pull requests are covered by ecosystem-check's smoke job.
+on:
+  workflow_dispatch:
+
+name: atlas-contract-check.yaml
+
+permissions: read-all
+
+jobs:
+  atlases:
+    uses: ggsegverse/.github/.github/workflows/revdep-check.yaml@main
+    with:
+      cran-rules: false
+      install-spatial-deps: true
+      # Every converted atlas package. ggsegAal3 is deliberately absent: it is
+      # still on the legacy schema and cannot be checked against the current
+      # contract until it is converted or archived.
+      revdeps: >-
+        ["ggsegverse/ggsegAal", "ggsegverse/ggsegAal-lemaitreh",
+         "ggsegverse/ggsegAicha", "ggsegverse/ggsegArslan",
+         "ggsegverse/ggsegAtlasTrack", "ggsegverse/ggsegBrainnetome",
+         "ggsegverse/ggsegCerebellum", "ggsegverse/ggsegChen",
+         "ggsegverse/ggsegCIT168", "ggsegverse/ggsegCraddock",
+         "ggsegverse/ggsegFreeSurfer", "ggsegverse/ggsegGlasser",
+         "ggsegverse/ggsegGordon", "ggsegverse/ggsegHammersmith",
+         "ggsegverse/ggsegHistorical", "ggsegverse/ggsegHO",
+         "ggsegverse/ggsegIca", "ggsegverse/ggsegJHU",
+         "ggsegverse/ggsegJulich", "ggsegverse/ggsegKong",
+         "ggsegverse/ggsegMars", "ggsegverse/ggsegMcalt",
+         "ggsegverse/ggsegMelbourne", "ggsegverse/ggsegMiccai",
+         "ggsegverse/ggsegNspn500", "ggsegverse/ggsegPower",
+         "ggsegverse/ggsegSchaefer", "ggsegverse/ggsegShen",
+         "ggsegverse/ggsegThalamus", "ggsegverse/ggsegYan",
+         "ggsegverse/ggsegYeo2011"]
