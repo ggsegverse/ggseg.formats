@@ -238,7 +238,7 @@ describe("the published dispatch surface", {
       ),
       function(generic) {
         methods <- as.character(utils::methods(generic))
-        paste(sort(substring(methods, nchar(generic) + 2L)), collapse = ", ")
+        toString(sort(substring(methods, nchar(generic) + 2L)))
       },
       character(1)
     )
