@@ -93,7 +93,8 @@ pattern like \code{"Thalamus"} then also matches focus labels such as
 \code{"hypothalamus"}; set \code{FALSE} (and/or anchor the pattern) when that
 matters.}
 
-\item{x, y}{For \code{atlas_region_op()}: patterns selecting the two operands.}
+\item{x, y}{For \code{atlas_region_op()}: patterns selecting the two operands,
+or a selector such as \code{\link[=context]{context()}} or \code{\link[=regions]{regions()}}.}
 
 \item{action}{For \code{atlas_region_op()}: the boolean operation to apply.}
 
@@ -229,6 +230,8 @@ data. Remaining views are re-packed via \code{\link[=atlas_view_gather]{atlas_vi
 the layout stays tight.
 
 \item \code{atlas_view_keep()}: Keep only views matching pattern.
+Remaining views are re-packed via \code{\link[=atlas_view_gather]{atlas_view_gather()}} so the layout
+stays tight, as \code{\link[=atlas_view_remove]{atlas_view_remove()}} does.
 
 \item \code{atlas_view_remove_region()}: Remove specific region geometry from sf
 data only. Core, palette, and 3D data are unchanged. Views are
@@ -243,8 +246,8 @@ rest of the region stays -- use this to clear stray specks left by
 volumetric projection. A region's largest piece anywhere in the atlas is
 always kept, so no region disappears -- a speck in one view goes when
 the same region is drawn properly in another. Context is cleaned too.
-Optionally scope to specific views. Views are re-packed via \code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any
-view shrank.
+Optionally scope to specific views. Views are re-packed via
+\code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any view shrank.
 
 \item \code{atlas_view_select()}: Keep each region only in the views that show
 it well.

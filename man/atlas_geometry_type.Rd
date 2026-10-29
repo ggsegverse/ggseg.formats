@@ -40,6 +40,7 @@ Other atlas accessors:
 \code{\link[=atlas_regions]{atlas_regions()}},
 \code{\link[=atlas_sf]{atlas_sf()}},
 \code{\link[=atlas_type]{atlas_type()}},
+\code{\link[=atlas_undrawn]{atlas_undrawn()}},
 \code{\link[=atlas_vertices]{atlas_vertices()}},
 \code{\link[=atlas_views]{atlas_views()}},
 \code{\link[=legacy_region_map]{legacy_region_map()}}

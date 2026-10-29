@@ -578,6 +578,21 @@ describe("atlas_region_contextual", {
 })
 
 
+describe("atlas_view_keep", {
+  it("re-packs the layout, as atlas_view_remove does", {
+    atlas <- aseg()
+    views <- atlas_views(atlas)
+    span <- function(x) {
+      xs <- unlist(lapply(atlas_geom(x)$geometry, `[[`, "x"))
+      max(xs) - min(xs)
+    }
+    kept <- atlas_view_keep(atlas, views[c(1, 3)])
+    expect_identical(span(kept), span(atlas_view_gather(kept)))
+    expect_lt(span(kept), span(atlas))
+  })
+})
+
+
 # atlas_region_op ----
 
 describe("atlas_region_op", {
@@ -634,6 +649,24 @@ describe("atlas_region_op", {
       make_op_atlas(),
       "cortex",
       "wm",
+      action = "difference",
+      into = "ribbon"
+    )
+    expect_identical(holes_of(r, "ribbon"), 1)
+    expect_identical(area_of(r, "ribbon"), 100 - 16)
+  })
+
+  it("x and y accept selectors", {
+    # The backdrop is context (not in core), which is what context() picks
+    # out; wm stays a region, so regions() picks it.
+    base <- make_op_atlas()
+    base$core <- base$core[base$core$label != "cortex", , drop = FALSE]
+    base$palette <- base$palette[names(base$palette) != "cortex"]
+
+    r <- atlas_region_op(
+      base,
+      x = context(),
+      y = regions(),
       action = "difference",
       into = "ribbon"
     )

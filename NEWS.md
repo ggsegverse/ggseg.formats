@@ -4,6 +4,45 @@
 
 ### New features
 
+- The `core` schema's three name columns have a stated contract, in
+  `?core_contract`. `label` is the canonical key, `display` is the best
+  human-readable name, and `region` is a grouping key derived from
+  `display`.
+
+- `atlas_region_semantics()` answers whether an atlas's `region` aggregates
+  across hemispheres. Two conventions are in use across the library and both
+  are correct for their source: a parcellation that names structures
+  anatomically shares a name between the sides, and one that numbers its
+  parcels does not -- `region_0001` and `region_0002` are two parcels, not
+  one structure seen twice, and no hemisphere-free name exists to recover.
+  Consumers had no way to ask which they had short of testing for it.
+
+- `context()` and `regions()` select an atlas's backdrop, or its parcels,
+  anywhere a geometry verb takes `labels` or `exclude`. Build scripts had
+  been writing `"^cortex"` by hand, which is a guess about what the pipeline
+  named the backdrop: measured across the library, it misses the backdrop in
+  109 of the 121 objects that have one, and a pattern matching nothing is
+  silent. `atlas_view_remove_small()` and `atlas_region_op()`'s `x` and `y`
+  resolve a function selector now, as the `ggseg.extra` verbs already did.
+
+- `atlas_context()` returns the labels an atlas draws but does not treat as
+  regions -- the anatomical backdrop. Callers had been matching on names,
+  and `"^cortex"` silently matched nothing for as long as a pipeline bug
+  left the backdrop undrawn.
+
+- `migrate_atlas_hemi()` maps the legacy `hemi` spellings onto the
+  vocabulary: `"middle"` and `"vermis"` both mean `"midline"`. An atlas
+  carrying one cannot be constructed, so no verb that validates can reach
+  it; this repairs `core` directly for that reason.
+
+- `migrate_atlas_display()` gives an atlas built before `display` existed
+  its display names, recovering the source's own name from the label. A
+  curated name is never replaced: `dk` publishes
+  "banks of superior temporal sulcus" for `lh_bankssts`, which no stripping
+  would recover. Verified against every atlas in the library that already
+  carries the column -- 1996 rows, no disagreement -- so the 108 objects
+  that lack it do not need rebuilding.
+
 - `attach_sfc()` and `reorder_sfc()` are exported. They are the seam that lets a
   data frame carry `sf` geometry without `sf` installed: attribute-space work
   happens with the geometry detached, and these put it back. `merge()`,
