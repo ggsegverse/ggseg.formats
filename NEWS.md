@@ -50,6 +50,13 @@
   representation when `sf` is not loaded, and `tibble` rejects an `sfc` column
   outright, so a consumer doing its own joins needs them.
 
+- An atlas can record how it was built (requires `ggseg.formats >= 0.0.4.9014`). `set_atlas_provenance()` attaches a
+  build record and `atlas_provenance()` reads it back; `ggseg_atlas()` takes
+  it as an argument so every verb that reshapes an atlas preserves it. The
+  record must say what built the atlas (`pipeline`) and when (`created`).
+  Purely additive: an atlas without one is unchanged, so every stored atlas
+  still round-trips through the constructor identically.
+
 - `?ggseg_atlas` now states why the `type` vocabulary is closed. Adding an
   atlas of an existing type is open; adding a type is a discussion with the
   maintainers, because a type implies a rendering contract in both renderers.
