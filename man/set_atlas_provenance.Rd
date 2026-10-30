@@ -7,7 +7,7 @@
 set_atlas_provenance(atlas, value)
 }
 \arguments{
-\item{atlas}{A \code{ggseg_atlas}.}
+\item{atlas}{a \code{ggseg_atlas} object}
 
 \item{value}{A named list, or \code{NULL} to drop the record. Must contain
 \code{pipeline}, a single string naming what built the atlas and its version,

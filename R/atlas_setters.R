@@ -90,7 +90,7 @@ set_atlas_type <- function(atlas, value) {
 #' exported so a third party constructing an atlas by hand can record the same
 #' thing rather than leaving it unanswerable.
 #'
-#' @param atlas A `ggseg_atlas`.
+#' @inheritParams atlas_palette
 #' @param value A named list, or `NULL` to drop the record. Must contain
 #'   `pipeline`, a single string naming what built the atlas and its version,
 #'   and `created`, a single string or `Date` for when. Further fields are

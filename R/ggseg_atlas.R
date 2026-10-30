@@ -78,62 +78,6 @@ ggseg_atlas <- function(
 }
 
 
-#' Low-level constructor for the atlas class
-#'
-#' The bare object, with no checking: the `new_*()` half of the
-#' constructor/helper/validator trio, where `ggseg_atlas()` is the helper that
-#' validates its inputs and `validate_ggseg_atlas()` / `assert_ggseg_atlas()`
-#' are the validators. Until now the class had no such function and
-#' `ggseg_atlas()` served as both, which left no cheap way to assemble an
-#' object already known to be valid -- so four functions did it by hand
-#' instead.
-#'
-#' This is the only place the object is built. `ggseg_atlas()` validates and
-#' then calls it; the reshaping verbs call it directly, because they are
-#' rebuilding an object that was already valid and only its slots have moved.
-#'
-#' Those four assembled it independently, with the five slots and the class
-#' vector written out four times. Adding `provenance` to `ggseg_atlas()`
-#' therefore left all four silently dropping it, and because they called
-#' `structure()` rather than `ggseg_atlas()`, auditing the constructor's call
-#' sites could not find them -- `atlas_view_gather()` runs on nearly every
-#' built atlas and discarded the record on all of them. One constructor means
-#' the next slot added cannot go missing the same way.
-#'
-#' `provenance` is appended only when present, so an atlas without a build
-#' record keeps exactly five slots and stays `identical()` to one built before
-#' provenance existed.
-#' @noRd
-new_ggseg_atlas <- function(
-  atlas,
-  type,
-  palette,
-  core,
-  data,
-  provenance = NULL
-) {
-  slots <- list(
-    atlas = atlas,
-    type = type,
-    palette = palette,
-    core = core,
-    data = data
-  )
-  if (!is.null(provenance)) {
-    slots$provenance <- provenance
-  }
-
-  structure(
-    slots,
-    class = c(
-      paste0(type, "_atlas"),
-      "ggseg_atlas",
-      "list"
-    )
-  )
-}
-
-
 #' @rdname ggseg_atlas
 #' @export
 brain_atlas <- function(atlas, type, core, data, palette = NULL) {
@@ -1078,4 +1022,60 @@ print_atlas_rendering <- function(x, data, has_sf, has_3d) {
   cli::cli_text("             {ggseg3d_status} ggseg3d ({render_3d})")
 
   invisible()
+}
+
+
+#' Low-level constructor for the atlas class
+#'
+#' The bare object, with no checking: the `new_*()` half of the
+#' constructor/helper/validator trio, where `ggseg_atlas()` is the helper that
+#' validates its inputs and `validate_ggseg_atlas()` / `assert_ggseg_atlas()`
+#' are the validators. Until now the class had no such function and
+#' `ggseg_atlas()` served as both, which left no cheap way to assemble an
+#' object already known to be valid -- so four functions did it by hand
+#' instead.
+#'
+#' This is the only place the object is built. `ggseg_atlas()` validates and
+#' then calls it; the reshaping verbs call it directly, because they are
+#' rebuilding an object that was already valid and only its slots have moved.
+#'
+#' Those four assembled it independently, with the five slots and the class
+#' vector written out four times. Adding `provenance` to `ggseg_atlas()`
+#' therefore left all four silently dropping it, and because they called
+#' `structure()` rather than `ggseg_atlas()`, auditing the constructor's call
+#' sites could not find them -- `atlas_view_gather()` runs on nearly every
+#' built atlas and discarded the record on all of them. One constructor means
+#' the next slot added cannot go missing the same way.
+#'
+#' `provenance` is appended only when present, so an atlas without a build
+#' record keeps exactly five slots and stays `identical()` to one built before
+#' provenance existed.
+#' @noRd
+new_ggseg_atlas <- function(
+  atlas,
+  type,
+  palette,
+  core,
+  data,
+  provenance = NULL
+) {
+  slots <- list(
+    atlas = atlas,
+    type = type,
+    palette = palette,
+    core = core,
+    data = data
+  )
+  if (!is.null(provenance)) {
+    slots$provenance <- provenance
+  }
+
+  structure(
+    slots,
+    class = c(
+      paste0(type, "_atlas"),
+      "ggseg_atlas",
+      "list"
+    )
+  )
 }

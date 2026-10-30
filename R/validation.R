@@ -360,27 +360,42 @@ validate_provenance <- function(value) {
   if (is.null(value)) {
     return(NULL)
   }
-  if (!is.list(value) || is.null(names(value)) || any(!nzchar(names(value)))) {
+  if (!is_named_list(value)) {
     cli::cli_abort(c(
       "{.arg provenance} must be a named list or {.code NULL}.",
       "i" = "See {.fun set_atlas_provenance}."
     ))
   }
-  required <- c("pipeline", "created")
-  absent <- setdiff(required, names(value))
+  absent <- setdiff(c("pipeline", "created"), names(value))
   if (length(absent)) {
     cli::cli_abort(c(
       "{.arg provenance} is missing {.field {absent}}.",
       "i" = "A build record states what built the atlas and when."
     ))
   }
+  check_provenance_fields(value)
+  value
+}
+
+
+#' Is this a list with a name on every element?
+#' @noRd
+is_named_list <- function(value) {
+  is.list(value) &&
+    !is.null(names(value)) &&
+    all(nzchar(names(value)))
+}
+
+
+#' The two fields a build record must be able to answer with
+#' @noRd
+check_provenance_fields <- function(value) {
   if (!is.character(value$pipeline) || length(value$pipeline) != 1L) {
     cli::cli_abort("{.field pipeline} must be a single string.")
   }
-  created_ok <- inherits(value$created, "Date") ||
-    (is.character(value$created) && length(value$created) == 1L)
-  if (!created_ok) {
+  one_string <- is.character(value$created) && length(value$created) == 1L
+  if (!inherits(value$created, "Date") && !one_string) {
     cli::cli_abort("{.field created} must be a single string or a {.cls Date}.")
   }
-  value
+  invisible(value)
 }
