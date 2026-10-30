@@ -130,6 +130,12 @@ describe("atlas provenance", {
     reshaped <- list(
       region_remove = atlas_region_remove(atlas, one),
       region_keep = atlas_region_keep(atlas, one),
+      # These two assembled the object themselves rather than calling the
+      # constructor, so they dropped the record while every other verb kept
+      # it. atlas_view_gather() runs on nearly every built atlas, so the loss
+      # was total in practice and invisible in principle.
+      view_gather = atlas_view_gather(atlas),
+      region_contextual = atlas_region_contextual(atlas, one),
       region_rename = atlas_region_rename(
         atlas,
         paste0("^", unique(atlas_regions(atlas))[1], "$"),
