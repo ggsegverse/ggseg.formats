@@ -114,6 +114,8 @@ Create and inspect ggseg atlas objects.
 - [`ggseg_data_tract()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_tract.md)
   [`brain_data_tract()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_tract.md)
   : Create tract atlas data
+- [`ggseg_data_wm()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_wm.md)
+  : Create white-matter atlas data
 - [`is_ggseg3d_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg3d_atlas.md)
   : Check if object is a legacy ggseg3d atlas
 - [`is_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
@@ -121,6 +123,7 @@ Create and inspect ggseg atlas objects.
   [`is_subcortical_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_tract_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_cerebellar_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
+  [`is_wm_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   : Check ggseg atlas class
 - [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
@@ -178,6 +181,7 @@ Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
   [`is_subcortical_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_tract_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_cerebellar_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
+  [`is_wm_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   [`is_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
   : Check ggseg atlas class
 
