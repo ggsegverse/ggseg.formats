@@ -8,13 +8,13 @@
   "codeRepository": "https://github.com/ggsegverse/ggseg.formats",
   "issueTracker": "https://github.com/ggsegverse/ggseg.formats/issues",
   "license": "https://spdx.org/licenses/MIT",
-  "version": "0.0.4.9013",
+  "version": "0.0.4.9014",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
     "url": "https://r-project.org"
   },
-  "runtimePlatform": "R version 4.6.1 (2026-06-24)",
+  "runtimePlatform": "R version 4.6.2 (2026-10-29)",
   "provider": {
     "@id": "https://cran.r-project.org",
     "@type": "Organization",
@@ -213,7 +213,7 @@
     },
     "SystemRequirements": null
   },
-  "fileSize": "3834.999KB",
+  "fileSize": "3847.653KB",
   "releaseNotes": "https://github.com/ggsegverse/ggseg.formats/blob/main/NEWS.md",
   "readme": "https://github.com/ggsegverse/ggseg.formats/blob/main/README.md",
   "contIntegration": ["https://github.com/ggsegverse/ggseg.formats/actions/workflows/R-CMD-check.yaml", "https://github.com/ggsegverse/ggseg.formats/actions/workflows/code-quality.yaml", "https://github.com/ggsegverse/ggseg.formats/actions/workflows/test-coverage.yaml"],
