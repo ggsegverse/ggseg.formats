@@ -70,11 +70,7 @@ ggseg_atlas <- function(atlas, type, core, data, palette = NULL) {
       core = core,
       data = data
     ),
-    class = c(
-      paste0(type, "_atlas"),
-      "ggseg_atlas",
-      "list"
-    )
+    class = atlas_class(type)
   )
 }
 
@@ -140,6 +136,12 @@ is_tract_atlas <- function(x) {
 #' @export
 is_cerebellar_atlas <- function(x) {
   inherits(x, "cerebellar_atlas") && validate_ggseg_atlas(x)
+}
+
+#' @rdname is_ggseg_atlas
+#' @export
+is_wm_atlas <- function(x) {
+  inherits(x, "wm_atlas") && validate_ggseg_atlas(x)
 }
 
 #' @rdname is_ggseg_atlas
@@ -805,7 +807,8 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
     cli::cli_abort(c(
       "{.arg data} must be a {.cls ggseg_atlas_data} object.",
       "i" = "Use {.fn ggseg_data_cortical}, {.fn ggseg_data_subcortical},
-      {.fn ggseg_data_tract}, or {.fn ggseg_data_cerebellar}."
+      {.fn ggseg_data_tract}, {.fn ggseg_data_cerebellar}, or
+      {.fn ggseg_data_wm}."
     ))
   }
 
