@@ -1079,10 +1079,6 @@ new_ggseg_atlas <- function(
 
   structure(
     slots,
-    class = c(
-      paste0(type, "_atlas"),
-      "ggseg_atlas",
-      "list"
-    )
+    class = atlas_class(type)
   )
 }
