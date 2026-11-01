@@ -76,3 +76,82 @@ describe("set_atlas_type", {
     )
   })
 })
+
+describe("atlas provenance", {
+  record <- list(
+    pipeline = "ggseg.extra::create_cortical_atlas 1.9.9",
+    created = "2026-10-29",
+    source = "Desikan-Killiany",
+    parameters = list(keep = 0.25)
+  )
+
+  it("is absent on an atlas that never recorded one", {
+    expect_null(atlas_provenance(dk()))
+  })
+
+  it("round-trips through the setter", {
+    atlas <- set_atlas_provenance(dk(), record)
+    expect_identical(atlas_provenance(atlas), record)
+  })
+
+  it("can be dropped again", {
+    atlas <- set_atlas_provenance(dk(), record)
+    expect_null(atlas_provenance(set_atlas_provenance(atlas, NULL)))
+  })
+
+  it("is accepted by the constructor and leaves the atlas valid", {
+    atlas <- dk()
+    rebuilt <- ggseg_atlas(
+      atlas = atlas$atlas,
+      type = atlas$type,
+      core = atlas$core,
+      data = atlas$data,
+      palette = atlas$palette,
+      provenance = record
+    )
+    expect_true(is_ggseg_atlas(rebuilt))
+    expect_identical(atlas_provenance(rebuilt), record)
+  })
+
+  it("rejects an atlas argument that is not an atlas", {
+    expect_error(atlas_provenance(list()), "must be a")
+    expect_error(set_atlas_provenance(list(), record), "must be a")
+  })
+
+  # The reason provenance is a constructor argument rather than an attribute.
+  # Every reshaping verb rebuilds the atlas through ggseg_atlas(), so anything
+  # the constructor does not copy is dropped without a word. Each of these
+  # reshapes an existing atlas, so each must preserve how it was built.
+  it("survives every verb that reshapes an existing atlas", {
+    atlas <- set_atlas_provenance(dk(), record)
+    labels <- unique(atlas_labels(atlas))
+    one <- paste0("^", labels[1], "$")
+
+    reshaped <- list(
+      region_remove = atlas_region_remove(atlas, one),
+      region_keep = atlas_region_keep(atlas, one),
+      # These two assembled the object themselves rather than calling the
+      # constructor, so they dropped the record while every other verb kept
+      # it. atlas_view_gather() runs on nearly every built atlas, so the loss
+      # was total in practice and invisible in principle.
+      view_gather = atlas_view_gather(atlas),
+      region_contextual = atlas_region_contextual(atlas, one),
+      region_rename = atlas_region_rename(
+        atlas,
+        paste0("^", unique(atlas_regions(atlas))[1], "$"),
+        "renamed",
+        match_on = "region"
+      ),
+      set_type = set_atlas_type(atlas, atlas_type(atlas)),
+      relabel = relabel_atlas(atlas, stats::setNames(labels[1], labels[1]))
+    )
+
+    for (verb in names(reshaped)) {
+      expect_identical(
+        atlas_provenance(reshaped[[verb]]),
+        record,
+        info = verb
+      )
+    }
+  })
+})
