@@ -1,5 +1,15 @@
 # ggseg.formats
 
+## New features
+
+- `"wm"` is a fifth atlas type, for white-matter atlases built from a label
+  map. A white-matter atlas stores what a subcortical one stores -- polygons
+  for the slab views and a mesh per structure -- and is drawn the same way,
+  so it carries `subcortical_atlas` in its class vector and every method
+  written for that applies unchanged. `ggseg_data_wm()` and `is_wm_atlas()`
+  come with it. Tract atlases stay separate: they carry centerlines, which a
+  white-matter label map has none of.
+
 ## ggseg.formats (development version)
 
 ### New features

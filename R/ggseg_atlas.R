@@ -143,6 +143,12 @@ is_cerebellar_atlas <- function(x) {
 
 #' @rdname is_ggseg_atlas
 #' @export
+is_wm_atlas <- function(x) {
+  inherits(x, "wm_atlas") && validate_ggseg_atlas(x)
+}
+
+#' @rdname is_ggseg_atlas
+#' @export
 is_brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
     "0.1.0",
@@ -805,7 +811,8 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
     cli::cli_abort(c(
       "{.arg data} must be a {.cls ggseg_atlas_data} object.",
       "i" = "Use {.fn ggseg_data_cortical}, {.fn ggseg_data_subcortical},
-      {.fn ggseg_data_tract}, or {.fn ggseg_data_cerebellar}."
+      {.fn ggseg_data_tract}, {.fn ggseg_data_cerebellar}, or
+      {.fn ggseg_data_wm}."
     ))
   }
 

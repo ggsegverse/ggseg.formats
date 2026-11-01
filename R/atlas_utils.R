@@ -1578,7 +1578,40 @@ pack_views_horizontally <- function(view_data, gap) {
 
 
 atlas_types <- function() {
-  c("cortical", "subcortical", "tract", "cerebellar")
+  c("cortical", "subcortical", "tract", "cerebellar", "wm")
+}
+
+
+#' The type a type inherits from, if any
+#'
+#' A white-matter atlas stores what a subcortical one stores -- polygons and
+#' a mesh per structure -- and is drawn the same way, so it is built as a
+#' subcortical atlas with a name of its own. Saying so in the class vector
+#' means every method written for `subcortical_atlas` applies to it
+#' unchanged, rather than being duplicated.
+#'
+#' A tract atlas is not a parent: it carries centerlines as well, which a
+#' white-matter label map has none of.
+#' @noRd
+atlas_parent_type <- function(type) {
+  switch(type, wm = "subcortical", NULL)
+}
+
+
+#' The class vector an atlas of this type carries
+#'
+#' `paste0()` does not drop a NULL -- `paste0(NULL, "_atlas")` is
+#' `"_atlas"`, not nothing -- so the parent is appended only when there is
+#' one, rather than pasted unconditionally.
+#' @noRd
+atlas_class <- function(type) {
+  parent <- atlas_parent_type(type)
+  c(
+    paste0(type, "_atlas"),
+    if (!is.null(parent)) paste0(parent, "_atlas"),
+    "ggseg_atlas",
+    "list"
+  )
 }
 
 

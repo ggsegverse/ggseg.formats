@@ -171,7 +171,7 @@ extract_3d_data <- function(
   meshes <- NULL
   vertices <- NULL
 
-  if (type %in% c("subcortical", "tract") && "mesh" %in% names(dt)) {
+  if (type %in% c("subcortical", "tract", "wm") && "mesh" %in% names(dt)) {
     meshes <- extract_meshes_from_rgl(dt)
     cli::cli_inform(c("i" = "Extracted meshes from 3D atlas."))
   } else if (has_vertex_data(dt)) {

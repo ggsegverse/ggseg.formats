@@ -90,6 +90,55 @@ ggseg_data_subcortical <- function(geom = NULL, meshes = NULL, ...) {
 }
 
 
+#' Create white-matter atlas data
+#'
+#' Creates a data object for white-matter brain atlases. A white-matter
+#' atlas stores what a subcortical one stores -- sf polygons for the 2D
+#' slab views and a mesh per structure for 3D -- so this is the subcortical
+#' shape under a name of its own, and the object inherits
+#' `ggseg_data_subcortical` so the methods written for it apply unchanged.
+#'
+#' White-matter *tracts* are a different thing: [ggseg_data_tract()] also
+#' carries centerlines, which a white-matter label map has none of.
+#'
+#' @param geom An sf data frame of polygons, or `NULL`.
+#' @param meshes A data frame of per-structure meshes, or `NULL`.
+#' @param ... Passed to the shared geometry resolver.
+#'
+#' @return A `ggseg_data_wm` object.
+#' @seealso [ggseg_data_subcortical()], [ggseg_data_tract()]
+#' @export
+#' @examples
+#' ggseg_data_wm(
+#'   meshes = data.frame(
+#'     label = "cst_left",
+#'     mesh = I(list(list(
+#'       vertices = data.frame(x = 1:10, y = 1:10, z = 1:10),
+#'       faces = data.frame(i = 1:3, j = 2:4, k = 3:5)
+#'     )))
+#'   )
+#' )
+ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
+  geom <- resolve_geom(geom, ..., .fn = "ggseg_data_wm")
+
+  if (is.null(geom) && is.null(meshes)) {
+    cli::cli_abort("At least one of {.arg geom} or {.arg meshes} is required.")
+  }
+
+  if (!is.null(meshes)) {
+    meshes <- validate_meshes(meshes)
+  }
+
+  structure(
+    list(
+      geom = geom,
+      meshes = meshes
+    ),
+    class = c("ggseg_data_wm", "ggseg_data_subcortical", "ggseg_atlas_data")
+  )
+}
+
+
 #' Create cerebellar atlas data
 #'
 #' Creates a data object for cerebellar brain atlases. Cerebellar atlases
