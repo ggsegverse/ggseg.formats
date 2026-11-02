@@ -291,7 +291,8 @@ atlas_region_remove <- function(
     type = atlas$type,
     palette = new_palette,
     core = new_core,
-    data = new_data
+    data = new_data,
+    provenance = atlas$provenance
   )
 }
 
@@ -341,15 +342,13 @@ atlas_region_contextual <- function(
 
   validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
 
-  structure(
-    list(
-      atlas = atlas$atlas,
-      type = atlas$type,
-      palette = new_palette,
-      core = new_core,
-      data = new_data
-    ),
-    class = class(atlas)
+  new_ggseg_atlas(
+    atlas$atlas,
+    atlas$type,
+    new_palette,
+    new_core,
+    new_data,
+    atlas$provenance
   )
 }
 
@@ -433,15 +432,13 @@ atlas_region_op <- function(
   new_geom <- if (was_polygon_only) sf_to_polygons(new_sf) else new_sf
   new_data <- rebuild_data_with_geom(atlas$data, new_geom)
   validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
-  structure(
-    list(
-      atlas = atlas$atlas,
-      type = atlas$type,
-      palette = new_palette,
-      core = new_core,
-      data = new_data
-    ),
-    class = class(atlas)
+  new_ggseg_atlas(
+    atlas$atlas,
+    atlas$type,
+    new_palette,
+    new_core,
+    new_data,
+    atlas$provenance
   )
 }
 
@@ -513,7 +510,8 @@ atlas_region_rename <- function(
     type = atlas$type,
     palette = atlas$palette,
     core = new_core,
-    data = atlas$data
+    data = atlas$data,
+    provenance = atlas$provenance
   )
 }
 
@@ -556,7 +554,8 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
     type = atlas$type,
     palette = new_palette,
     core = new_core,
-    data = new_data
+    data = new_data,
+    provenance = atlas$provenance
   )
 }
 
@@ -580,7 +579,8 @@ atlas_core_add <- function(atlas, data, by = "region") {
     type = atlas$type,
     palette = atlas$palette,
     core = new_core,
-    data = atlas$data
+    data = atlas$data,
+    provenance = atlas$provenance
   )
 }
 
@@ -1321,19 +1321,13 @@ set_atlas_polygons <- function(atlas, new_polygons) {
 rebuild_atlas <- function(atlas, new_data) {
   validate_data_labels(new_data, atlas$core, report_2d_coverage = FALSE)
 
-  structure(
-    list(
-      atlas = atlas$atlas,
-      type = atlas$type,
-      palette = atlas$palette,
-      core = atlas$core,
-      data = new_data
-    ),
-    class = c(
-      paste0(atlas$type, "_atlas"),
-      "ggseg_atlas",
-      "list"
-    )
+  new_ggseg_atlas(
+    atlas$atlas,
+    atlas$type,
+    atlas$palette,
+    atlas$core,
+    new_data,
+    atlas$provenance
   )
 }
 

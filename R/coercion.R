@@ -88,7 +88,8 @@ as_ggseg_atlas.list <- function(x) {
       type = x$type,
       palette = x$palette,
       core = x$core,
-      data = x$data
+      data = x$data,
+      provenance = x$provenance
     ))
   }
 
@@ -159,7 +160,8 @@ convert_legacy_brain_data <- function(x) {
     type = type,
     palette = palette,
     core = core,
-    data = data
+    data = data,
+    provenance = x$provenance
   )
 }
 
@@ -198,7 +200,8 @@ convert_legacy_structure <- function(x) {
     type = type,
     palette = x$palette,
     core = core,
-    data = data
+    data = data,
+    provenance = x$provenance
   )
 }
 
@@ -207,20 +210,7 @@ convert_legacy_structure <- function(x) {
 #' @noRd
 restamp_class <- function(x) {
   type <- x$type %||% "cortical"
-  structure(
-    list(
-      atlas = x$atlas,
-      type = type,
-      palette = x$palette,
-      core = x$core,
-      data = x$data
-    ),
-    class = c(
-      paste0(type, "_atlas"),
-      "ggseg_atlas",
-      "list"
-    )
-  )
+  new_ggseg_atlas(x$atlas, type, x$palette, x$core, x$data, x$provenance)
 }
 
 

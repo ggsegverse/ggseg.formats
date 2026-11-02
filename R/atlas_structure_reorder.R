@@ -112,7 +112,8 @@ atlas_structure_reorder <- function(
     type = atlas$type,
     palette = atlas$palette,
     core = atlas$core,
-    data = new_data
+    data = new_data,
+    provenance = atlas$provenance
   )
 }
 

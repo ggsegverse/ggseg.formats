@@ -77,6 +77,39 @@ set_atlas_type <- function(atlas, value) {
     type = value,
     core = atlas$core,
     data = atlas$data,
-    palette = atlas$palette
+    palette = atlas$palette,
+    provenance = atlas$provenance
   )
+}
+
+
+#' Record how an atlas was built
+#'
+#' Attaches a build record to an atlas. Intended for the pipelines in
+#' \pkg{ggseg.extra}, which know the arguments a build was given; it is
+#' exported so a third party constructing an atlas by hand can record the same
+#' thing rather than leaving it unanswerable.
+#'
+#' @inheritParams atlas_palette
+#' @param value A named list, or `NULL` to drop the record. Must contain
+#'   `pipeline`, a single string naming what built the atlas and its version,
+#'   and `created`, a single string or `Date` for when. Further fields are
+#'   yours.
+#'
+#' @return `atlas`, with `value` as its provenance.
+#'
+#' @seealso [atlas_provenance()] to read one back.
+#' @examples
+#' atlas <- set_atlas_provenance(
+#'   dk(),
+#'   list(pipeline = "hand-built 1.0", created = "2026-10-29")
+#' )
+#' atlas_provenance(atlas)$pipeline
+#' @export
+set_atlas_provenance <- function(atlas, value) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  atlas$provenance <- validate_provenance(value)
+  atlas
 }

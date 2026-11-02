@@ -502,3 +502,47 @@ describe("single-view atlases", {
     }
   })
 })
+
+describe("validate_provenance()", {
+  good <- list(pipeline = "p 1.0", created = "2026-10-29")
+
+  it("passes NULL, because most of the library predates provenance", {
+    expect_null(validate_provenance(NULL))
+  })
+
+  it("passes a record naming what built the atlas and when", {
+    expect_identical(validate_provenance(good), good)
+  })
+
+  it("accepts a Date for created", {
+    rec <- list(pipeline = "p 1.0", created = as.Date("2026-10-29"))
+    expect_identical(validate_provenance(rec), rec)
+  })
+
+  it("keeps any further fields the pipeline recorded", {
+    rec <- c(good, list(parameters = list(keep = 0.25)))
+    expect_identical(validate_provenance(rec)$parameters$keep, 0.25)
+  })
+
+  it("rejects something that is not a named list", {
+    expect_error(validate_provenance("p 1.0"), "named list")
+    expect_error(validate_provenance(list("p 1.0")), "named list")
+    expect_error(validate_provenance(setNames(list(1), "")), "named list")
+  })
+
+  it("rejects a record that does not say what built the atlas, or when", {
+    expect_error(validate_provenance(good["pipeline"]), "created")
+    expect_error(validate_provenance(good["created"]), "pipeline")
+  })
+
+  it("rejects a pipeline or created that cannot be read as one value", {
+    expect_error(
+      validate_provenance(list(pipeline = c("a", "b"), created = "2026-10-29")),
+      "single string"
+    )
+    expect_error(
+      validate_provenance(list(pipeline = "p 1.0", created = 20261029)),
+      "single string or a"
+    )
+  })
+})

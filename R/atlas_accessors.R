@@ -332,6 +332,38 @@ print.ggseg_meshes <- function(x, n = 10, ...) {
   invisible(x)
 }
 
+#' How an atlas was built
+#'
+#' Returns the build record an atlas carries, or `NULL` for an atlas built
+#' before provenance existed or by a pipeline that did not record one.
+#'
+#' Provenance answers a question the rest of the class cannot: not what the
+#' atlas contains, but how it came to contain it. Two atlases produced by the
+#' same pipeline can differ in view count, polygon simplification or
+#' palette source because they were built with different arguments, and
+#' without a record the only way to find out is to locate the build script
+#' that produced them -- which lives in a different repository and may have
+#' changed since.
+#'
+#' @inheritParams atlas_palette
+#'
+#' @return A named list, or `NULL`. When present it carries at least
+#'   `pipeline` (what built the atlas, including its version) and `created`
+#'   (when). Any further fields are the producing pipeline's own, commonly the
+#'   source parcellation and the arguments the build was given.
+#'
+#' @seealso [set_atlas_provenance()] to attach one.
+#' @examples
+#' atlas_provenance(dk())
+#' @export
+atlas_provenance <- function(atlas) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
+  }
+  atlas$provenance
+}
+
+
 #' @keywords internal
 #' @noRd
 geom_from_data <- function(data) {

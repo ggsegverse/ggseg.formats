@@ -5,7 +5,7 @@
 \alias{brain_atlas}
 \title{Constructor for ggseg atlas}
 \usage{
-ggseg_atlas(atlas, type, core, data, palette = NULL)
+ggseg_atlas(atlas, type, core, data, palette = NULL, provenance = NULL)
 
 brain_atlas(atlas, type, core, data, palette = NULL)
 }
@@ -25,6 +25,10 @@ for grouping or metadata (e.g., lobe, network, Brodmann area).}
 Must match the specified type.}
 
 \item{palette}{named character vector of colours keyed by label}
+
+\item{provenance}{optional named list recording how the atlas was built.
+Must carry \code{pipeline} and \code{created} when supplied; see
+\code{\link[=set_atlas_provenance]{set_atlas_provenance()}}. \code{NULL} for an atlas whose build is unrecorded.}
 }
 \value{
 an object of class 'ggseg_atlas'
