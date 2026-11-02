@@ -58,12 +58,36 @@ get_brain_mesh <- function(
 #' and a centroid, designed to render as an opaque grey wall when not
 #' assigned to any atlas region.
 #'
+#' @param surface Name of the reference surface to retrieve, as recorded by
+#'   [atlas_surface()]. Only `"suit"` is bundled here; pass the atlas's own
+#'   recorded surface rather than relying on the default, so an atlas built
+#'   against a different surface fails loudly instead of being drawn on the
+#'   wrong one.
+#'
 #' @return A list with `vertices` (data.frame with x, y, z) and `faces`
 #'   (data.frame with i, j, k, 0-based indices).
+#' @seealso [atlas_surface()] to read which surface an atlas indexes into.
 #' @export
 #' @examples
 #' mesh <- get_cerebellar_mesh()
 #' nrow(mesh$vertices)
-get_cerebellar_mesh <- function() {
+#'
+#' mesh <- get_cerebellar_mesh(atlas_surface(suit()))
+#' nrow(mesh$vertices)
+get_cerebellar_mesh <- function(surface = "suit") {
+  if (!is.character(surface) || length(surface) != 1L || is.na(surface)) {
+    cli::cli_abort("{.arg surface} must be a single non-missing string.")
+  }
+
+  if (!identical(surface, "suit")) {
+    cli::cli_abort(c(
+      "Cerebellar surface {.val {surface}} not available in
+       {.pkg ggseg.formats}.",
+      "i" = "Only {.val suit} is bundled.",
+      "i" = "An atlas indexing into another surface must be rendered with the
+             package that distributes it."
+    ))
+  }
+
   cerebellar_mesh_suit
 }

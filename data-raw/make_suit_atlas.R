@@ -53,6 +53,11 @@ stopifnot("every SUIT region must have a metadata row" = !anyNA(hit))
 # they are the join key.
 .suit_atlas$core$hemi[.suit_atlas$core$hemi == "vermis"] <- "midline"
 
+# ggsegSUIT predates the `surface` field, so the import records which surface
+# the vertex indices address rather than leaving later readers to fall back on
+# the cerebellar default.
+.suit_atlas$data$surface <- "suit"
+
 usethis::use_data(
   brain_mesh_inflated,
   cerebellar_mesh_suit,

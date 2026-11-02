@@ -378,6 +378,35 @@ describe("print methods", {
     expect_snapshot(print(data))
   })
 
+  it("prints the deep nuclei a cerebellar atlas carries as meshes", {
+    # A cerebellar atlas is a flatmap *and* per-structure meshes; printing
+    # only the vertices hid the nuclei entirely.
+    vertices <- data.frame(label = "left_I-IV")
+    vertices$vertices <- list(0L:9L)
+    meshes <- data.frame(label = "left_dentate", stringsAsFactors = FALSE)
+    meshes$mesh <- list(list(
+      vertices = data.frame(x = 1:3, y = 1:3, z = 1:3),
+      faces = data.frame(i = 1L, j = 2L, k = 3L)
+    ))
+
+    data <- ggseg_data_cerebellar(
+      vertices = vertices,
+      meshes = meshes,
+      surface = "suit"
+    )
+    expect_snapshot(print(data))
+  })
+
+  it("names the surface it was told about, not the one it assumes", {
+    vertices <- data.frame(label = "left_I-IV")
+    vertices$vertices <- list(0L:9L)
+    data <- ggseg_data_cerebellar(
+      vertices = vertices,
+      surface = "hippunfold"
+    )
+    expect_snapshot(print(data))
+  })
+
   it("prints ggseg_data_cerebellar without vertices", {
     skip_if_not_installed("sf")
     sf_geom <- sf::st_sf(
@@ -534,6 +563,54 @@ describe("print_mesh_summary with NULL mesh entries", {
     expect_output(
       print_mesh_summary(meshes),
       "region1"
+    )
+  })
+})
+
+
+describe("ggseg_data_cerebellar(surface)", {
+  cb_vertices <- function() {
+    v <- data.frame(label = "lobule_i_left", stringsAsFactors = FALSE)
+    v$vertices <- list(0:5)
+    v
+  }
+
+  it("records the surface it is given", {
+    d <- ggseg_data_cerebellar(vertices = cb_vertices(), surface = "suit")
+    expect_identical(d$surface, "suit")
+  })
+
+  it("records nothing when no surface is given", {
+    d <- ggseg_data_cerebellar(vertices = cb_vertices())
+    expect_null(d$surface)
+  })
+
+  it("accepts a surface this ecosystem does not ship", {
+    # A third-party atlas may index into a surface distributed with it, so
+    # the vocabulary is not constrained to what ggseg.formats bundles.
+    d <- ggseg_data_cerebellar(vertices = cb_vertices(), surface = "hippunfold")
+    expect_identical(d$surface, "hippunfold")
+  })
+
+  it("rejects a surface that is not a single name", {
+    expect_error(
+      ggseg_data_cerebellar(vertices = cb_vertices(), surface = c("a", "b")),
+      "single non-missing string"
+    )
+    expect_error(
+      ggseg_data_cerebellar(vertices = cb_vertices(), surface = NA_character_),
+      "single non-missing string"
+    )
+    expect_error(
+      ggseg_data_cerebellar(vertices = cb_vertices(), surface = 1),
+      "single non-missing string"
+    )
+  })
+
+  it("rejects an empty surface name", {
+    expect_error(
+      ggseg_data_cerebellar(vertices = cb_vertices(), surface = "  "),
+      "must not be empty"
     )
   })
 })

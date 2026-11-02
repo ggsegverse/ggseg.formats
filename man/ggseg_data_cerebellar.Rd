@@ -4,7 +4,13 @@
 \alias{ggseg_data_cerebellar}
 \title{Create cerebellar atlas data}
 \usage{
-ggseg_data_cerebellar(geom = NULL, vertices = NULL, meshes = NULL, ...)
+ggseg_data_cerebellar(
+  geom = NULL,
+  vertices = NULL,
+  meshes = NULL,
+  surface = NULL,
+  ...
+)
 }
 \arguments{
 \item{geom}{2D geometry for rendering, stored in the single \code{geom} slot:
@@ -22,6 +28,12 @@ of mesh objects with vertices and faces). For deep cerebellar structures
 that are not on the cortical surface. Same format as
 \code{\link[=ggseg_data_subcortical]{ggseg_data_subcortical()}} meshes.}
 
+\item{surface}{Name of the reference surface the \code{vertices} index into,
+length one, or \code{NULL}. Records which surface the indices address so a
+renderer can resolve the right mesh instead of assuming one. \code{NULL} means
+unrecorded and is read back as \code{"suit"} by \code{\link[=atlas_surface]{atlas_surface()}}, which is
+what every cerebellar atlas built before this field used.}
+
 \item{...}{Captures a deprecated \code{sf} argument: if supplied it is converted
 to the polygon representation via \code{\link[=sf_to_polygons]{sf_to_polygons()}} and a deprecation
 warning is issued. Prefer passing 2D geometry via \code{geom}.}
@@ -31,8 +43,10 @@ An object of class c("ggseg_data_cerebellar", "ggseg_atlas_data")
 }
 \description{
 Creates a data object for cerebellar brain atlases. Cerebellar atlases
-use sf polygons from a SUIT flatmap for 2D rendering and vertex indices
-into the shared SUIT cerebellar surface mesh for 3D rendering.
+use polygons from a flatmap for 2D rendering and vertex indices into a
+shared cerebellar surface mesh for 3D rendering. \code{surface} records which
+surface those indices address; it is the SUIT surface for every atlas
+distributed so far.
 }
 \details{
 The shared mesh (see \code{\link[=get_cerebellar_mesh]{get_cerebellar_mesh()}}) includes a cap over the
@@ -51,6 +65,7 @@ data <- ggseg_data_cerebellar(
   vertices = data.frame(
     label = c("lobule_I", "lobule_II"),
     vertices = I(list(c(1L, 2L, 3L), c(4L, 5L, 6L)))
-  )
+  ),
+  surface = "suit"
 )
 }

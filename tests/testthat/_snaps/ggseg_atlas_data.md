@@ -81,7 +81,38 @@
       -- ggseg_data_cerebellar --
       
       2D (ggseg): 1 labels (sf), views: flatmap
-      3D (ggseg3d): vertex indices (SUIT surface)
+      3D (ggseg3d): vertex indices into the "suit" surface
+    Output
+            label   vertices
+      1 left_I-IV <int [10]>
+
+# print methods / prints the deep nuclei a cerebellar atlas carries as meshes
+
+    Code
+      print(data)
+    Message
+      
+      -- ggseg_data_cerebellar --
+      
+      3D (ggseg3d): vertex indices into the "suit" surface
+    Output
+            label   vertices
+      1 left_I-IV <int [10]>
+    Message
+      3D (ggseg3d): meshes
+    Output
+               label vertices faces
+      1 left_dentate        3     1
+
+# print methods / names the surface it was told about, not the one it assumes
+
+    Code
+      print(data)
+    Message
+      
+      -- ggseg_data_cerebellar --
+      
+      3D (ggseg3d): vertex indices into the "hippunfold" surface
     Output
             label   vertices
       1 left_I-IV <int [10]>

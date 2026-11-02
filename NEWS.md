@@ -2,6 +2,17 @@
 
 ## New features
 
+- `ggseg_data_cerebellar()` gains `surface`, recording which reference surface
+  its vertex indices address, read back with `atlas_surface()`. Until now the
+  atlas type was the only thing carrying that, which made a second flatmap
+  anatomy inexpressible. An atlas built before the field reads back as
+  `"suit"`.
+- `get_cerebellar_mesh()` takes a `surface` and refuses one it does not bundle
+  rather than silently returning SUIT, which would draw an atlas on the wrong
+  surface while still producing a plot.
+- Printing cerebellar atlas data now shows the deep nuclei meshes it carries,
+  which were omitted entirely.
+
 - `"wm"` is a fifth atlas type, for white-matter atlases built from a label
   map. A white-matter atlas stores what a subcortical one stores -- polygons
   for the slab views and a mesh per structure -- and is drawn the same way,

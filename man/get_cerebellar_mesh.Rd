@@ -4,7 +4,14 @@
 \alias{get_cerebellar_mesh}
 \title{Get SUIT cerebellar surface mesh}
 \usage{
-get_cerebellar_mesh()
+get_cerebellar_mesh(surface = "suit")
+}
+\arguments{
+\item{surface}{Name of the reference surface to retrieve, as recorded by
+\code{\link[=atlas_surface]{atlas_surface()}}. Only \code{"suit"} is bundled here; pass the atlas's own
+recorded surface rather than relying on the default, so an atlas built
+against a different surface fails loudly instead of being drawn on the
+wrong one.}
 }
 \value{
 A list with \code{vertices} (data.frame with x, y, z) and \code{faces}
@@ -22,4 +29,10 @@ assigned to any atlas region.
 \examples{
 mesh <- get_cerebellar_mesh()
 nrow(mesh$vertices)
+
+mesh <- get_cerebellar_mesh(atlas_surface(suit()))
+nrow(mesh$vertices)
+}
+\seealso{
+\code{\link[=atlas_surface]{atlas_surface()}} to read which surface an atlas indexes into.
 }

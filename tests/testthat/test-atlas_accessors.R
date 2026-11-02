@@ -451,3 +451,44 @@ describe("atlas_meshes", {
     expect_error(atlas_meshes(data.frame()), "must be a.*ggseg_atlas")
   })
 })
+
+
+describe("atlas_surface()", {
+  it("reads the surface an atlas records", {
+    a <- ggseg_atlas(
+      atlas = "demo_cb",
+      type = "cerebellar",
+      core = data.frame(
+        hemi = "left",
+        region = "lobule_i",
+        label = "lobule_i_left",
+        display = "lobule_i_left",
+        stringsAsFactors = FALSE
+      ),
+      data = ggseg_data_cerebellar(
+        vertices = local({
+          v <- data.frame(label = "lobule_i_left", stringsAsFactors = FALSE)
+          v$vertices <- list(0:5)
+          v
+        }),
+        surface = "hippunfold"
+      )
+    )
+    expect_identical(atlas_surface(a), "hippunfold")
+  })
+
+  it("reads an unrecorded cerebellar surface back as suit", {
+    # Every cerebellar atlas distributed before the field existed indexes
+    # into SUIT, so absence means SUIT rather than unknown.
+    expect_identical(atlas_surface(suit()), "suit")
+  })
+
+  it("is NULL for a type with no reference surface", {
+    expect_null(atlas_surface(aseg()))
+    expect_null(atlas_surface(tracula()))
+  })
+
+  it("errors for non-ggseg_atlas input", {
+    expect_error(atlas_surface(data.frame()), "must be a.*ggseg_atlas")
+  })
+})

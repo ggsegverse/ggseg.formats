@@ -142,8 +142,10 @@ ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
 #' Create cerebellar atlas data
 #'
 #' Creates a data object for cerebellar brain atlases. Cerebellar atlases
-#' use sf polygons from a SUIT flatmap for 2D rendering and vertex indices
-#' into the shared SUIT cerebellar surface mesh for 3D rendering.
+#' use polygons from a flatmap for 2D rendering and vertex indices into a
+#' shared cerebellar surface mesh for 3D rendering. `surface` records which
+#' surface those indices address; it is the SUIT surface for every atlas
+#' distributed so far.
 #'
 #' The shared mesh (see [get_cerebellar_mesh()]) includes a cap over the
 #' peduncular surface where the cerebellum meets the brainstem. Vertices
@@ -165,6 +167,11 @@ ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
 #'   of mesh objects with vertices and faces). For deep cerebellar structures
 #'   that are not on the cortical surface. Same format as
 #'   [ggseg_data_subcortical()] meshes.
+#' @param surface Name of the reference surface the `vertices` index into,
+#'   length one, or `NULL`. Records which surface the indices address so a
+#'   renderer can resolve the right mesh instead of assuming one. `NULL` means
+#'   unrecorded and is read back as `"suit"` by [atlas_surface()], which is
+#'   what every cerebellar atlas built before this field used.
 #' @template geom_dots
 #'
 #' @return An object of class c("ggseg_data_cerebellar", "ggseg_atlas_data")
@@ -175,12 +182,14 @@ ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
 #'   vertices = data.frame(
 #'     label = c("lobule_I", "lobule_II"),
 #'     vertices = I(list(c(1L, 2L, 3L), c(4L, 5L, 6L)))
-#'   )
+#'   ),
+#'   surface = "suit"
 #' )
 ggseg_data_cerebellar <- function(
   geom = NULL,
   vertices = NULL,
   meshes = NULL,
+  surface = NULL,
   ...
 ) {
   geom <- resolve_geom(geom, ..., .fn = "ggseg_data_cerebellar")
@@ -204,10 +213,38 @@ ggseg_data_cerebellar <- function(
     list(
       geom = geom,
       vertices = vertices,
-      meshes = meshes
+      meshes = meshes,
+      surface = validate_surface(surface)
     ),
     class = c("ggseg_data_cerebellar", "ggseg_atlas_data")
   )
+}
+
+
+#' Check that a recorded reference surface is a single name
+#'
+#' The vocabulary is deliberately not constrained to the surfaces this
+#' ecosystem happens to ship. A third-party atlas may index into a surface
+#' distributed with it, and rejecting the name here would make such an atlas
+#' unconstructable; a renderer that cannot resolve the name reports that
+#' itself, where the resolution is actually attempted.
+#' @noRd
+validate_surface <- function(surface) {
+  if (is.null(surface)) {
+    return(NULL)
+  }
+
+  if (!is.character(surface) || length(surface) != 1L || is.na(surface)) {
+    cli::cli_abort(
+      "{.arg surface} must be a single non-missing string, or {.code NULL}."
+    )
+  }
+
+  if (!nzchar(trimws(surface))) {
+    cli::cli_abort("{.arg surface} must not be empty.")
+  }
+
+  surface
 }
 
 
@@ -326,8 +363,16 @@ print.ggseg_data_cerebellar <- function(x, n = 10, ...) {
   }
 
   if (!is.null(x$vertices)) {
-    cli::cli_text("{.strong 3D (ggseg3d):} vertex indices (SUIT surface)")
+    surface <- x$surface %||% "suit" # nolint: object_usage_linter
+    cli::cli_text(
+      "{.strong 3D (ggseg3d):} vertex indices into the {.val {surface}} surface"
+    )
     print_data_head(x$vertices, n)
+  }
+
+  if (!is.null(x$meshes)) {
+    cli::cli_text("{.strong 3D (ggseg3d):} meshes")
+    print_mesh_summary(x$meshes, n)
   }
 
   invisible(x)

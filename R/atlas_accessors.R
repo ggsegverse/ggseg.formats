@@ -388,3 +388,45 @@ data_poly <- function(data) {
   geom <- geom_from_data(data)
   if (inherits(geom, "brain_polygons")) geom else NULL
 }
+
+
+#' The reference surface a type assumed before it recorded one
+#'
+#' Cerebellar atlases predate the `surface` field and every one of them
+#' indexes into the SUIT surface, so an unrecorded surface on a cerebellar
+#' atlas is SUIT rather than unknown. A type that has always recorded its
+#' surface, or has no surface to record, has no default.
+#' @noRd
+default_surface <- function(type) {
+  switch(type, cerebellar = "suit", NULL)
+}
+
+
+#' Get the reference surface an atlas indexes into
+#'
+#' Returns the name of the surface the atlas's vertex indices address. Only
+#' atlases that store vertex indices into a shared surface have one; an atlas
+#' built from per-structure meshes or centerlines returns `NULL`.
+#'
+#' A cerebellar atlas built before the surface was recorded reports `"suit"`,
+#' which is the surface every such atlas was built against. Use this accessor
+#' rather than assuming a surface from [atlas_type()]: the type names the
+#' anatomy, not the mesh, and two atlases of one type may unfold different
+#' surfaces.
+#'
+#' @param atlas a `ggseg_atlas` object
+#' @param ... Additional arguments (unused)
+#'
+#' @return Character vector of length one naming the surface, or `NULL` when
+#'   the atlas records none and its type has no default.
+#' @family atlas accessors
+#' @export
+#' @examples
+#' atlas_surface(suit())
+#' atlas_surface(aseg())
+atlas_surface <- function(atlas, ...) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  atlas$data$surface %||% default_surface(atlas_type(atlas))
+}

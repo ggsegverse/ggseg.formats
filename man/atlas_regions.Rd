@@ -39,6 +39,7 @@ Other atlas accessors:
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
 \code{\link[=atlas_sf]{atlas_sf()}},
+\code{\link[=atlas_surface]{atlas_surface()}},
 \code{\link[=atlas_type]{atlas_type()}},
 \code{\link[=atlas_undrawn]{atlas_undrawn()}},
 \code{\link[=atlas_vertices]{atlas_vertices()}},

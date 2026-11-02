@@ -128,3 +128,26 @@ describe("mesh face index bases", {
     expect_identical(get_brain_mesh("lh", brain_meshes = custom), custom$lh)
   })
 })
+
+
+describe("get_cerebellar_mesh(surface)", {
+  it("returns the SUIT mesh by default", {
+    expect_identical(get_cerebellar_mesh(), get_cerebellar_mesh("suit"))
+  })
+
+  it("accepts the surface an atlas records", {
+    mesh <- get_cerebellar_mesh(atlas_surface(suit()))
+    expect_named(mesh, c("vertices", "faces"))
+  })
+
+  it("refuses a surface it does not bundle rather than substituting one", {
+    # Drawing an atlas on the wrong surface puts every region in the wrong
+    # place while still producing a plot, so this must fail loudly.
+    expect_error(get_cerebellar_mesh("hippunfold"), "not available")
+  })
+
+  it("rejects a surface that is not a single string", {
+    expect_error(get_cerebellar_mesh(c("suit", "suit")), "single")
+    expect_error(get_cerebellar_mesh(NA_character_), "single")
+  })
+})
