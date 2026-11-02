@@ -364,44 +364,6 @@ atlas_provenance <- function(atlas) {
 }
 
 
-#' @keywords internal
-#' @noRd
-geom_from_data <- function(data) {
-  if (!is.null(data$geom)) {
-    return(data$geom)
-  }
-  data$sf
-}
-
-#' The sf-class geometry of an atlas data object, or NULL if it is polygon-only
-#' @keywords internal
-#' @noRd
-data_sf <- function(data) {
-  geom <- geom_from_data(data)
-  if (inherits(geom, "sf")) geom else NULL
-}
-
-#' The brain_polygons geometry of an atlas data object, or NULL if it is sf
-#' @keywords internal
-#' @noRd
-data_poly <- function(data) {
-  geom <- geom_from_data(data)
-  if (inherits(geom, "brain_polygons")) geom else NULL
-}
-
-
-#' The reference surface a type assumed before it recorded one
-#'
-#' Cerebellar atlases predate the `surface` field and every one of them
-#' indexes into the SUIT surface, so an unrecorded surface on a cerebellar
-#' atlas is SUIT rather than unknown. A type that has always recorded its
-#' surface, or has no surface to record, has no default.
-#' @noRd
-default_surface <- function(type) {
-  switch(type, cerebellar = "suit", NULL)
-}
-
-
 #' Get the reference surface an atlas indexes into
 #'
 #' Returns the name of the surface the atlas's vertex indices address. Only
@@ -429,4 +391,40 @@ atlas_surface <- function(atlas, ...) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
   atlas$data$surface %||% default_surface(atlas_type(atlas))
+}
+
+
+#' @keywords internal
+#' @noRd
+geom_from_data <- function(data) {
+  if (!is.null(data$geom)) {
+    return(data$geom)
+  }
+  data$sf
+}
+
+#' The sf-class geometry of an atlas data object, or NULL if it is polygon-only
+#' @keywords internal
+#' @noRd
+data_sf <- function(data) {
+  geom <- geom_from_data(data)
+  if (inherits(geom, "sf")) geom else NULL
+}
+
+#' The brain_polygons geometry of an atlas data object, or NULL if it is sf
+#' @keywords internal
+#' @noRd
+data_poly <- function(data) {
+  geom <- geom_from_data(data)
+  if (inherits(geom, "brain_polygons")) geom else NULL
+}
+#' The reference surface a type assumed before it recorded one
+#'
+#' Cerebellar atlases predate the `surface` field and every one of them
+#' indexes into the SUIT surface, so an unrecorded surface on a cerebellar
+#' atlas is SUIT rather than unknown. A type that has always recorded its
+#' surface, or has no surface to record, has no default.
+#' @noRd
+default_surface <- function(type) {
+  switch(type, cerebellar = "suit", NULL)
 }

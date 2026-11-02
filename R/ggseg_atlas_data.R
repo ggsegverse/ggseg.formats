@@ -221,33 +221,6 @@ ggseg_data_cerebellar <- function(
 }
 
 
-#' Check that a recorded reference surface is a single name
-#'
-#' The vocabulary is deliberately not constrained to the surfaces this
-#' ecosystem happens to ship. A third-party atlas may index into a surface
-#' distributed with it, and rejecting the name here would make such an atlas
-#' unconstructable; a renderer that cannot resolve the name reports that
-#' itself, where the resolution is actually attempted.
-#' @noRd
-validate_surface <- function(surface) {
-  if (is.null(surface)) {
-    return(NULL)
-  }
-
-  if (!is.character(surface) || length(surface) != 1L || is.na(surface)) {
-    cli::cli_abort(
-      "{.arg surface} must be a single non-missing string, or {.code NULL}."
-    )
-  }
-
-  if (!nzchar(trimws(surface))) {
-    cli::cli_abort("{.arg surface} must not be empty.")
-  }
-
-  surface
-}
-
-
 #' Create tract atlas data
 #'
 #' Creates a data object for white matter tract atlases. Stores centerlines
@@ -598,4 +571,31 @@ print_mesh_summary <- function(meshes, n = 10) {
     )
   )
   print_data_head(summary_df, n)
+}
+
+
+#' Check that a recorded reference surface is a single name
+#'
+#' The vocabulary is deliberately not constrained to the surfaces this
+#' ecosystem happens to ship. A third-party atlas may index into a surface
+#' distributed with it, and rejecting the name here would make such an atlas
+#' unconstructable; a renderer that cannot resolve the name reports that
+#' itself, where the resolution is actually attempted.
+#' @noRd
+validate_surface <- function(surface) {
+  if (is.null(surface)) {
+    return(NULL)
+  }
+
+  if (!is.character(surface) || length(surface) != 1L || is.na(surface)) {
+    cli::cli_abort(
+      "{.arg surface} must be a single non-missing string, or {.code NULL}."
+    )
+  }
+
+  if (!nzchar(trimws(surface))) {
+    cli::cli_abort("{.arg surface} must not be empty.")
+  }
+
+  surface
 }
