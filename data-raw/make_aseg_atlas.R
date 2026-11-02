@@ -39,19 +39,43 @@ if (!file.exists(color_lut)) {
   color_lut <- file.path(fs_dir, "FreeSurferColorLUT.txt")
 }
 
-# Create atlas using ggseg.extra with projection-based views
-# Default uses 6 views focused on subcortical range:
-#   - axial_inferior, axial_superior
-#   - coronal_posterior, coronal_anterior
-#   - sagittal_left, sagittal_right
+# FreeSurfer ships no `context` column, so nothing in a stock lookup table is
+# backdrop and the atlas would arrive with no silhouette to draw its structures
+# against. The two cerebral cortex labels are traced as one `cortex` ribbon;
+# cerebellum cortex stays a region, and white matter is deliberately left out
+# -- drawn as context it fills the sulci and turns the ribbon into a blob.
+aseg_lut <- read_lut(color_lut)
+aseg_lut$context <- ifelse(
+  grepl("Cerebral-Cortex$", aseg_lut$label),
+  "cortex",
+  NA_character_
+)
+
+# Display names and hemispheres ride in on the lookup table so the pipeline
+# derives `region` from them, rather than core being rewritten afterwards.
+# The column must be `display`: that is the one the pipeline reads, and a
+# lookup table carrying the curated names under any other name is silently
+# ignored in favour of the source's own label.
+meta_row <- match(aseg_lut$label, aseg_metadata$label)
+aseg_lut$display <- aseg_metadata$display[meta_row]
+aseg_lut$hemi <- aseg_metadata$hemi[meta_row]
+
+# Labels dropped after the build, listed once.
+drop_patterns <- c(
+  "White-Matter",
+  "WM-hypointensities",
+  "-Ventricle",
+  "-Vent$",
+  "CSF"
+)
+
+# Create atlas using ggseg.extra with projection-based views: three coronal,
+# three axial and one sagittal slab over the subcortical range.
 aseg_raw <- create_subcortical_from_volume(
   input_volume = aseg_volume,
-  input_lut = color_lut,
+  input_lut = aseg_lut,
   atlas_name = "aseg",
   output_dir = "data-raw/",
-  tolerance = 1,
-  smoothness = 2,
-  steps = 3:9,
   skip_existing = FALSE,
   cleanup = FALSE
 )
@@ -59,63 +83,66 @@ aseg_raw <- create_subcortical_from_volume(
 cli::cli_h2("Post-processing atlas")
 
 cli::cli_alert_info("Remove unwanted regions")
-aseg_raw_simple <- aseg_raw |>
-  atlas_region_remove("White-Matter", match_on = "label") |>
-  atlas_region_remove("WM-hypointensities", match_on = "label") |>
-  atlas_region_remove("-Ventricle", match_on = "label") |>
-  atlas_region_remove("-Vent$", match_on = "label") |>
-  atlas_region_remove("CSF", match_on = "label") |>
-  atlas_region_remove("Cerebral-Cortex", match_on = "label") |>
-  atlas_view_remove_region("cerebellum", "label", "coronal")
+aseg_raw_simple <- Reduce(
+  function(atlas, pattern) {
+    atlas_region_remove(atlas, pattern, match_on = "label")
+  },
+  drop_patterns,
+  init = aseg_raw
+) |>
+  atlas_view_remove_region(
+    pattern = "cerebellum",
+    match_on = "label",
+    views = "coronal"
+  )
 
-cli::cli_alert_info("Selecting views")
-aseg_raw_simple <- aseg_raw_simple |>
-  atlas_view_keep(
-    "coronal_1|coronal_2|sagittal|axial_3|axial_4|axial_5|axial_6"
-  ) |>
-  atlas_view_gather()
+# Tiling the label bounding box puts slabs where the structures are not: the
+# most superior axial and the most anterior coronal come back carrying a
+# handful of regions against a full backdrop. Drop them by counting what each
+# view actually holds, rather than by naming the views, because a name that
+# stops existing is a silent no-op.
+counts <- atlas_view_region_counts(aseg_raw_simple)
+cli::cli_alert_info(
+  "Views by region count: {paste0(names(counts), '=', as.integer(counts))}"
+)
 
-# Smooth the voxel-stepped 2D contours. `create_subcortical_from_volume()`'s
-# `smoothness` is a morphological-close buffer distance, so the value passed
-# to the builder is too small to round off the voxel staircase on its own;
-# tidy the polygons here (matching the pattern in the ggsegFreeSurfer build
-# scripts). Both the structures and the `cortex`/`cortex_` silhouette get a
-# light close: a heavier close inflates the cortex outline into a blob and
-# hides the ventricle gaps, so keep it modest and simplify the outline lightly.
+aseg_raw_simple <- atlas_view_remove_sparse(aseg_raw_simple)
+
+cli::cli_alert_info("Gathering views")
+aseg_raw_simple <- atlas_view_gather(aseg_raw_simple)
+
+# Smooth the voxel-stepped 2D contours. Geometry shaping is not part of atlas
+# creation, so the polygons arrive stepped and are tidied here.
+#
+# `smoothness` counts voxels, and the close is what welds the traced ribbon
+# into a mantle, so the value decides whether there is a cortex left: at 1 the
+# gyri fuse and the silhouette inflates into a blob, while 0.4 keeps the
+# sulcal notches and the interhemispheric fissure open. Raise it and the
+# ribbon goes.
 cli::cli_alert_info("Smoothing contours")
 aseg_raw_smooth <- aseg_raw_simple |>
-  atlas_smooth(keep = NULL, smoothness = 3, exclude = "^cortex") |>
-  atlas_smooth(keep = 0.3, smoothness = 2, labels = "^cortex")
+  atlas_smooth(smoothness = 0.6, exclude = "^cortex") |>
+  atlas_polish(keep = 0.3, smoothness = 0.4, labels = "^cortex")
 
 
 cli::cli_h2("Merging metadata")
 
-core_with_meta <- aseg_raw_smooth$core |>
-  rename(region_raw = region) |>
-  left_join(
-    select(aseg_metadata, label, region, names, structure),
-    by = "label"
-  ) |>
-  mutate(region = coalesce(region, region_raw)) |>
-  select(hemi, region, label, names, structure)
+# `structure` is the one column the lookup table cannot carry, so it is the
+# only thing joined onto the finished core.
+aseg <- atlas_core_add(
+  aseg_raw_smooth,
+  select(aseg_metadata, label, structure),
+  by = "label"
+)
 
-n_with_structure <- sum(!is.na(core_with_meta$structure))
-n_total <- nrow(core_with_meta)
+has_structure <- aseg_metadata$label[!is.na(aseg_metadata$structure)]
+n_with_structure <- sum(atlas_labels(aseg) %in% has_structure)
+n_total <- length(atlas_labels(aseg))
 cli::cli_alert_info(
   "Regions with structure info: {n_with_structure}/{n_total}"
 )
 
-# Rebuild atlas with enriched core
-aseg <- ggseg_atlas(
-  atlas = aseg_raw_smooth$atlas,
-  type = aseg_raw_smooth$type,
-  palette = aseg_raw_smooth$palette,
-  core = core_with_meta,
-  data = aseg_raw_smooth$data
-)
-
-
-cli::cli_alert_success("ASEG atlas created with {nrow(aseg$core)} regions")
+cli::cli_alert_success("ASEG atlas created with {n_total} regions")
 print(aseg)
 
 # Preview

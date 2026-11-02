@@ -1,5 +1,20 @@
 # ggseg.formats
 
+## Breaking changes
+
+- The bundled `aseg()` atlas is rebuilt. Its 29 labels and 18 regions are
+  unchanged, but its views are renumbered and fewer: `axial_3`, `axial_4`,
+  `axial_5`, `axial_6`, `coronal_1` and `sagittal` are gone, replaced by
+  `axial_1`, `axial_2`, `coronal_3` and `sagittal_left`. Code naming an aseg
+  view must be updated; code that does not name views is unaffected.
+- `aseg()` now reports `midline` as well as `left` and `right`. Structures on
+  the midline, such as the brain stem, were previously forced to a side.
+- The rebuild preserves the sulci: the cortex backdrop keeps 67 enclosed
+  rings where it kept 25, because `ggseg.extra` no longer smooths with a
+  morphological close by default, which filled every hole narrower than the
+  smoothing distance, and no longer closes gaps across a label the build
+  excluded from smoothing.
+
 ## New features
 
 - `"wm"` is a fifth atlas type, for white-matter atlases built from a label
