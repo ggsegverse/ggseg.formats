@@ -54,7 +54,7 @@ using ggseg (2D) and ggseg3d (3D).</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ggseg_atlas</span><span class="op">(</span><span class="va">atlas</span>, <span class="va">type</span>, <span class="va">core</span>, <span class="va">data</span>, palette <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ggseg_atlas</span><span class="op">(</span><span class="va">atlas</span>, <span class="va">type</span>, <span class="va">core</span>, <span class="va">data</span>, palette <span class="op">=</span> <span class="cn">NULL</span>, provenance <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">brain_atlas</span><span class="op">(</span><span class="va">atlas</span>, <span class="va">type</span>, <span class="va">core</span>, <span class="va">data</span>, palette <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -87,6 +87,12 @@ Must match the specified type.</p></dd>
 
 <dt id="arg-palette">palette<a class="anchor" aria-label="anchor" href="#arg-palette"></a></dt>
 <dd><p>named character vector of colours keyed by label</p></dd>
+
+
+<dt id="arg-provenance">provenance<a class="anchor" aria-label="anchor" href="#arg-provenance"></a></dt>
+<dd><p>optional named list recording how the atlas was built.
+Must carry <code>pipeline</code> and <code>created</code> when supplied; see
+<code><a href="set_atlas_provenance.html">set_atlas_provenance()</a></code>. <code>NULL</code> for an atlas whose build is unrecorded.</p></dd>
 
 </dl></div>
     <div class="section level2">

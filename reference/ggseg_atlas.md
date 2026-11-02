@@ -6,7 +6,7 @@ parcellations using ggseg (2D) and ggseg3d (3D).
 ## Usage
 
 ``` r
-ggseg_atlas(atlas, type, core, data, palette = NULL)
+ggseg_atlas(atlas, type, core, data, palette = NULL, provenance = NULL)
 
 brain_atlas(atlas, type, core, data, palette = NULL)
 ```
@@ -41,6 +41,13 @@ brain_atlas(atlas, type, core, data, palette = NULL)
 - palette:
 
   named character vector of colours keyed by label
+
+- provenance:
+
+  optional named list recording how the atlas was built. Must carry
+  `pipeline` and `created` when supplied; see
+  [`set_atlas_provenance()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_provenance.md).
+  `NULL` for an atlas whose build is unrecorded.
 
 ## Value
 

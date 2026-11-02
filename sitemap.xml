@@ -28,6 +28,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_plot_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_provenance.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_region_semantics.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.html</loc></url>
@@ -64,6 +65,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/reorder_sfc.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/selectors.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_palette.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_provenance.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/sf_to_polygons.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/suit.html</loc></url>

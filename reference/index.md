@@ -157,6 +157,9 @@ Query atlas contents without reaching into slots directly.
 - [`atlas_polygons()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.md)
   : Get atlas polygons for 2D rendering
 
+- [`atlas_provenance()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_provenance.md)
+  : How an atlas was built
+
 - [`atlas_region_semantics()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_region_semantics.md)
   :
 
@@ -197,6 +200,8 @@ Replace atlas properties, returning a modified `ggseg_atlas`.
 
 - [`set_atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_palette.md)
   : Set the palette of an atlas
+- [`set_atlas_provenance()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_provenance.md)
+  : Record how an atlas was built
 - [`set_atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.md)
   : Set the type of an atlas
 
