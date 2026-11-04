@@ -106,7 +106,20 @@ cli::cli_alert_info(
   "Views by region count: {paste0(names(counts), '=', as.integer(counts))}"
 )
 
-aseg_raw_simple <- atlas_view_remove_sparse(aseg_raw_simple)
+# A view earns a panel by showing at least half the structures. Below that it
+# repeats what the denser views already show: of the two this drops, one is
+# the best view of no structure at all, and the other only of the right
+# cerebellar cortex, which the kept axial still shows at 61% of that size.
+# Expressed as a share rather than a count so it cannot silently stop
+# discriminating when the atlas gains or loses regions.
+drawn_labels <- setdiff(
+  atlas_labels(aseg_raw_simple),
+  atlas_context(aseg_raw_simple)
+)
+aseg_raw_simple <- atlas_view_remove_sparse(
+  aseg_raw_simple,
+  min_regions = ceiling(length(drawn_labels) / 2)
+)
 
 cli::cli_alert_info("Gathering views")
 aseg_raw_simple <- atlas_view_gather(aseg_raw_simple)

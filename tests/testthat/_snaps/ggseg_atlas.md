@@ -150,7 +150,7 @@
       Type: subcortical
       Regions: 18
       Hemispheres: left, midline, right
-      Views: axial_1, axial_2, coronal_2, coronal_3, sagittal_left
+      Views: axial_2, coronal_2, sagittal_left
       Palette: v
       Rendering: v ggseg
       v ggseg3d (meshes)
