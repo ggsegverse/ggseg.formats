@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9014</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9015</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -194,19 +194,20 @@ region text instead:</p>
 <p><code><a href="../reference/atlas_views.html">atlas_views()</a></code> tells you what 2D views an atlas has:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "axial_3"   "axial_4"   "axial_5"   "axial_6"   "coronal_1" "coronal_2"</span></span>
-<span><span class="co">#&gt; [7] "sagittal"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "axial_2"       "coronal_2"     "sagittal_left"</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_view_keep()</a></code> and <code><a href="../reference/atlas_manipulation.html">atlas_view_remove()</a></code>
 filter views by pattern. If you only want the sagittal slice:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"sagittal"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="va">sag</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "sagittal"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "sagittal_left"</span></span></code></pre></div>
 <p>Or remove several views at once by passing a vector:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fewer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"axial_3"</span>, <span class="st">"coronal_2"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `views` matched no view in this atlas: <span style="color: #0000BB;">"axial_3"</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Available views: <span style="color: #0000BB;">"axial_2"</span>, <span style="color: #0000BB;">"coronal_2"</span>, and <span style="color: #0000BB;">"sagittal_left"</span>.</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="va">fewer</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "axial_4"   "axial_5"   "axial_6"   "coronal_1" "sagittal"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "axial_2"       "sagittal_left"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="cleaning-up-geometry">Cleaning up geometry<a class="anchor" aria-label="anchor" href="#cleaning-up-geometry"></a>
@@ -218,7 +219,7 @@ minimum area threshold. Context polygons (those not in core) are never
 removed:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, min_area <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 14 geometries below area 50</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 9 geometries below area 50</span></span></code></pre></div>
 <p>You can scope the removal to specific views:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cleaned_sag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span></span>
@@ -226,7 +227,7 @@ removed:</p>
 <span>  min_area <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  views <span class="op">=</span> <span class="st">"sagittal"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 4 geometries below area 50</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 3 geometries below area 50</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_view_remove_region()</a></code> removes a specific region’s
 2D geometry without touching core, palette, or 3D data. This is useful
 when a region’s 2D projection is misleading but you still want it in
@@ -249,8 +250,10 @@ configurable gap:</p>
 <code class="sourceCode R"><span><span class="va">trimmed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sagittal"</span>, <span class="st">"coronal_2"</span>, <span class="st">"axial_3"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_gather</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `views` matched no view in this atlas: <span style="color: #0000BB;">"axial_3"</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Available views: <span style="color: #0000BB;">"axial_2"</span>, <span style="color: #0000BB;">"coronal_2"</span>, and <span style="color: #0000BB;">"sagittal_left"</span>.</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="va">trimmed</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "axial_3"   "coronal_2" "sagittal"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "coronal_2"     "sagittal_left"</span></span></code></pre></div>
 <p><code><a href="../reference/atlas_manipulation.html">atlas_view_reorder()</a></code> lets you choose the left-to-right
 order and repositions at the same time. Views not mentioned in
 <code>order</code> are appended at the end:</p>
@@ -258,8 +261,12 @@ order and repositions at the same time. Views not mentioned in
 <code class="sourceCode R"><span><span class="va">reordered</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sagittal"</span>, <span class="st">"coronal_2"</span>, <span class="st">"axial_3"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_reorder</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"axial_3"</span>, <span class="st">"sagittal"</span>, <span class="st">"coronal_2"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning: `views` matched no view in this atlas: <span style="color: #0000BB;">"axial_3"</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Available views: <span style="color: #0000BB;">"axial_2"</span>, <span style="color: #0000BB;">"coronal_2"</span>, and <span style="color: #0000BB;">"sagittal_left"</span>.</span></span>
+<span><span class="co">#&gt; Warning: `order` names no view in this atlas: <span style="color: #0000BB;">"axial_3"</span> and <span style="color: #0000BB;">"sagittal"</span>.</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Available views: <span style="color: #0000BB;">"coronal_2"</span> and <span style="color: #0000BB;">"sagittal_left"</span>.</span></span>
 <span><span class="fu"><a href="../reference/atlas_views.html">atlas_views</a></span><span class="op">(</span><span class="va">reordered</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "axial_3"   "coronal_2" "sagittal"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "coronal_2"     "sagittal_left"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="adding-metadata">Adding metadata<a class="anchor" aria-label="anchor" href="#adding-metadata"></a>
@@ -303,30 +310,30 @@ atlas for a compact two-view figure of deep grey matter structures:</p>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_region_contextual</a></span><span class="op">(</span><span class="st">"ventricle|choroid|white|cc"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span>min_area <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/atlas_manipulation.html">atlas_view_gather</a></span><span class="op">(</span>gap <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 3 geometries below area 30</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 4 geometries below area 30</span></span>
 <span></span>
 <span><span class="va">publication_aseg</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">aseg ggseg atlas</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Type: subcortical</span></span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Regions:</span> 11</span></span>
-<span><span class="co">#&gt; <span style="font-weight: bold;">Hemispheres:</span> left, NA, right</span></span>
-<span><span class="co">#&gt; <span style="font-weight: bold;">Views:</span> coronal_2, sagittal</span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Hemispheres:</span> left, midline, right</span></span>
+<span><span class="co">#&gt; <span style="font-weight: bold;">Views:</span> coronal_2, sagittal_left</span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Palette:</span> <span style="color: #00BB00;">✔</span></span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Rendering:</span> <span style="color: #00BB00;">✔</span> ggseg</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> ggseg3d (meshes)</span></span>
 <span><span class="co">#&gt; ────────────────────────────────────────────────────────────────────────────────</span></span>
-<span><span class="co">#&gt;    hemi            region                  label              display</span></span>
-<span><span class="co">#&gt; 1  left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex</span></span>
-<span><span class="co">#&gt; 2  left          thalamus          Left-Thalamus             thalamus</span></span>
-<span><span class="co">#&gt; 3  left           caudate           Left-Caudate              caudate</span></span>
-<span><span class="co">#&gt; 4  left           putamen           Left-Putamen              putamen</span></span>
-<span><span class="co">#&gt; 5  left          pallidum          Left-Pallidum             pallidum</span></span>
-<span><span class="co">#&gt; 6  &lt;NA&gt;        brain stem             Brain-Stem           brain stem</span></span>
-<span><span class="co">#&gt; 7  left       hippocampus       Left-Hippocampus          hippocampus</span></span>
-<span><span class="co">#&gt; 8  left          amygdala          Left-Amygdala             amygdala</span></span>
-<span><span class="co">#&gt; 9  left         ventraldc         Left-VentralDC ventral diencephalon</span></span>
-<span><span class="co">#&gt; 10 left            vessel            Left-vessel               vessel</span></span>
+<span><span class="co">#&gt;       hemi            region                  label              display</span></span>
+<span><span class="co">#&gt; 1     left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex</span></span>
+<span><span class="co">#&gt; 2     left          thalamus          Left-Thalamus             thalamus</span></span>
+<span><span class="co">#&gt; 3     left           caudate           Left-Caudate              caudate</span></span>
+<span><span class="co">#&gt; 4     left           putamen           Left-Putamen              putamen</span></span>
+<span><span class="co">#&gt; 5     left          pallidum          Left-Pallidum             pallidum</span></span>
+<span><span class="co">#&gt; 6  midline        brain stem             Brain-Stem           brain stem</span></span>
+<span><span class="co">#&gt; 7     left       hippocampus       Left-Hippocampus          hippocampus</span></span>
+<span><span class="co">#&gt; 8     left          amygdala          Left-Amygdala             amygdala</span></span>
+<span><span class="co">#&gt; 9     left         ventraldc         Left-VentralDC ventral diencephalon</span></span>
+<span><span class="co">#&gt; 10    left            vessel            Left-vessel               vessel</span></span>
 <span><span class="co">#&gt;        structure</span></span>
 <span><span class="co">#&gt; 1     cerebellum</span></span>
 <span><span class="co">#&gt; 2  basal ganglia</span></span>

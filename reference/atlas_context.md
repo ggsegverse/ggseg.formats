@@ -32,5 +32,5 @@ pipeline bug left the backdrop undrawn.
 
 ``` r
 atlas_context(aseg())
-#> [1] "cortex"  "cortex_"
+#> [1] "cortex"
 ```

@@ -146,8 +146,7 @@ tells you what 2D views an atlas has:
 ``` r
 
 atlas_views(aseg())
-#> [1] "axial_3"   "axial_4"   "axial_5"   "axial_6"   "coronal_1" "coronal_2"
-#> [7] "sagittal"
+#> [1] "axial_2"       "coronal_2"     "sagittal_left"
 ```
 
 [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
@@ -159,7 +158,7 @@ filter views by pattern. If you only want the sagittal slice:
 
 sag <- atlas_view_keep(aseg(), "sagittal")
 atlas_views(sag)
-#> [1] "sagittal"
+#> [1] "sagittal_left"
 ```
 
 Or remove several views at once by passing a vector:
@@ -167,8 +166,10 @@ Or remove several views at once by passing a vector:
 ``` r
 
 fewer <- atlas_view_remove(aseg(), c("axial_3", "coronal_2"))
+#> Warning: `views` matched no view in this atlas: "axial_3".
+#> ℹ Available views: "axial_2", "coronal_2", and "sagittal_left".
 atlas_views(fewer)
-#> [1] "axial_4"   "axial_5"   "axial_6"   "coronal_1" "sagittal"
+#> [1] "axial_2"       "sagittal_left"
 ```
 
 ## Cleaning up geometry
@@ -182,7 +183,7 @@ removes region polygons below a minimum area threshold. Context polygons
 ``` r
 
 cleaned <- atlas_view_remove_small(aseg(), min_area = 50)
-#> ℹ Removed 14 geometries below area 50
+#> ℹ Removed 9 geometries below area 50
 ```
 
 You can scope the removal to specific views:
@@ -194,7 +195,7 @@ cleaned_sag <- atlas_view_remove_small(
   min_area = 50,
   views = "sagittal"
 )
-#> ℹ Removed 4 geometries below area 50
+#> ℹ Removed 3 geometries below area 50
 ```
 
 [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
@@ -223,8 +224,10 @@ repositions views side-by-side with a configurable gap:
 trimmed <- aseg() |>
   atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
   atlas_view_gather()
+#> Warning: `views` matched no view in this atlas: "axial_3".
+#> ℹ Available views: "axial_2", "coronal_2", and "sagittal_left".
 atlas_views(trimmed)
-#> [1] "axial_3"   "coronal_2" "sagittal"
+#> [1] "coronal_2"     "sagittal_left"
 ```
 
 [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
@@ -236,8 +239,12 @@ time. Views not mentioned in `order` are appended at the end:
 reordered <- aseg() |>
   atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
   atlas_view_reorder(c("axial_3", "sagittal", "coronal_2"))
+#> Warning: `views` matched no view in this atlas: "axial_3".
+#> ℹ Available views: "axial_2", "coronal_2", and "sagittal_left".
+#> Warning: `order` names no view in this atlas: "axial_3" and "sagittal".
+#> ℹ Available views: "coronal_2" and "sagittal_left".
 atlas_views(reordered)
-#> [1] "axial_3"   "coronal_2" "sagittal"
+#> [1] "coronal_2"     "sagittal_left"
 ```
 
 ## Adding metadata
@@ -287,30 +294,30 @@ publication_aseg <- aseg() |>
   atlas_region_contextual("ventricle|choroid|white|cc") |>
   atlas_view_remove_small(min_area = 30) |>
   atlas_view_gather(gap = 0.1)
-#> ℹ Removed 3 geometries below area 30
+#> ℹ Removed 4 geometries below area 30
 
 publication_aseg
 #> 
 #> ── aseg ggseg atlas ────────────────────────────────────────────────────────────
 #> Type: subcortical
 #> Regions: 11
-#> Hemispheres: left, NA, right
-#> Views: coronal_2, sagittal
+#> Hemispheres: left, midline, right
+#> Views: coronal_2, sagittal_left
 #> Palette: ✔
 #> Rendering: ✔ ggseg
 #> ✔ ggseg3d (meshes)
 #> ────────────────────────────────────────────────────────────────────────────────
-#>    hemi            region                  label              display
-#> 1  left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
-#> 2  left          thalamus          Left-Thalamus             thalamus
-#> 3  left           caudate           Left-Caudate              caudate
-#> 4  left           putamen           Left-Putamen              putamen
-#> 5  left          pallidum          Left-Pallidum             pallidum
-#> 6  <NA>        brain stem             Brain-Stem           brain stem
-#> 7  left       hippocampus       Left-Hippocampus          hippocampus
-#> 8  left          amygdala          Left-Amygdala             amygdala
-#> 9  left         ventraldc         Left-VentralDC ventral diencephalon
-#> 10 left            vessel            Left-vessel               vessel
+#>       hemi            region                  label              display
+#> 1     left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
+#> 2     left          thalamus          Left-Thalamus             thalamus
+#> 3     left           caudate           Left-Caudate              caudate
+#> 4     left           putamen           Left-Putamen              putamen
+#> 5     left          pallidum          Left-Pallidum             pallidum
+#> 6  midline        brain stem             Brain-Stem           brain stem
+#> 7     left       hippocampus       Left-Hippocampus          hippocampus
+#> 8     left          amygdala          Left-Amygdala             amygdala
+#> 9     left         ventraldc         Left-VentralDC ventral diencephalon
+#> 10    left            vessel            Left-vessel               vessel
 #>        structure
 #> 1     cerebellum
 #> 2  basal ganglia
