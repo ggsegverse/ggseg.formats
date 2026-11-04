@@ -39,9 +39,17 @@ describe("atlas_undrawn()", {
   })
 
   it("names the regions left behind when views are narrowed", {
+    # The sparsest view, found rather than assumed: a view that happens to
+    # show every region leaves nothing behind, so picking one by position
+    # tests nothing the day the atlas is rebuilt with different slabs.
     atlas <- aseg()
-    views <- atlas_views(atlas)
-    one <- atlas_view_keep(atlas, views[1])
+    drawn <- atlas_geom(atlas)
+    per_view <- table(unlist(lapply(
+      drawn$geometry,
+      function(g) unique(g$view)
+    )))
+    sparsest <- names(per_view)[which.min(per_view)]
+    one <- atlas_view_keep(atlas, sparsest)
     undrawn <- atlas_undrawn(one)
     expect_gt(length(undrawn), 0)
     expect_true(all(undrawn %in% atlas$core$label))

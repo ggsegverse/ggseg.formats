@@ -2938,15 +2938,21 @@ describe("the view verbs on a view that does not exist", {
   })
 
   it("names an unmatched element of a vector request", {
+    # The view names are read off the atlas rather than written out: a
+    # hard-coded name that stops existing turns this from "the bad one is
+    # named" into "the name appears in the available-views list", which
+    # passes without testing anything.
+    real <- atlas_views(aseg())[[1]]
     expect_warning(
-      atlas_view_remove(aseg(), c("coronal_3", "axial_3")),
-      "coronal_3"
+      atlas_view_remove(aseg(), c(real, "no_such_view")),
+      "no_such_view"
     )
   })
 
   it("stays silent when every element matches", {
-    expect_no_warning(atlas_view_keep(aseg(), "coronal_2|axial_3"))
-    expect_no_warning(atlas_view_remove(aseg(), c("coronal_2", "axial_3")))
+    real <- atlas_views(aseg())[1:2]
+    expect_no_warning(atlas_view_keep(aseg(), paste(real, collapse = "|")))
+    expect_no_warning(atlas_view_remove(aseg(), real))
   })
 
   it("reports the atlas's actual views alongside the bad one", {

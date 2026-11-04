@@ -149,24 +149,24 @@
       -- aseg ggseg atlas ------------------------------------------------------------
       Type: subcortical
       Regions: 18
-      Hemispheres: left, NA, right
-      Views: axial_3, axial_4, axial_5, axial_6, coronal_1, coronal_2, sagittal
+      Hemispheres: left, midline, right
+      Views: axial_2, coronal_2, sagittal_left
       Palette: v
       Rendering: v ggseg
       v ggseg3d (meshes)
       --------------------------------------------------------------------------------
     Output
-         hemi            region                  label              display
-      1  left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
-      2  left          thalamus          Left-Thalamus             thalamus
-      3  left           caudate           Left-Caudate              caudate
-      4  left           putamen           Left-Putamen              putamen
-      5  left          pallidum          Left-Pallidum             pallidum
-      6  <NA>        brain stem             Brain-Stem           brain stem
-      7  left       hippocampus       Left-Hippocampus          hippocampus
-      8  left          amygdala          Left-Amygdala             amygdala
-      9  left    accumbens area    Left-Accumbens-area            accumbens
-      10 left         ventraldc         Left-VentralDC ventral diencephalon
+            hemi            region                  label              display
+      1     left cerebellum cortex Left-Cerebellum-Cortex    cerebellum cortex
+      2     left          thalamus          Left-Thalamus             thalamus
+      3     left           caudate           Left-Caudate              caudate
+      4     left           putamen           Left-Putamen              putamen
+      5     left          pallidum          Left-Pallidum             pallidum
+      6  midline        brain stem             Brain-Stem           brain stem
+      7     left       hippocampus       Left-Hippocampus          hippocampus
+      8     left          amygdala          Left-Amygdala             amygdala
+      9     left    accumbens area    Left-Accumbens-area            accumbens
+      10    left         ventraldc         Left-VentralDC ventral diencephalon
              structure
       1     cerebellum
       2  basal ganglia
