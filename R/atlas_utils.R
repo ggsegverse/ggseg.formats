@@ -196,35 +196,46 @@ atlas_type.brain_atlas <- function(x) {
 
 # Atlas manipulation functions ----
 
-#' Manipulate brain atlas regions and views
+#' Manipulate brain atlas regions, views and drawings
 #'
-#' Functions for modifying brain atlas objects. These cover three areas:
+#' Four groups of pipe-friendly verbs, each acting on a different thing. Which
+#' group a verb belongs to is the first thing to know about it, because two of
+#' the groups read alike and do not behave alike.
 #'
-#' **Region manipulation** modifies which regions are active in the atlas:
+#' - [region_manipulation]: which regions the atlas has.
+#' - [view_manipulation]: which views exist, and where they sit.
+#' - [drawing_manipulation]: which regions are drawn inside a view. These add
+#'   no views and remove nothing from `core`: the region stays, its depiction
+#'   in some view goes --- though a view left drawing nothing goes with it.
+#' - [atlas_core_add()]: metadata columns on `core`.
+#'
+#' All of them return a new `ggseg_atlas`.
+#'
+#' @seealso [region_manipulation], [view_manipulation],
+#'   [drawing_manipulation], [atlas_core_add()]
+#' @name atlas_manipulation
+#' @family atlas manipulations
+NULL
+
+
+#' Change which regions an atlas has
+#'
+#' Verbs that modify the regions `core` declares, and the geometry that does
+#' or does not belong to them:
+#'
 #' - `atlas_region_remove()`: completely remove regions
-#' - `atlas_region_contextual()`: keep geometry but remove from core/palette
-#' - `atlas_context_remove()`: drop all contextual sf geometry
-#' - `atlas_region_rename()`: rename regions in core
 #' - `atlas_region_keep()`: keep only matching regions
+#' - `atlas_region_rename()`: rename regions in core
+#' - `atlas_region_contextual()`: keep geometry but remove from core/palette
+#' - `atlas_context_remove()`: drop all contextual geometry
 #' - `atlas_region_op()`: combine two regions' geometry with a boolean op
 #'   (difference / intersection / union / symdifference)
 #'
-#' **View manipulation** modifies the 2D sf geometry data:
-#' - `atlas_view_remove()`: remove entire views
-#' - `atlas_view_keep()`: keep only matching views
-#' - `atlas_view_remove_region()`: remove specific region geometry from sf
-#' - `atlas_view_remove_small()`: remove small regions, or stray specks
-#' - `atlas_view_select()`: keep each region only in the views that show it
-#'   well
-#' - `atlas_view_gather()`: reposition views to close gaps
-#' - `atlas_view_reorder()`: change view order
+#' To drop a region's drawing in some views while keeping the region itself,
+#' see [drawing_manipulation].
 #'
-#' **Core manipulation** modifies atlas metadata:
-#' - `atlas_core_add()`: join additional metadata columns
-#'
-#' @param atlas A `ggseg_atlas` object
-#' @param pattern Character pattern to match. Uses
-#'   `grepl(..., ignore.case = TRUE)`.
+#' @template atlas
+#' @template pattern
 #' @template match_on
 #' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
 #'   Defaults to `TRUE` for backwards compatibility, but note that a context
@@ -233,25 +244,17 @@ atlas_type.brain_atlas <- function(x) {
 #'   matters.
 #' @param replacement For `atlas_region_rename()`: replacement string or
 #'   function.
-#' @param views For view functions: character vector of view names or
-#'   patterns. Multiple values collapsed with `"|"` for matching.
-#' @param order For `atlas_view_reorder()`: character vector of desired
-#'   view order. Unspecified views appended at end.
-#' @param min_area For `atlas_view_remove_small()`: minimum area to keep.
-#'   What it applies to depends on `scope`; with the default
-#'   `scope = "region"` context geometries are never removed.
-#' @param gap Proportional gap between views (default 0.15 = 15% of max width).
-#' @param data For `atlas_core_add()`: data.frame with metadata to join.
-#' @param by For `atlas_core_add()`: column(s) to join by. Default `"region"`.
 #'
 #' @return Modified `ggseg_atlas` object
 #'
 #' @examples
-#' dk() |>
-#'   atlas_region_remove("bankssts") |>
-#'   atlas_region_keep("frontal")
+#' # Regions are named by the atlas, so take them from it rather than
+#' # spelling them out here, where they would go stale unnoticed.
+#' first_region <- atlas_regions(dk())[1]
+#' dk() |> atlas_region_remove(first_region, match_on = "region")
 #'
-#' @name atlas_manipulation
+#' @seealso [atlas_manipulation] for the other groups
+#' @name region_manipulation
 #' @export
 #' @family atlas manipulations
 atlas_region_remove <- function(
@@ -297,7 +300,7 @@ atlas_region_remove <- function(
 }
 
 
-#' @describeIn atlas_manipulation Keep geometry for visual context but remove
+#' @describeIn region_manipulation Keep geometry for visual context but remove
 #'   from core, palette, and 3D data. Context geometries render grey and don't
 #'   appear in legends. Contextual rows are moved behind the remaining core
 #'   regions so focus regions draw on top where they overlap in projection.
@@ -353,7 +356,7 @@ atlas_region_contextual <- function(
 }
 
 
-#' @describeIn atlas_manipulation Combine two sets of region geometry with a
+#' @describeIn region_manipulation Combine two sets of region geometry with a
 #'   vector boolean operation (per view), writing the result to a new region
 #'   `into`. `x` and `y` are patterns matched against `match_on`; within each
 #'   view their matching geometries are unioned, then combined via `action`:
@@ -443,7 +446,7 @@ atlas_region_op <- function(
 }
 
 
-#' @describeIn atlas_manipulation Drop all contextual sf geometry — every
+#' @describeIn region_manipulation Drop all contextual sf geometry — every
 #'   sf row whose `label` is not present in `core`. Covers labels marked
 #'   via [atlas_region_contextual()] plus pipeline-generated outlines
 #'   (`cortex_`, `Background`, `unknown`). Remaining views are re-packed
@@ -469,7 +472,7 @@ atlas_context_remove <- function(atlas) {
 }
 
 
-#' @describeIn atlas_manipulation Rename regions matching a pattern. Only
+#' @describeIn region_manipulation Rename regions matching a pattern. Only
 #'   ever writes to the `region` column, never to `label`. `match_on` chooses
 #'   the rows: those whose `label` (the default) or `region` matches
 #'   `pattern`. The edit is always made to the region text those rows already
@@ -516,7 +519,7 @@ atlas_region_rename <- function(
 }
 
 
-#' @describeIn atlas_manipulation Keep only matching regions. Non-matching
+#' @describeIn region_manipulation Keep only matching regions. Non-matching
 #'   regions are removed from core, palette, and 3D data but sf geometry
 #'   is preserved for surface continuity.
 #' @export
@@ -560,8 +563,23 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
 }
 
 
-#' @describeIn atlas_manipulation Join additional metadata columns to
-#'   atlas core.
+#' Join additional metadata columns to an atlas's core
+#'
+#' Adds columns to `core`, never rows: `data` must hold unique values of `by`.
+#' Use it to carry a classification --- a lobe, a network, a study's own
+#' grouping --- alongside the atlas's own metadata.
+#'
+#' @template atlas
+#' @param data A data.frame with metadata to join.
+#' @param by Column(s) to join by. Default `"region"`.
+#'
+#' @return Modified `ggseg_atlas` object
+#'
+#' @examples
+#' lobes <- data.frame(region = atlas_regions(dk())[1:2], network = c("a", "b"))
+#' atlas_core_add(dk(), lobes)
+#'
+#' @seealso [atlas_manipulation] for the other groups
 #' @export
 #' @family atlas manipulations
 atlas_core_add <- function(atlas, data, by = "region") {
@@ -618,9 +636,33 @@ brain_views <- function(atlas) {
 }
 
 
-#' @describeIn atlas_manipulation Remove views matching pattern from sf
-#'   data. Remaining views are re-packed via [atlas_view_gather()] so
-#'   the layout stays tight.
+#' Change which views an atlas has, and where they sit
+#'
+#' Verbs that act on views as objects:
+#'
+#' - `atlas_view_remove()`: remove entire views
+#' - `atlas_view_keep()`: keep only matching views
+#' - `atlas_view_reorder()`: change view order
+#' - `atlas_view_gather()`: reposition views to close gaps
+#'
+#' None of these changes what is drawn inside a view. For that --- dropping a
+#' region's depiction in some views while the region itself stays --- see
+#' [drawing_manipulation].
+#'
+#' @template atlas
+#' @template views
+#' @param order For `atlas_view_reorder()`: character vector of desired
+#'   view order. Unspecified views appended at end.
+#' @param gap Proportional gap between views (default 0.15 = 15% of max width).
+#'
+#' @return Modified `ggseg_atlas` object
+#'
+#' @examples
+#' # Views are named by the atlas, so ask it rather than naming one here.
+#' dk() |> atlas_view_keep(atlas_views(dk())[1])
+#'
+#' @seealso [atlas_manipulation] for the other groups
+#' @name view_manipulation
 #' @export
 #' @family atlas manipulations
 atlas_view_remove <- function(atlas, views) {
@@ -652,7 +694,7 @@ atlas_view_remove <- function(atlas, views) {
 }
 
 
-#' @describeIn atlas_manipulation Keep only views matching pattern.
+#' @describeIn view_manipulation Keep only views matching pattern.
 #'   Remaining views are re-packed via [atlas_view_gather()] so the layout
 #'   stays tight, as [atlas_view_remove()] does.
 #' @export
@@ -690,9 +732,47 @@ atlas_view_keep <- function(atlas, views) {
 }
 
 
-#' @describeIn atlas_manipulation Remove specific region geometry from sf
-#'   data only. Core, palette, and 3D data are unchanged. Views are
-#'   re-packed via [atlas_view_gather()] in case any view shrank.
+#' Change which regions are drawn inside a view
+#'
+#' Verbs that prune depictions, each by a different criterion:
+#'
+#' - `atlas_view_remove_region()`: by name
+#' - `atlas_view_remove_small()`: by absolute area
+#' - `atlas_view_select()`: by area as a share of the region's best view
+#'
+#' None of these adds a view, and none removes a region from `core`: the
+#' region stays and is still legended, while its depiction in some view goes.
+#' A view can still disappear as a consequence --- `atlas_view_select()` drops
+#' a view that keeps no region, and the other two drop a view whose last
+#' remaining geometry they removed.
+#'
+#' `atlas_view_remove_small()` and `atlas_view_select()` are the same
+#' operation asked two ways, an absolute area against a share of the region's
+#' largest appearance, with one difference that decides between them:
+#' `atlas_view_select()` keeps every region in at least one view, while
+#' `atlas_view_remove_small()` with the default `scope = "region"` can take a
+#' region's geometry out of every view, leaving it legended but drawn nowhere
+#' --- and the higher the threshold, the more regions that happens to. Check
+#' [atlas_undrawn()] after raising `min_area`.
+#'
+#' For views as objects, see [view_manipulation]; to remove a region from the
+#' atlas altogether, [region_manipulation].
+#'
+#' @template atlas
+#' @template pattern
+#' @template match_on
+#' @template views
+#' @param min_area For `atlas_view_remove_small()`: minimum area to keep.
+#'   What it applies to depends on `scope`; with the default
+#'   `scope = "region"` context geometries are never removed.
+#'
+#' @return Modified `ggseg_atlas` object
+#'
+#' @examples
+#' dk() |> atlas_view_remove_small(min_area = 10)
+#'
+#' @seealso [atlas_manipulation] for the other groups
+#' @name drawing_manipulation
 #' @export
 #' @family atlas manipulations
 atlas_view_remove_region <- function(
@@ -737,7 +817,7 @@ atlas_view_remove_region <- function(
 }
 
 
-#' @describeIn atlas_manipulation Remove geometry below a minimum area
+#' @describeIn drawing_manipulation Remove geometry below a minimum area
 #'   threshold. With `scope = "region"` (the default) a label's whole geometry
 #'   in a view is removed when its combined area is too small, and context
 #'   geometries (labels not in core) are never removed. With
@@ -824,7 +904,7 @@ atlas_view_remove_small <- function(
 }
 
 
-#' @describeIn atlas_manipulation Keep each region only in the views that show
+#' @describeIn drawing_manipulation Keep each region only in the views that show
 #'   it well.
 #'
 #'   A slice or projection slab catches a structure in cross-section as readily
@@ -885,7 +965,7 @@ atlas_view_select <- function(
 }
 
 
-#' @describeIn atlas_manipulation Reposition remaining views to close gaps
+#' @describeIn view_manipulation Reposition remaining views to close gaps
 #'   after view removal.
 #' @export
 #' @family atlas manipulations
@@ -910,7 +990,7 @@ atlas_view_gather <- function(atlas, gap = 0.15) {
 }
 
 
-#' @describeIn atlas_manipulation Reorder views and reposition. Views not
+#' @describeIn view_manipulation Reorder views and reposition. Views not
 #'   in `order` are appended at end.
 #' @export
 #' @family atlas manipulations
