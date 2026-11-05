@@ -239,7 +239,11 @@ Treat “merged with green CI” as done — not “code written”.
   told.
 - Stage paths explicitly; never `git add .`/`-A` (pre-existing WIP must
   not be swept in).
-- Open a PR with a Summary and Test Plan, and shepherd it to green CI.
+- Open a PR with a Summary, and shepherd it to green CI. Add a Test Plan
+  section only for verification CI does not perform – manual checks,
+  depends-only runs, snapshot acceptance rationale. Never restate checks
+  CI already proves green (formatter, linter, test counts, check
+  status).
 - Local pre-PR loop: `air format .` →
   [`devtools::document()`](https://devtools.r-lib.org/reference/document.html)
   → [`devtools::test()`](https://devtools.r-lib.org/reference/test.html)
