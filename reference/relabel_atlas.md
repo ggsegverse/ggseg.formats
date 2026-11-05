@@ -38,18 +38,22 @@ This is the supported way to correct an atlas's identifiers – the
 operation
 [`tracula()`](https://ggsegverse.github.io/ggseg.formats/reference/tracula.md)
 itself needed when its `.bbr.prep` suffix was restored. Use
-[`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 instead to change the display names in `region`, which is not a join
 key.
 
 ## See also
 
-[`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 to rename regions rather than re-key labels.
 
 Other atlas manipulations:
+[`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md),
 [`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
-[`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md)
+[`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md),
+[`drawing_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md),
+[`region_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
+[`view_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 
 ## Examples
 

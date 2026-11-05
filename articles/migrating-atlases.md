@@ -49,10 +49,10 @@ reads a recorded table of the 0.0.4 values instead, so it stays correct
 however `display` is later improved.
 
 If a pattern you pass to
-[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
-[`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
+[`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 or
-[`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 matches nothing, they now warn and, where the pattern looks like a
 pre-0.1.0 name, say which key to use instead.
 
@@ -141,7 +141,7 @@ repeated rows at render time.
 does not check how much of `core` has 2D geometry. Partial coverage is
 normal: no single view holds every structure, and narrowing an atlas to
 one view with
-[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 leaves `core` whole while the geometry shrinks. Coverage below 90%
 raises a warning for information only; the atlas is valid either way. If
 you are *building* an atlas and want a coverage floor, that belongs in

@@ -24,7 +24,7 @@ play nicely with the pipe.
 
 ## Keeping and removing regions
 
-[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 strips a region entirely—from core, palette, 2D geometry, and 3D data.
 The `pattern` argument is passed to
 [`grepl()`](https://rdrr.io/r/base/grep.html) with `ignore.case = TRUE`,
@@ -37,7 +37,7 @@ no_cc <- atlas_region_remove(dk(), "corpuscallosum")
 #> [1] FALSE
 ```
 
-[`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 is the inverse: it keeps only the regions that match and turns
 everything else into context geometry (the geometry is preserved for
 surface continuity, but non-matching regions leave core and palette):
@@ -78,7 +78,7 @@ atlas_labels(both_sides)
 
 Sometimes you want a region’s polygon to stay visible (rendered in grey)
 but not appear in the legend or carry data. This is what
-[`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 does. It removes the region from core, palette, and 3D data but leaves
 the 2D geometry in place:
 
@@ -92,13 +92,13 @@ ctx <- atlas_region_contextual(aseg(), "ventricle")
 ```
 
 Compare that to
-[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
+[`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
 which would delete the ventricle polygons entirely, leaving gaps in the
 2D slices.
 
 ## Renaming regions
 
-[`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
 changes the `region` column without touching `label` (so geometry links
 stay intact). Like the other verbs it picks its rows by `label`, and it
 edits the region those rows already have. A string is substituted for
@@ -149,9 +149,9 @@ atlas_views(aseg())
 #> [1] "axial_2"       "coronal_2"     "sagittal_left"
 ```
 
-[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 and
-[`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 filter views by pattern. If you only want the sagittal slice:
 
 ``` r
@@ -176,7 +176,7 @@ atlas_views(fewer)
 
 After filtering regions you may have small polygon fragments left
 over—tiny slivers where a region just barely crossed a slice plane.
-[`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
 removes region polygons below a minimum area threshold. Context polygons
 (those not in core) are never removed:
 
@@ -198,7 +198,7 @@ cleaned_sag <- atlas_view_remove_small(
 #> ℹ Removed 3 geometries below area 50
 ```
 
-[`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
 removes a specific region’s 2D geometry without touching core, palette,
 or 3D data. This is useful when a region’s 2D projection is misleading
 but you still want it in 3D:
@@ -216,7 +216,7 @@ no_stem_sf <- atlas_view_remove_region(
 
 When you remove views, the remaining geometry keeps its original
 coordinates, which can leave awkward gaps.
-[`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 repositions views side-by-side with a configurable gap:
 
 ``` r
@@ -230,7 +230,7 @@ atlas_views(trimmed)
 #> [1] "coronal_2"     "sagittal_left"
 ```
 
-[`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 lets you choose the left-to-right order and repositions at the same
 time. Views not mentioned in `order` are appended at the end:
 
@@ -249,7 +249,7 @@ atlas_views(reordered)
 
 ## Adding metadata
 
-[`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md)
 left-joins a data frame onto the core table. This is useful for
 attaching grouping variables, statistical results, or any other
 per-region information. Here we add a custom network column to a handful

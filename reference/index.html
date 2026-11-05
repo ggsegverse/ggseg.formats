@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9015</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9016</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -255,6 +255,13 @@
 
         <dt>
 
+          <code><a href="atlas_core_add.html">atlas_core_add()</a></code>
+
+        </dt>
+        <dd>Join additional metadata columns to an atlas's core</dd>
+
+        <dt>
+
           <code><a href="atlas_display.html">atlas_display()</a></code>
 
         </dt>
@@ -290,10 +297,10 @@
 
         <dt>
 
-          <code><a href="atlas_manipulation.html">atlas_region_remove()</a></code> <code><a href="atlas_manipulation.html">atlas_region_contextual()</a></code> <code><a href="atlas_manipulation.html">atlas_region_op()</a></code> <code><a href="atlas_manipulation.html">atlas_context_remove()</a></code> <code><a href="atlas_manipulation.html">atlas_region_rename()</a></code> <code><a href="atlas_manipulation.html">atlas_region_keep()</a></code> <code><a href="atlas_manipulation.html">atlas_core_add()</a></code> <code><a href="atlas_manipulation.html">atlas_view_remove()</a></code> <code><a href="atlas_manipulation.html">atlas_view_keep()</a></code> <code><a href="atlas_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="atlas_manipulation.html">atlas_view_remove_small()</a></code> <code><a href="atlas_manipulation.html">atlas_view_select()</a></code> <code><a href="atlas_manipulation.html">atlas_view_gather()</a></code> <code><a href="atlas_manipulation.html">atlas_view_reorder()</a></code>
+          <code><a href="atlas_manipulation.html">atlas_manipulation</a></code>
 
         </dt>
-        <dd>Manipulate brain atlas regions and views</dd>
+        <dd>Manipulate brain atlas regions, views and drawings</dd>
 
         <dt>
 
@@ -388,6 +395,27 @@
 
         <dt>
 
+          <code><a href="drawing_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_small()</a></code> <code><a href="drawing_manipulation.html">atlas_view_select()</a></code>
+
+        </dt>
+        <dd>Change which regions are drawn inside a view</dd>
+
+        <dt>
+
+          <code><a href="region_manipulation.html">atlas_region_remove()</a></code> <code><a href="region_manipulation.html">atlas_region_contextual()</a></code> <code><a href="region_manipulation.html">atlas_region_op()</a></code> <code><a href="region_manipulation.html">atlas_context_remove()</a></code> <code><a href="region_manipulation.html">atlas_region_rename()</a></code> <code><a href="region_manipulation.html">atlas_region_keep()</a></code>
+
+        </dt>
+        <dd>Change which regions an atlas has</dd>
+
+        <dt>
+
+          <code><a href="view_manipulation.html">atlas_view_remove()</a></code> <code><a href="view_manipulation.html">atlas_view_keep()</a></code> <code><a href="view_manipulation.html">atlas_view_gather()</a></code> <code><a href="view_manipulation.html">atlas_view_reorder()</a></code>
+
+        </dt>
+        <dd>Change which views an atlas has, and where they sit</dd>
+
+        <dt>
+
           <code><a href="get_cerebellar_mesh.html">get_cerebellar_mesh()</a></code>
 
         </dt>
@@ -476,7 +504,7 @@
       </dl></div><div class="section level2">
       <h2 id="atlas-manipulation">Atlas manipulation<a class="anchor" aria-label="anchor" href="#atlas-manipulation"></a></h2>
 
-      <div class="section-desc"><p>Pipe-friendly functions for subsetting regions, managing views, and enriching metadata. All return a new <code>ggseg_atlas</code>.</p></div>
+      <div class="section-desc"><p>Pipe-friendly functions, each group acting on a different thing: the regions an atlas has, the views it has, and which regions are drawn inside a view. All return a new <code>ggseg_atlas</code>.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -485,10 +513,38 @@
 
       <dl><dt>
 
-          <code><a href="atlas_manipulation.html">atlas_region_remove()</a></code> <code><a href="atlas_manipulation.html">atlas_region_contextual()</a></code> <code><a href="atlas_manipulation.html">atlas_region_op()</a></code> <code><a href="atlas_manipulation.html">atlas_context_remove()</a></code> <code><a href="atlas_manipulation.html">atlas_region_rename()</a></code> <code><a href="atlas_manipulation.html">atlas_region_keep()</a></code> <code><a href="atlas_manipulation.html">atlas_core_add()</a></code> <code><a href="atlas_manipulation.html">atlas_view_remove()</a></code> <code><a href="atlas_manipulation.html">atlas_view_keep()</a></code> <code><a href="atlas_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="atlas_manipulation.html">atlas_view_remove_small()</a></code> <code><a href="atlas_manipulation.html">atlas_view_select()</a></code> <code><a href="atlas_manipulation.html">atlas_view_gather()</a></code> <code><a href="atlas_manipulation.html">atlas_view_reorder()</a></code>
+          <code><a href="atlas_manipulation.html">atlas_manipulation</a></code>
 
         </dt>
-        <dd>Manipulate brain atlas regions and views</dd>
+        <dd>Manipulate brain atlas regions, views and drawings</dd>
+
+        <dt>
+
+          <code><a href="region_manipulation.html">atlas_region_remove()</a></code> <code><a href="region_manipulation.html">atlas_region_contextual()</a></code> <code><a href="region_manipulation.html">atlas_region_op()</a></code> <code><a href="region_manipulation.html">atlas_context_remove()</a></code> <code><a href="region_manipulation.html">atlas_region_rename()</a></code> <code><a href="region_manipulation.html">atlas_region_keep()</a></code>
+
+        </dt>
+        <dd>Change which regions an atlas has</dd>
+
+        <dt>
+
+          <code><a href="view_manipulation.html">atlas_view_remove()</a></code> <code><a href="view_manipulation.html">atlas_view_keep()</a></code> <code><a href="view_manipulation.html">atlas_view_gather()</a></code> <code><a href="view_manipulation.html">atlas_view_reorder()</a></code>
+
+        </dt>
+        <dd>Change which views an atlas has, and where they sit</dd>
+
+        <dt>
+
+          <code><a href="drawing_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_small()</a></code> <code><a href="drawing_manipulation.html">atlas_view_select()</a></code>
+
+        </dt>
+        <dd>Change which regions are drawn inside a view</dd>
+
+        <dt>
+
+          <code><a href="atlas_core_add.html">atlas_core_add()</a></code>
+
+        </dt>
+        <dd>Join additional metadata columns to an atlas's core</dd>
 
         <dt>
 

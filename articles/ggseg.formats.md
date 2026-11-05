@@ -208,7 +208,7 @@ unique(dk()$core$lobe)
 ```
 
 You can add your own metadata with
-[`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md)
 (covered in the manipulation vignette).
 
 ## Querying an atlas

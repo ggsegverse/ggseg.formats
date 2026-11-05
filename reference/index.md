@@ -111,6 +111,9 @@ Query atlas contents without reaching into slots directly.
 - [`atlas_context()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_context.md)
   : The labels an atlas draws but does not treat as regions
 
+- [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md)
+  : Join additional metadata columns to an atlas's core
+
 - [`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
   : Extract the display-name column of an atlas
 
@@ -129,21 +132,8 @@ Query atlas contents without reaching into slots directly.
   [`brain_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   : Extract the label column of an atlas
 
-- [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_op()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_context_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  : Manipulate brain atlas regions and views
+- [`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+  : Manipulate brain atlas regions, views and drawings
 
 - [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md)
   : Get atlas meshes for 3D rendering
@@ -187,6 +177,25 @@ Query atlas contents without reaching into slots directly.
 - [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
+
+- [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  : Change which regions are drawn inside a view
+
+- [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_op()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_context_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  : Change which regions an atlas has
+
+- [`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  : Change which views an atlas has, and where they sit
 
 - [`get_cerebellar_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/get_cerebellar_mesh.md)
   : Get SUIT cerebellar surface mesh
@@ -234,24 +243,30 @@ migrate atlas files.
 
 ## Atlas manipulation
 
-Pipe-friendly functions for subsetting regions, managing views, and
-enriching metadata. All return a new `ggseg_atlas`.
+Pipe-friendly functions, each group acting on a different thing: the
+regions an atlas has, the views it has, and which regions are drawn
+inside a view. All return a new `ggseg_atlas`.
 
-- [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_op()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_context_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
-  : Manipulate brain atlas regions and views
+- [`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+  : Manipulate brain atlas regions, views and drawings
+- [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_op()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_context_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_rename()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  [`atlas_region_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
+  : Change which regions an atlas has
+- [`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
+  : Change which views an atlas has, and where they sit
+- [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  : Change which regions are drawn inside a view
+- [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md)
+  : Join additional metadata columns to an atlas's core
 - [`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md)
   : Reorder the structures of an atlas
 - [`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md)

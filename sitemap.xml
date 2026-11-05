@@ -18,6 +18,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_context.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.html</loc></url>
@@ -41,6 +42,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/convert_legacy_brain_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/core_contract.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/dk.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/get_brain_mesh.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/get_cerebellar_mesh.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/ggseg.formats-package.html</loc></url>
@@ -61,6 +63,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/read_atlas_files.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/read_freesurfer_stats.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/read_freesurfer_table.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/reorder_sfc.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/selectors.html</loc></url>
@@ -70,5 +73,6 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/sf_to_polygons.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/suit.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/tracula.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.html</loc></url>
 </urlset>
 

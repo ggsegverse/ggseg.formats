@@ -63,13 +63,17 @@ structure keeps the same depth in every view it appears in.
 
 ## See also
 
-[`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
+[`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md),
 which moves whole views around the canvas rather than structures within
 them.
 
 Other atlas manipulations:
+[`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md),
 [`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
-[`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md)
+[`drawing_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md),
+[`region_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
+[`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md),
+[`view_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 
 ## Examples
 

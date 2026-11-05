@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9015</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9016</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -126,9 +126,9 @@ what 0.0.4 shipped as <code>region</code>: <code>aseg</code> has
 <code>"cc posterior"</code>. <code><a href="../reference/legacy_region_map.html">legacy_region_map()</a></code> reads a
 recorded table of the 0.0.4 values instead, so it stays correct however
 <code>display</code> is later improved.</p>
-<p>If a pattern you pass to <code><a href="../reference/atlas_manipulation.html">atlas_region_remove()</a></code>,
-<code><a href="../reference/atlas_manipulation.html">atlas_region_keep()</a></code> or
-<code><a href="../reference/atlas_manipulation.html">atlas_region_contextual()</a></code> matches nothing, they now warn
+<p>If a pattern you pass to <code><a href="../reference/region_manipulation.html">atlas_region_remove()</a></code>,
+<code><a href="../reference/region_manipulation.html">atlas_region_keep()</a></code> or
+<code><a href="../reference/region_manipulation.html">atlas_region_contextual()</a></code> matches nothing, they now warn
 and, where the pattern looks like a pre-0.1.0 name, say which key to use
 instead.</p>
 </div>
@@ -203,7 +203,7 @@ render time.</p>
 <p><code><a href="../reference/ggseg_atlas.html">ggseg_atlas()</a></code> does not check how much of
 <code>core</code> has 2D geometry. Partial coverage is normal: no single
 view holds every structure, and narrowing an atlas to one view with
-<code><a href="../reference/atlas_manipulation.html">atlas_view_keep()</a></code> leaves <code>core</code> whole while the
+<code><a href="../reference/view_manipulation.html">atlas_view_keep()</a></code> leaves <code>core</code> whole while the
 geometry shrinks. Coverage below 90% raises a warning for information
 only; the atlas is valid either way. If you are <em>building</em> an
 atlas and want a coverage floor, that belongs in the construction

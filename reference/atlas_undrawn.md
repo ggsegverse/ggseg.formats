@@ -31,9 +31,9 @@ silent omission into a failed build.
 
 ## See also
 
-[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
+[`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 and
-[`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
+[`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md),
 which narrow the views this checks.
 
 Other atlas accessors:
