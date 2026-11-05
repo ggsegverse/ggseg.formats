@@ -64,7 +64,11 @@ a <- atlas_structure_reorder(a, "Left-Thalamus", .before = "Left-Putamen")
 canvas rather than structures within them.
 
 Other atlas manipulations:
+\code{\link[=atlas_core_add]{atlas_core_add()}},
 \code{\link{atlas_manipulation}},
-\code{\link[=relabel_atlas]{relabel_atlas()}}
+\code{\link{drawing_manipulation}},
+\code{\link{region_manipulation}},
+\code{\link[=relabel_atlas]{relabel_atlas()}},
+\code{\link{view_manipulation}}
 }
 \concept{atlas manipulations}

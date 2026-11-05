@@ -40,7 +40,11 @@ head(atlas_labels(a))
 \code{\link[=atlas_region_rename]{atlas_region_rename()}} to rename regions rather than re-key labels.
 
 Other atlas manipulations:
+\code{\link[=atlas_core_add]{atlas_core_add()}},
 \code{\link{atlas_manipulation}},
-\code{\link[=atlas_structure_reorder]{atlas_structure_reorder()}}
+\code{\link[=atlas_structure_reorder]{atlas_structure_reorder()}},
+\code{\link{drawing_manipulation}},
+\code{\link{region_manipulation}},
+\code{\link{view_manipulation}}
 }
 \concept{atlas manipulations}

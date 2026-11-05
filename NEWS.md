@@ -27,6 +27,17 @@
   come with it. Tract atlases stay separate: they carry centerlines, which a
   white-matter label map has none of.
 
+## Documentation
+
+- The manipulation verbs are documented in four help topics rather than one,
+  split by what each group acts on: `region_manipulation` (which regions the
+  atlas has), `view_manipulation` (which views exist, and where they sit),
+  `drawing_manipulation` (which regions are drawn inside a view) and
+  `atlas_core_add()`. `atlas_view_remove_region()`, `atlas_view_remove_small()`
+  and `atlas_view_select()` prune depictions and add no views, which the shared
+  page had filed under view manipulation alongside the verbs that do.
+  `?atlas_manipulation` still resolves, now as an overview.
+
 ## ggseg.formats (development version)
 
 ### New features
