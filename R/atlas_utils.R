@@ -234,9 +234,8 @@ NULL
 #' To drop a region's drawing in some views while keeping the region itself,
 #' see [drawing_manipulation].
 #'
-#' @param atlas A `ggseg_atlas` object
-#' @param pattern Character pattern to match. Uses
-#'   `grepl(..., ignore.case = TRUE)`.
+#' @template atlas
+#' @template pattern
 #' @template match_on
 #' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
 #'   Defaults to `TRUE` for backwards compatibility, but note that a context
@@ -570,7 +569,7 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
 #' Use it to carry a classification --- a lobe, a network, a study's own
 #' grouping --- alongside the atlas's own metadata.
 #'
-#' @inheritParams region_manipulation
+#' @template atlas
 #' @param data A data.frame with metadata to join.
 #' @param by Column(s) to join by. Default `"region"`.
 #'
@@ -650,9 +649,8 @@ brain_views <- function(atlas) {
 #' region's depiction in some views while the region itself stays --- see
 #' [drawing_manipulation].
 #'
-#' @inheritParams region_manipulation
-#' @param views Character vector of view names or patterns. Multiple values
-#'   are collapsed with `"|"` for matching.
+#' @template atlas
+#' @template views
 #' @param order For `atlas_view_reorder()`: character vector of desired
 #'   view order. Unspecified views appended at end.
 #' @param gap Proportional gap between views (default 0.15 = 15% of max width).
@@ -760,8 +758,10 @@ atlas_view_keep <- function(atlas, views) {
 #' For views as objects, see [view_manipulation]; to remove a region from the
 #' atlas altogether, [region_manipulation].
 #'
-#' @inheritParams region_manipulation
-#' @inheritParams view_manipulation
+#' @template atlas
+#' @template pattern
+#' @template match_on
+#' @template views
 #' @param min_area For `atlas_view_remove_small()`: minimum area to keep.
 #'   What it applies to depends on `scope`; with the default
 #'   `scope = "region"` context geometries are never removed.
