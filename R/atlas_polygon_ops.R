@@ -220,9 +220,10 @@ polygons_remove_small <- function(
 #'
 #' Unlike [polygons_remove_small()], which drops a label's whole geometry in a
 #' view when its combined area is too small, this drops individual disconnected
-#' pieces and keeps the rest of the region. A region's largest piece in a view
-#' is always kept, so no region can disappear. Holes are not treated as pieces:
-#' a piece's area is its exterior ring minus its holes.
+#' pieces and keeps the rest of the region. A region's largest piece anywhere
+#' in the atlas is always kept, so no region can disappear -- a speck in one
+#' view goes when the same region is drawn properly in another. Holes are not
+#' treated as pieces: a piece's area is its exterior ring minus its holes.
 #'
 #' @param polygons A `brain_polygons` table.
 #' @param min_area Pieces below this area are dropped.
