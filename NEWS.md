@@ -27,6 +27,14 @@
   come with it. Tract atlases stay separate: they carry centerlines, which a
   white-matter label map has none of.
 
+## Minor changes
+
+- `atlas_view_select()` is renamed `atlas_prune_weak()`. The old name read as
+  the verb for choosing which views an atlas keeps --- which is
+  `atlas_view_keep()` --- rather than for choosing, per region, which views
+  draw it. `atlas_view_select()` still works and warns, pointing at the new
+  name; it will be removed in a future release.
+
 ## Documentation
 
 - The manipulation verbs are documented in four help topics rather than one,
