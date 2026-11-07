@@ -42,7 +42,7 @@
   atlas has), `view_manipulation` (which views exist, and where they sit),
   `drawing_manipulation` (which regions are drawn inside a view) and
   `atlas_core_add()`. `atlas_view_remove_region()`, `atlas_view_remove_small()`
-  and `atlas_view_select()` prune depictions and add no views, which the shared
+  and `atlas_prune_weak()` prune depictions and add no views, which the shared
   page had filed under view manipulation alongside the verbs that do.
   `?atlas_manipulation` still resolves, now as an overview.
 
@@ -109,7 +109,7 @@
 
 ### Bug fixes
 
-- `atlas_view_select()` no longer errors on an atlas with a view that draws
+- `atlas_prune_weak()` no longer errors on an atlas with a view that draws
   only context. Such a view contributes no column to the scoring matrix, which
   was then indexed by every declared view. It now scores zero and is dropped,
   as is any view the selection empties of regions.
@@ -214,7 +214,7 @@
   geometry payload at once.
 - New `atlas_structure_reorder()` moves structures with `.before`/`.after`
   anchors, deciding which is drawn over which.
-- New `atlas_view_select()` keeps each region only in the views where it holds at
+- New `atlas_prune_weak()` keeps each region only in the views where it holds at
   least `threshold` of its best view's area, comparing regions whole.
 - `atlas_region_rename()` gains `match_on`; it still only writes to `region`.
 - `atlas_centerlines()` returns a `ggseg_centerlines` object with a print
@@ -246,7 +246,7 @@
   file, when a migration cannot carry every column across.
 - `atlas_labels()` gains the `data.frame` method its `atlas_regions()` and
   `atlas_display()` siblings already had.
-- `atlas_view_select()` warns and returns the atlas unchanged on a
+- `atlas_prune_weak()` warns and returns the atlas unchanged on a
   geometry-less atlas, like the other view verbs, instead of aborting.
 - The five `brain_atlas`-rename deprecations stamped 0.2.0 now say 0.1.0, the
   version they ship in.
