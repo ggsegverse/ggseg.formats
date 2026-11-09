@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9017</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9018</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,11 +93,15 @@ single function call, and they all pipe together.</p>
 <div class="section level2">
 <h2 id="the-manipulation-toolkit">The manipulation toolkit<a class="anchor" aria-label="anchor" href="#the-manipulation-toolkit"></a>
 </h2>
-<p>ggseg.formats provides three groups of manipulation functions.
+<p>ggseg.formats provides four groups of manipulation functions.
 <strong>Region functions</strong> (<code>atlas_region_*</code>) control
 which regions are active in the atlas. <strong>View functions</strong>
-(<code>atlas_view_*</code>) control the 2D geometry—which views are
-present and how they are arranged. <strong>Core functions</strong>
+(<code>atlas_view_*</code>) control which views are present and how they
+are arranged. <strong>Pruning functions</strong>
+(<code>atlas_prune_*</code>) control which regions are <em>drawn</em>
+inside a view: they add and remove no views, and remove nothing from
+<code>core</code>—the region stays and stays legended, and only its
+depiction in some view goes. <strong>Core functions</strong>
 (<code>atlas_core_*</code>) enrich the region metadata. All of them
 accept a <code>ggseg_atlas</code> as the first argument, return a new
 <code>ggseg_atlas</code>, and play nicely with the pipe.</p>
@@ -214,26 +218,25 @@ filter views by pattern. If you only want the sagittal slice:</p>
 </h2>
 <p>After filtering regions you may have small polygon fragments left
 over—tiny slivers where a region just barely crossed a slice plane.
-<code><a href="../reference/drawing_manipulation.html">atlas_view_remove_small()</a></code> removes region polygons below a
-minimum area threshold. Context polygons (those not in core) are never
+<code><a href="../reference/drawing_manipulation.html">atlas_prune_small()</a></code> removes region polygons below a minimum
+area threshold. Context polygons (those not in core) are never
 removed:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, min_area <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cleaned</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_prune_small</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>, min_area <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 9 geometries below area 50</span></span></code></pre></div>
 <p>You can scope the removal to specific views:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cleaned_sag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">cleaned_sag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_prune_small</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  min_area <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  views <span class="op">=</span> <span class="st">"sagittal"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 3 geometries below area 50</span></span></code></pre></div>
-<p><code><a href="../reference/drawing_manipulation.html">atlas_view_remove_region()</a></code> removes a specific region’s
-2D geometry without touching core, palette, or 3D data. This is useful
-when a region’s 2D projection is misleading but you still want it in
-3D:</p>
+<p><code><a href="../reference/drawing_manipulation.html">atlas_prune_region()</a></code> removes a specific region’s 2D
+geometry without touching core, palette, or 3D data. This is useful when
+a region’s 2D projection is misleading but you still want it in 3D:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">no_stem_sf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_view_remove_region</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">no_stem_sf</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_prune_region</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="st">"brain stem"</span>,</span>
 <span>  match_on <span class="op">=</span> <span class="st">"region"</span></span>
@@ -308,7 +311,7 @@ atlas for a compact two-view figure of deep grey matter structures:</p>
 <code class="sourceCode R"><span><span class="va">publication_aseg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/view_manipulation.html">atlas_view_keep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sagittal"</span>, <span class="st">"coronal_2"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/region_manipulation.html">atlas_region_contextual</a></span><span class="op">(</span><span class="st">"ventricle|choroid|white|cc"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_view_remove_small</a></span><span class="op">(</span>min_area <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/drawing_manipulation.html">atlas_prune_small</a></span><span class="op">(</span>min_area <span class="op">=</span> <span class="fl">30</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/view_manipulation.html">atlas_view_gather</a></span><span class="op">(</span>gap <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Removed 4 geometries below area 30</span></span>
 <span></span>

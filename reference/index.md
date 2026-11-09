@@ -178,10 +178,12 @@ Query atlas contents without reaching into slots directly.
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
 
-- [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
-  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+- [`atlas_prune_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_prune_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_prune_weak()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   : Change which regions are drawn inside a view
 
 - [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
@@ -262,10 +264,12 @@ inside a view. All return a new `ggseg_atlas`.
   [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
   [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
   : Change which views an atlas has, and where they sit
-- [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
-  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+- [`atlas_prune_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_prune_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_prune_weak()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   : Change which regions are drawn inside a view
 - [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md)
   : Join additional metadata columns to an atlas's core

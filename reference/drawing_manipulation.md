@@ -5,6 +5,26 @@ Verbs that prune depictions, each by a different criterion:
 ## Usage
 
 ``` r
+atlas_prune_region(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  views = NULL
+)
+
+atlas_prune_small(
+  atlas,
+  min_area,
+  views = NULL,
+  scope = c("region", "piece"),
+  labels = NULL,
+  exclude = NULL
+)
+
+atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
+
+atlas_view_select(atlas, threshold = 0.5, weights = NULL)
+
 atlas_view_remove_region(
   atlas,
   pattern,
@@ -20,10 +40,6 @@ atlas_view_remove_small(
   labels = NULL,
   exclude = NULL
 )
-
-atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
-
-atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 ```
 
 ## Arguments
@@ -50,8 +66,8 @@ atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 
 - min_area:
 
-  For `atlas_view_remove_small()`: minimum area to keep. What it applies
-  to depends on `scope`; with the default `scope = "region"` context
+  For `atlas_prune_small()`: minimum area to keep. What it applies to
+  depends on `scope`; with the default `scope = "region"` context
   geometries are never removed.
 
 - scope:
@@ -61,11 +77,11 @@ atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 
 - labels, exclude:
 
-  For `atlas_view_remove_small()`: optional regex scoping which labels
-  are considered. `labels` restricts removal to matching labels,
-  `exclude` spares them. Only one may be given. Useful with
-  `scope = "piece"`, where a thin structure such as a cortical ribbon
-  has legitimately small pieces that should not be treated as specks.
+  For `atlas_prune_small()`: optional regex scoping which labels are
+  considered. `labels` restricts removal to matching labels, `exclude`
+  spares them. Only one may be given. Useful with `scope = "piece"`,
+  where a thin structure such as a cortical ribbon has legitimately
+  small pieces that should not be treated as specks.
 
 - threshold:
 
@@ -85,9 +101,9 @@ Modified `ggseg_atlas` object
 
 ## Details
 
-- `atlas_view_remove_region()`: by name
+- `atlas_prune_region()`: by name
 
-- `atlas_view_remove_small()`: by absolute area
+- `atlas_prune_small()`: by absolute area
 
 - `atlas_prune_weak()`: by area as a share of the region's best view
 
@@ -97,14 +113,14 @@ goes. A view can still disappear as a consequence — `atlas_prune_weak()`
 drops a view that keeps no region, and the other two drop a view whose
 last remaining geometry they removed.
 
-`atlas_view_remove_small()` and `atlas_prune_weak()` are the same
-operation asked two ways, an absolute area against a share of the
-region's largest appearance, with one difference that decides between
-them: `atlas_prune_weak()` keeps every region in at least one view,
-while `atlas_view_remove_small()` with the default `scope = "region"`
-can take a region's geometry out of every view, leaving it legended but
-drawn nowhere — and the higher the threshold, the more regions that
-happens to. Check
+`atlas_prune_small()` and `atlas_prune_weak()` are the same operation
+asked two ways, an absolute area against a share of the region's largest
+appearance, with one difference that decides between them:
+`atlas_prune_weak()` keeps every region in at least one view, while
+`atlas_prune_small()` with the default `scope = "region"` can take a
+region's geometry out of every view, leaving it legended but drawn
+nowhere — and the higher the threshold, the more regions that happens
+to. Check
 [`atlas_undrawn()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_undrawn.md)
 after raising `min_area`.
 
@@ -115,10 +131,10 @@ to remove a region from the atlas altogether,
 
 ## Functions
 
-- `atlas_view_remove_small()`: Remove geometry below a minimum area
-  threshold. With `scope = "region"` (the default) a label's whole
-  geometry in a view is removed when its combined area is too small, and
-  context geometries (labels not in core) are never removed. With
+- `atlas_prune_small()`: Remove geometry below a minimum area threshold.
+  With `scope = "region"` (the default) a label's whole geometry in a
+  view is removed when its combined area is too small, and context
+  geometries (labels not in core) are never removed. With
   `scope = "piece"` individual disconnected pieces are removed while the
   rest of the region stays – use this to clear stray specks left by
   volumetric projection. A region's largest piece anywhere in the atlas
@@ -158,6 +174,18 @@ to remove a region from the atlas altogether,
   [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md),
   and not for choosing which views draw a region.
 
+- `atlas_view_remove_region()`: Deprecated. Use `atlas_prune_region()`:
+  the old name read as a verb on views, when it removes no view — the
+  region stays in `core` and only its depiction in the named views goes.
+  For removing views themselves see
+  [`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md).
+
+- `atlas_view_remove_small()`: Deprecated. Use `atlas_prune_small()`:
+  the old name read as a verb on views, when it removes no view. Note
+  the near-namesake in ggseg.extra, `atlas_view_remove_sparse()`, which
+  really does drop views; the two were a letter apart in intent and are
+  not any more.
+
 ## See also
 
 [atlas_manipulation](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md)
@@ -174,7 +202,7 @@ Other atlas manipulations:
 ## Examples
 
 ``` r
-dk() |> atlas_view_remove_small(min_area = 10)
+dk() |> atlas_prune_small(min_area = 10)
 #> ℹ Removed 10 geometries below area 10
 #> 
 #> ── dk ggseg atlas ──────────────────────────────────────────────────────────────
