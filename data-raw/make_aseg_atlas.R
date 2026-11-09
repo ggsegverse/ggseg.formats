@@ -90,7 +90,7 @@ aseg_raw_simple <- Reduce(
   drop_patterns,
   init = aseg_raw
 ) |>
-  atlas_view_remove_region(
+  atlas_prune_region(
     pattern = "cerebellum",
     match_on = "label",
     views = "coronal"

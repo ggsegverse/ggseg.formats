@@ -2,12 +2,34 @@
 % Please edit documentation in R/atlas_utils.R
 \name{drawing_manipulation}
 \alias{drawing_manipulation}
-\alias{atlas_view_remove_region}
-\alias{atlas_view_remove_small}
+\alias{atlas_prune_region}
+\alias{atlas_prune_small}
 \alias{atlas_prune_weak}
 \alias{atlas_view_select}
+\alias{atlas_view_remove_region}
+\alias{atlas_view_remove_small}
 \title{Change which regions are drawn inside a view}
 \usage{
+atlas_prune_region(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  views = NULL
+)
+
+atlas_prune_small(
+  atlas,
+  min_area,
+  views = NULL,
+  scope = c("region", "piece"),
+  labels = NULL,
+  exclude = NULL
+)
+
+atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
+
+atlas_view_select(atlas, threshold = 0.5, weights = NULL)
+
 atlas_view_remove_region(
   atlas,
   pattern,
@@ -23,10 +45,6 @@ atlas_view_remove_small(
   labels = NULL,
   exclude = NULL
 )
-
-atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
-
-atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 }
 \arguments{
 \item{atlas}{A \code{ggseg_atlas} object}
@@ -42,7 +60,7 @@ pattern reads it unless told otherwise.}
 \item{views}{Character vector of view names or patterns. Multiple values
 are collapsed with \code{"|"} for matching.}
 
-\item{min_area}{For \code{atlas_view_remove_small()}: minimum area to keep.
+\item{min_area}{For \code{atlas_prune_small()}: minimum area to keep.
 What it applies to depends on \code{scope}; with the default
 \code{scope = "region"} context geometries are never removed.}
 
@@ -50,7 +68,7 @@ What it applies to depends on \code{scope}; with the default
 view (\code{"region"}, the default) or to each disconnected piece
 (\code{"piece"}).}
 
-\item{labels, exclude}{For \code{atlas_view_remove_small()}: optional regex
+\item{labels, exclude}{For \code{atlas_prune_small()}: optional regex
 scoping which labels are considered. \code{labels} restricts removal to
 matching labels, \code{exclude} spares them. Only one may be given. Useful
 with \code{scope = "piece"}, where a thin structure such as a cortical ribbon
@@ -72,8 +90,8 @@ Verbs that prune depictions, each by a different criterion:
 }
 \details{
 \itemize{
-\item \code{atlas_view_remove_region()}: by name
-\item \code{atlas_view_remove_small()}: by absolute area
+\item \code{atlas_prune_region()}: by name
+\item \code{atlas_prune_small()}: by absolute area
 \item \code{atlas_prune_weak()}: by area as a share of the region's best view
 }
 
@@ -83,11 +101,11 @@ A view can still disappear as a consequence --- \code{atlas_prune_weak()} drops
 a view that keeps no region, and the other two drop a view whose last
 remaining geometry they removed.
 
-\code{atlas_view_remove_small()} and \code{atlas_prune_weak()} are the same
+\code{atlas_prune_small()} and \code{atlas_prune_weak()} are the same
 operation asked two ways, an absolute area against a share of the region's
 largest appearance, with one difference that decides between them:
 \code{atlas_prune_weak()} keeps every region in at least one view, while
-\code{atlas_view_remove_small()} with the default \code{scope = "region"} can take a
+\code{atlas_prune_small()} with the default \code{scope = "region"} can take a
 region's geometry out of every view, leaving it legended but drawn nowhere
 --- and the higher the threshold, the more regions that happens to. Check
 \code{\link[=atlas_undrawn]{atlas_undrawn()}} after raising \code{min_area}.
@@ -97,7 +115,7 @@ atlas altogether, \link{region_manipulation}.
 }
 \section{Functions}{
 \itemize{
-\item \code{atlas_view_remove_small()}: Remove geometry below a minimum area
+\item \code{atlas_prune_small()}: Remove geometry below a minimum area
 threshold. With \code{scope = "region"} (the default) a label's whole geometry
 in a view is removed when its combined area is too small, and context
 geometries (labels not in core) are never removed. With
@@ -135,9 +153,20 @@ match, so they compete fairly. Pass \code{weights} to override.
 old name read as the verb for choosing which views an atlas keeps, which
 is \code{\link[=atlas_view_keep]{atlas_view_keep()}}, and not for choosing which views draw a region.
 
+\item \code{atlas_view_remove_region()}: Deprecated. Use \code{atlas_prune_region()}:
+the old name read as a verb on views, when it removes no view --- the
+region stays in \code{core} and only its depiction in the named views goes.
+For removing views themselves see \code{\link[=atlas_view_remove]{atlas_view_remove()}}.
+
+\item \code{atlas_view_remove_small()}: Deprecated. Use \code{atlas_prune_small()}: the
+old name read as a verb on views, when it removes no view. Note the
+near-namesake in ggseg.extra, \code{atlas_view_remove_sparse()}, which really
+does drop views; the two were a letter apart in intent and are not any
+more.
+
 }}
 \examples{
-dk() |> atlas_view_remove_small(min_area = 10)
+dk() |> atlas_prune_small(min_area = 10)
 
 }
 \seealso{

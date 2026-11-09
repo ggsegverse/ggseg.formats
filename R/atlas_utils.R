@@ -736,8 +736,8 @@ atlas_view_keep <- function(atlas, views) {
 #'
 #' Verbs that prune depictions, each by a different criterion:
 #'
-#' - `atlas_view_remove_region()`: by name
-#' - `atlas_view_remove_small()`: by absolute area
+#' - `atlas_prune_region()`: by name
+#' - `atlas_prune_small()`: by absolute area
 #' - `atlas_prune_weak()`: by area as a share of the region's best view
 #'
 #' None of these adds a view, and none removes a region from `core`: the
@@ -746,11 +746,11 @@ atlas_view_keep <- function(atlas, views) {
 #' a view that keeps no region, and the other two drop a view whose last
 #' remaining geometry they removed.
 #'
-#' `atlas_view_remove_small()` and `atlas_prune_weak()` are the same
+#' `atlas_prune_small()` and `atlas_prune_weak()` are the same
 #' operation asked two ways, an absolute area against a share of the region's
 #' largest appearance, with one difference that decides between them:
 #' `atlas_prune_weak()` keeps every region in at least one view, while
-#' `atlas_view_remove_small()` with the default `scope = "region"` can take a
+#' `atlas_prune_small()` with the default `scope = "region"` can take a
 #' region's geometry out of every view, leaving it legended but drawn nowhere
 #' --- and the higher the threshold, the more regions that happens to. Check
 #' [atlas_undrawn()] after raising `min_area`.
@@ -762,20 +762,20 @@ atlas_view_keep <- function(atlas, views) {
 #' @template pattern
 #' @template match_on
 #' @template views
-#' @param min_area For `atlas_view_remove_small()`: minimum area to keep.
+#' @param min_area For `atlas_prune_small()`: minimum area to keep.
 #'   What it applies to depends on `scope`; with the default
 #'   `scope = "region"` context geometries are never removed.
 #'
 #' @return Modified `ggseg_atlas` object
 #'
 #' @examples
-#' dk() |> atlas_view_remove_small(min_area = 10)
+#' dk() |> atlas_prune_small(min_area = 10)
 #'
 #' @seealso [atlas_manipulation] for the other groups
 #' @name drawing_manipulation
 #' @export
 #' @family atlas manipulations
-atlas_view_remove_region <- function(
+atlas_prune_region <- function(
   atlas,
   pattern,
   match_on = c("label", "region"),
@@ -784,10 +784,10 @@ atlas_view_remove_region <- function(
   match_on <- match.arg(match_on)
 
   if (is.null(data_sf(atlas$data))) {
-    return(view_remove_region_poly(atlas, pattern, match_on, views))
+    return(prune_region_poly(atlas, pattern, match_on, views))
   }
 
-  require_sf("atlas_view_remove_region()")
+  require_sf("atlas_prune_region()")
 
   if (match_on == "region") {
     match_col <- atlas$core$region
@@ -831,14 +831,14 @@ atlas_view_remove_region <- function(
 #' @param scope Whether `min_area` applies to a label's whole geometry in a
 #'   view (`"region"`, the default) or to each disconnected piece
 #'   (`"piece"`).
-#' @param labels,exclude For `atlas_view_remove_small()`: optional regex
+#' @param labels,exclude For `atlas_prune_small()`: optional regex
 #'   scoping which labels are considered. `labels` restricts removal to
 #'   matching labels, `exclude` spares them. Only one may be given. Useful
 #'   with `scope = "piece"`, where a thin structure such as a cortical ribbon
 #'   has legitimately small pieces that should not be treated as specks.
 #' @export
 #' @family atlas manipulations
-atlas_view_remove_small <- function(
+atlas_prune_small <- function(
   atlas,
   min_area,
   views = NULL,
@@ -879,7 +879,7 @@ atlas_view_remove_small <- function(
     return(atlas_view_gather(set_atlas_polygons(atlas, res$polygons)))
   }
 
-  require_sf("atlas_view_remove_small()")
+  require_sf("atlas_prune_small()")
   areas <- as.numeric(sf::st_area(data_sf(atlas$data)$geometry))
   is_context <- is.na(data_sf(atlas$data)$label) |
     !data_sf(atlas$data)$label %in% atlas$core$label
@@ -980,6 +980,61 @@ atlas_view_select <- function(
     "atlas_prune_weak()"
   )
   atlas_prune_weak(atlas, threshold = threshold, weights = weights)
+}
+
+
+#' @describeIn drawing_manipulation Deprecated. Use `atlas_prune_region()`:
+#'   the old name read as a verb on views, when it removes no view --- the
+#'   region stays in `core` and only its depiction in the named views goes.
+#'   For removing views themselves see [atlas_view_remove()].
+#' @export
+atlas_view_remove_region <- function(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  views = NULL
+) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "atlas_view_remove_region()",
+    "atlas_prune_region()"
+  )
+  atlas_prune_region(
+    atlas,
+    pattern = pattern,
+    match_on = match_on,
+    views = views
+  )
+}
+
+
+#' @describeIn drawing_manipulation Deprecated. Use `atlas_prune_small()`: the
+#'   old name read as a verb on views, when it removes no view. Note the
+#'   near-namesake in ggseg.extra, `atlas_view_remove_sparse()`, which really
+#'   does drop views; the two were a letter apart in intent and are not any
+#'   more.
+#' @export
+atlas_view_remove_small <- function(
+  atlas,
+  min_area,
+  views = NULL,
+  scope = c("region", "piece"),
+  labels = NULL,
+  exclude = NULL
+) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "atlas_view_remove_small()",
+    "atlas_prune_small()"
+  )
+  atlas_prune_small(
+    atlas,
+    min_area = min_area,
+    views = views,
+    scope = scope,
+    labels = labels,
+    exclude = exclude
+  )
 }
 
 
@@ -1490,11 +1545,11 @@ region_op_result <- function(sf_data, x_labels, y_labels, action, into) {
 
 #' Remove region geometry from a polygon-only atlas
 #'
-#' The sf-free branch of [atlas_view_remove_region()]: resolves labels to
+#' The sf-free branch of [atlas_prune_region()]: resolves labels to
 #' drop, removes them from the polygon representation, and re-packs views.
 #' @noRd
 #' @keywords internal
-view_remove_region_poly <- function(atlas, pattern, match_on, views) {
+prune_region_poly <- function(atlas, pattern, match_on, views) {
   if (is.null(data_poly(atlas$data))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
     return(atlas)
@@ -1750,7 +1805,7 @@ view_hemisphere_weights <- function(atlas, flat, view_names, weights) {
 
 #' Remove disconnected pieces below an area threshold
 #'
-#' Piece-level counterpart of [atlas_view_remove_small()]. sf atlases are
+#' Piece-level counterpart of [atlas_prune_small()]. sf atlases are
 #' routed through the polygon representation, which is where piece geometry is
 #' explicit, and converted back afterwards.
 #' @noRd
@@ -1867,7 +1922,7 @@ apply_prune_weak <- function(atlas, keep, view_names) {
   for (label in rownames(keep)) {
     drop_views <- view_names[!keep[label, ]]
     if (length(drop_views)) {
-      atlas <- atlas_view_remove_region(
+      atlas <- atlas_prune_region(
         atlas,
         paste0("^", label, "$"),
         match_on = "label",
