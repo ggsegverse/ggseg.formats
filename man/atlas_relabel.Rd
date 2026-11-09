@@ -2,9 +2,12 @@
 % Please edit documentation in R/relabel_atlas.R
 \name{atlas_relabel}
 \alias{atlas_relabel}
+\alias{relabel_atlas}
 \title{Re-key an atlas's labels}
 \usage{
 atlas_relabel(atlas, mapping)
+
+relabel_atlas(atlas, mapping)
 }
 \arguments{
 \item{atlas}{a \code{ggseg_atlas} object}
@@ -32,6 +35,14 @@ This is the supported way to correct an atlas's identifiers -- the operation
 \code{\link[=atlas_region_rename]{atlas_region_rename()}} instead to change the display names in \code{region},
 which is not a join key.
 }
+\section{Functions}{
+\itemize{
+\item \code{relabel_atlas()}: Deprecated. Use \code{atlas_relabel()}: everything
+else that acts on an atlas begins \code{atlas_}, and a verb-first name never
+appeared when completing \code{atlas_}, so this one was present but
+unfindable.
+
+}}
 \examples{
 a <- atlas_relabel(aseg(), c("Left-Thalamus" = "lh_thalamus"))
 head(atlas_labels(a))

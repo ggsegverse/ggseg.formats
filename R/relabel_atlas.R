@@ -64,15 +64,10 @@ atlas_relabel <- function(atlas, mapping) {
 }
 
 
-#' Deprecated name for [atlas_relabel()]
-#'
-#' Renamed so it sits with the rest of the atlas vocabulary: everything else
-#' that acts on an atlas begins `atlas_`, and a verb-first name never appeared
-#' when completing `atlas_`, so the function was there but unfindable.
-#'
-#' @inheritParams atlas_relabel
-#' @return The `ggseg_atlas` [atlas_relabel()] returns.
-#' @keywords internal
+#' @describeIn atlas_relabel Deprecated. Use `atlas_relabel()`: everything
+#'   else that acts on an atlas begins `atlas_`, and a verb-first name never
+#'   appeared when completing `atlas_`, so this one was present but
+#'   unfindable.
 #' @export
 relabel_atlas <- function(atlas, mapping) {
   lifecycle::deprecate_warn(
