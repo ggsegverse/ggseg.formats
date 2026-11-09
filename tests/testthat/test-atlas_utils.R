@@ -1067,6 +1067,27 @@ describe("atlas_view_keep", {
 })
 
 
+describe("the deprecated pruning wrappers", {
+  it("restate their replacement's signature exactly", {
+    # Each wrapper spells out the real verb's defaults by hand so the
+    # deprecated name keeps a documented usage line. That restatement can
+    # drift: change a default on the replacement and the old name keeps the
+    # old one, while its warning still claims the two are equivalent. The
+    # `match_on` default is the live risk -- the ecosystem used to key on
+    # `region` and now keys on `label`.
+    expect_identical(
+      formals(atlas_view_remove_region),
+      formals(atlas_prune_region)
+    )
+    expect_identical(
+      formals(atlas_view_remove_small),
+      formals(atlas_prune_small)
+    )
+    expect_identical(formals(atlas_view_select), formals(atlas_prune_weak))
+  })
+})
+
+
 describe("atlas_view_remove_region (deprecated)", {
   it("warns, naming the new verb, and forwards every argument", {
     atlas <- make_multiview_atlas()

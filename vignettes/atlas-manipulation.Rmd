@@ -29,11 +29,14 @@ Every one of those steps is a single function call, and they all pipe together.
 
 ## The manipulation toolkit
 
-ggseg.formats provides three groups of manipulation functions. **Region
+ggseg.formats provides four groups of manipulation functions. **Region
 functions** (`atlas_region_*`) control which regions are active in the atlas.
-**View functions** (`atlas_view_*`) control the 2D geometry—which views are
-present and how they are arranged. **Core functions** (`atlas_core_*`) enrich
-the region metadata. All of them accept a `ggseg_atlas` as the first argument,
+**View functions** (`atlas_view_*`) control which views are present and how
+they are arranged. **Pruning functions** (`atlas_prune_*`) control which
+regions are *drawn* inside a view: they add and remove no views, and remove
+nothing from `core`—the region stays and stays legended, and only its
+depiction in some view goes. **Core functions** (`atlas_core_*`) enrich the
+region metadata. All of them accept a `ggseg_atlas` as the first argument,
 return a new `ggseg_atlas`, and play nicely with the pipe.
 
 ## Keeping and removing regions
