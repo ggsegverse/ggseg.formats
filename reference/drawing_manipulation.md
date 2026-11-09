@@ -21,6 +21,8 @@ atlas_view_remove_small(
   exclude = NULL
 )
 
+atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
+
 atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 ```
 
@@ -67,13 +69,13 @@ atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 
 - threshold:
 
-  For `atlas_view_select()`: minimum share, between 0 and 1, of a
+  For `atlas_prune_weak()`: minimum share, between 0 and 1, of a
   region's best-view area that a view must hold to keep drawing it.
   Higher values are more aggressive.
 
 - weights:
 
-  For `atlas_view_select()`: optional named numeric vector of per-view
+  For `atlas_prune_weak()`: optional named numeric vector of per-view
   multipliers applied before comparing areas. Overrides the automatic
   hemisphere-coverage weighting for the views named.
 
@@ -87,18 +89,18 @@ Modified `ggseg_atlas` object
 
 - `atlas_view_remove_small()`: by absolute area
 
-- `atlas_view_select()`: by area as a share of the region's best view
+- `atlas_prune_weak()`: by area as a share of the region's best view
 
 None of these adds a view, and none removes a region from `core`: the
 region stays and is still legended, while its depiction in some view
-goes. A view can still disappear as a consequence —
-`atlas_view_select()` drops a view that keeps no region, and the other
-two drop a view whose last remaining geometry they removed.
+goes. A view can still disappear as a consequence — `atlas_prune_weak()`
+drops a view that keeps no region, and the other two drop a view whose
+last remaining geometry they removed.
 
-`atlas_view_remove_small()` and `atlas_view_select()` are the same
+`atlas_view_remove_small()` and `atlas_prune_weak()` are the same
 operation asked two ways, an absolute area against a share of the
 region's largest appearance, with one difference that decides between
-them: `atlas_view_select()` keeps every region in at least one view,
+them: `atlas_prune_weak()` keeps every region in at least one view,
 while `atlas_view_remove_small()` with the default `scope = "region"`
 can take a region's geometry out of every view, leaving it legended but
 drawn nowhere — and the higher the threshold, the more regions that
@@ -126,7 +128,7 @@ to remove a region from the atlas altogether,
   [`atlas_view_gather()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
   in case any view shrank.
 
-- `atlas_view_select()`: Keep each region only in the views that show it
+- `atlas_prune_weak()`: Keep each region only in the views that show it
   well.
 
   A slice or projection slab catches a structure in cross-section as
@@ -149,6 +151,12 @@ to remove a region from the atlas altogether,
   detected from the hemispheres actually present in each view and their
   areas scaled to match, so they compete fairly. Pass `weights` to
   override.
+
+- `atlas_view_select()`: Deprecated. Use `atlas_prune_weak()`: the old
+  name read as the verb for choosing which views an atlas keeps, which
+  is
+  [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md),
+  and not for choosing which views draw a region.
 
 ## See also
 

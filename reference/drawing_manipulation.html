@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9016</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9017</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,6 +67,8 @@
 <span>  exclude <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">atlas_prune_weak</span><span class="op">(</span><span class="va">atlas</span>, threshold <span class="op">=</span> <span class="fl">0.5</span>, weights <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">atlas_view_select</span><span class="op">(</span><span class="va">atlas</span>, threshold <span class="op">=</span> <span class="fl">0.5</span>, weights <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,13 +118,13 @@ has legitimately small pieces that should not be treated as specks.</p></dd>
 
 
 <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
-<dd><p>For <code>atlas_view_select()</code>: minimum share, between 0 and 1,
+<dd><p>For <code>atlas_prune_weak()</code>: minimum share, between 0 and 1,
 of a region's best-view area that a view must hold to keep drawing it.
 Higher values are more aggressive.</p></dd>
 
 
 <dt id="arg-weights">weights<a class="anchor" aria-label="anchor" href="#arg-weights"></a></dt>
-<dd><p>For <code>atlas_view_select()</code>: optional named numeric vector of
+<dd><p>For <code>atlas_prune_weak()</code>: optional named numeric vector of
 per-view multipliers applied before comparing areas. Overrides the
 automatic hemisphere-coverage weighting for the views named.</p></dd>
 
@@ -136,16 +138,16 @@ automatic hemisphere-coverage weighting for the views named.</p></dd>
 
 <ul><li><p><code>atlas_view_remove_region()</code>: by name</p></li>
 <li><p><code>atlas_view_remove_small()</code>: by absolute area</p></li>
-<li><p><code>atlas_view_select()</code>: by area as a share of the region's best view</p></li>
+<li><p><code>atlas_prune_weak()</code>: by area as a share of the region's best view</p></li>
 </ul><p>None of these adds a view, and none removes a region from <code>core</code>: the
 region stays and is still legended, while its depiction in some view goes.
-A view can still disappear as a consequence — <code>atlas_view_select()</code> drops
+A view can still disappear as a consequence — <code>atlas_prune_weak()</code> drops
 a view that keeps no region, and the other two drop a view whose last
 remaining geometry they removed.</p>
-<p><code>atlas_view_remove_small()</code> and <code>atlas_view_select()</code> are the same
+<p><code>atlas_view_remove_small()</code> and <code>atlas_prune_weak()</code> are the same
 operation asked two ways, an absolute area against a share of the region's
 largest appearance, with one difference that decides between them:
-<code>atlas_view_select()</code> keeps every region in at least one view, while
+<code>atlas_prune_weak()</code> keeps every region in at least one view, while
 <code>atlas_view_remove_small()</code> with the default <code>scope = "region"</code> can take a
 region's geometry out of every view, leaving it legended but drawn nowhere
 — and the higher the threshold, the more regions that happens to. Check
@@ -167,7 +169,7 @@ always kept, so no region disappears – a speck in one view goes when
 the same region is drawn properly in another. Context is cleaned too.
 Optionally scope to specific views. Views are re-packed via
 <code><a href="view_manipulation.html">atlas_view_gather()</a></code> in case any view shrank.</p></li>
-<li><p><code>atlas_view_select()</code>: Keep each region only in the views that show
+<li><p><code>atlas_prune_weak()</code>: Keep each region only in the views that show
 it well.</p>
 <p>A slice or projection slab catches a structure in cross-section as readily
 as along its length, so most regions leave a sliver in most views. That
@@ -185,6 +187,9 @@ hemisphere while axial and coronal panels show both, so on raw area it
 loses every comparison and empties out. Such views are detected from the
 hemispheres actually present in each view and their areas scaled to
 match, so they compete fairly. Pass <code>weights</code> to override.</p></li>
+<li><p><code>atlas_view_select()</code>: Deprecated. Use <code>atlas_prune_weak()</code>: the
+old name read as the verb for choosing which views an atlas keeps, which
+is <code><a href="view_manipulation.html">atlas_view_keep()</a></code>, and not for choosing which views draw a region.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

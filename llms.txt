@@ -274,6 +274,7 @@ Query atlas contents without reaching into slots directly.
 
 - [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_prune_weak()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   : Change which regions are drawn inside a view
 
@@ -357,6 +358,7 @@ inside a view. All return a new `ggseg_atlas`.
   : Change which views an atlas has, and where they sit
 - [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
+  [`atlas_prune_weak()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_select()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   : Change which regions are drawn inside a view
 - [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md)
