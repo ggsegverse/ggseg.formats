@@ -29,11 +29,14 @@ Every one of those steps is a single function call, and they all pipe together.
 
 ## The manipulation toolkit
 
-ggseg.formats provides three groups of manipulation functions. **Region
+ggseg.formats provides four groups of manipulation functions. **Region
 functions** (`atlas_region_*`) control which regions are active in the atlas.
-**View functions** (`atlas_view_*`) control the 2D geometry—which views are
-present and how they are arranged. **Core functions** (`atlas_core_*`) enrich
-the region metadata. All of them accept a `ggseg_atlas` as the first argument,
+**View functions** (`atlas_view_*`) control which views are present and how
+they are arranged. **Pruning functions** (`atlas_prune_*`) control which
+regions are *drawn* inside a view: they add and remove no views, and remove
+nothing from `core`—the region stays and stays legended, and only its
+depiction in some view goes. **Core functions** (`atlas_core_*`) enrich the
+region metadata. All of them accept a `ggseg_atlas` as the first argument,
 return a new `ggseg_atlas`, and play nicely with the pipe.
 
 ## Keeping and removing regions
@@ -157,31 +160,31 @@ atlas_views(fewer)
 
 After filtering regions you may have small polygon fragments left over—tiny
 slivers where a region just barely crossed a slice plane.
-`atlas_view_remove_small()` removes region polygons below a minimum area
+`atlas_prune_small()` removes region polygons below a minimum area
 threshold. Context polygons (those not in core) are never removed:
 ```{r}
 #| label: view-remove-small
-cleaned <- atlas_view_remove_small(aseg(), min_area = 50)
+cleaned <- atlas_prune_small(aseg(), min_area = 50)
 ```
 
 You can scope the removal to specific views:
 
 ```{r}
 #| label: view-remove-small-scoped
-cleaned_sag <- atlas_view_remove_small(
+cleaned_sag <- atlas_prune_small(
   aseg(),
   min_area = 50,
   views = "sagittal"
 )
 ```
 
-`atlas_view_remove_region()` removes a specific region's 2D geometry without
+`atlas_prune_region()` removes a specific region's 2D geometry without
 touching core, palette, or 3D data. This is useful when a region's 2D projection
 is misleading but you still want it in 3D:
 
 ```{r}
 #| label: view-remove-region
-no_stem_sf <- atlas_view_remove_region(
+no_stem_sf <- atlas_prune_region(
   aseg(),
   "brain stem",
   match_on = "region"
@@ -246,7 +249,7 @@ two-view figure of deep grey matter structures:
 publication_aseg <- aseg() |>
   atlas_view_keep(c("sagittal", "coronal_2")) |>
   atlas_region_contextual("ventricle|choroid|white|cc") |>
-  atlas_view_remove_small(min_area = 30) |>
+  atlas_prune_small(min_area = 30) |>
   atlas_view_gather(gap = 0.1)
 
 publication_aseg

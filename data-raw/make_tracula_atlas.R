@@ -259,7 +259,7 @@ saveRDS(tracula, file.path("data-raw", "tracula_unsmoothed.rds"))
 cli::cli_alert_info("Cleaning up geometries")
 
 tracula <- tracula |>
-  atlas_view_remove_small(
+  atlas_prune_small(
     min_area = 20,
     scope = "piece",
     exclude = "^cortex"

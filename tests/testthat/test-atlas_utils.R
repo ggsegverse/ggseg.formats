@@ -1067,9 +1067,96 @@ describe("atlas_view_keep", {
 })
 
 
-# atlas_view_remove_region ----
+describe("the deprecated pruning wrappers", {
+  it("restate their replacement's signature exactly", {
+    # Each wrapper spells out the real verb's defaults by hand so the
+    # deprecated name keeps a documented usage line. That restatement can
+    # drift: change a default on the replacement and the old name keeps the
+    # old one, while its warning still claims the two are equivalent. The
+    # `match_on` default is the live risk -- the ecosystem used to key on
+    # `region` and now keys on `label`.
+    expect_identical(
+      formals(atlas_view_remove_region),
+      formals(atlas_prune_region)
+    )
+    expect_identical(
+      formals(atlas_view_remove_small),
+      formals(atlas_prune_small)
+    )
+    expect_identical(formals(atlas_view_select), formals(atlas_prune_weak))
+  })
+})
 
-describe("atlas_view_remove_region", {
+
+describe("atlas_view_remove_region (deprecated)", {
+  it("warns, naming the new verb, and forwards every argument", {
+    atlas <- make_multiview_atlas()
+
+    lifecycle::expect_deprecated(
+      old <- atlas_view_remove_region(atlas, "lh_frontal"),
+      regexp = "atlas_prune_region"
+    )
+    expect_identical(old, atlas_prune_region(atlas, "lh_frontal"))
+
+    # `match_on` and `views` both have to travel. `^frontal$` matches the
+    # *region* and no label at all -- the labels are `lh_frontal`/`rh_frontal`
+    # -- so reading it as a label, which is what an unforwarded `match_on`
+    # would do, matches nothing. Scoping to one view changes the result again.
+    one_view <- atlas_views(atlas)[1]
+    by_region <- suppressWarnings(atlas_view_remove_region(
+      atlas,
+      "^frontal$",
+      match_on = "region",
+      views = one_view
+    ))
+    expected <- atlas_prune_region(
+      atlas,
+      "^frontal$",
+      match_on = "region",
+      views = one_view
+    )
+    as_label <- atlas_prune_region(atlas, "^frontal$", views = one_view)
+    unscoped <- atlas_prune_region(atlas, "^frontal$", match_on = "region")
+
+    # Both comparisons have to be able to differ, or the equality below
+    # would hold for a wrapper that forwarded neither.
+    expect_false(identical(expected, as_label))
+    expect_false(identical(expected, unscoped))
+    expect_identical(by_region, expected)
+  })
+})
+
+
+describe("atlas_view_remove_small (deprecated)", {
+  it("warns, naming the new verb, and forwards every argument", {
+    atlas <- make_multiview_atlas()
+
+    lifecycle::expect_deprecated(
+      old <- atlas_view_remove_small(atlas, min_area = 10),
+      regexp = "atlas_prune_small"
+    )
+    expect_identical(old, atlas_prune_small(atlas, min_area = 10))
+
+    # `scope` has to travel too: "piece" prunes disconnected specks while
+    # "region" drops a label's whole geometry in a view, so the two give
+    # different atlases and an unforwarded default would be invisible.
+    by_piece <- suppressWarnings(atlas_view_remove_small(
+      atlas,
+      min_area = 10,
+      scope = "piece"
+    ))
+    expected <- atlas_prune_small(atlas, min_area = 10, scope = "piece")
+    by_region <- atlas_prune_small(atlas, min_area = 10, scope = "region")
+
+    expect_false(identical(expected, by_region))
+    expect_identical(by_piece, expected)
+  })
+})
+
+
+# atlas_prune_region ----
+
+describe("atlas_prune_region", {
   for (polygons in c(FALSE, TRUE)) {
     it(
       paste0(
@@ -1079,7 +1166,7 @@ describe("atlas_view_remove_region", {
       ),
       {
         atlas <- make_multiview_atlas(polygons = polygons)
-        result <- atlas_view_remove_region(atlas, "lh_frontal")
+        result <- atlas_prune_region(atlas, "lh_frontal")
 
         expect_false("lh_frontal" %in% result$data$geom$label)
         expect_true("lh_frontal" %in% result$core$label)
@@ -1091,7 +1178,7 @@ describe("atlas_view_remove_region", {
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("matches on region via core lookup [", rep_name(polygons), "]"), {
       atlas <- make_multiview_atlas(polygons = polygons)
-      result <- atlas_view_remove_region(atlas, "frontal", match_on = "region")
+      result <- atlas_prune_region(atlas, "frontal", match_on = "region")
 
       expect_false("lh_frontal" %in% result$data$geom$label)
       expect_false("rh_frontal" %in% result$data$geom$label)
@@ -1104,7 +1191,7 @@ describe("atlas_view_remove_region", {
       atlas <- make_multiview_atlas(polygons = polygons)
       atlas$data$geom$label[1] <- NA
       n_na <- sum(is.na(atlas$data$geom$label))
-      result <- atlas_view_remove_region(atlas, "insula")
+      result <- atlas_prune_region(atlas, "insula")
       expect_identical(sum(is.na(result$data$geom$label)), n_na)
     })
   }
@@ -1112,7 +1199,7 @@ describe("atlas_view_remove_region", {
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("preserves context geometry labels [", rep_name(polygons), "]"), {
       atlas <- make_multiview_atlas(polygons = polygons)
-      result <- atlas_view_remove_region(atlas, "ctx_left")
+      result <- atlas_prune_region(atlas, "ctx_left")
       expect_false("ctx_left" %in% result$data$geom$label)
     })
   }
@@ -1577,9 +1664,9 @@ describe("atlas_prune_weak", {
 })
 
 
-# atlas_view_remove_small ----
+# atlas_prune_small ----
 
-describe("atlas_view_remove_small", {
+describe("atlas_prune_small", {
   n_pieces <- function(x) {
     flat <- polygons_unnest(if (is_ggseg_atlas(x)) atlas_polygons(x) else x)
     length(unique(paste(flat$label, flat$view)))
@@ -1596,7 +1683,7 @@ describe("atlas_view_remove_small", {
         atlas <- make_multiview_atlas(polygons = polygons)
         n_before <- n_pieces(atlas)
         expect_message(
-          result <- atlas_view_remove_small(atlas, min_area = 2),
+          result <- atlas_prune_small(atlas, min_area = 2),
           "Removed"
         )
         n_after <- n_pieces(result)
@@ -1613,7 +1700,7 @@ describe("atlas_view_remove_small", {
         c(atlas$core$label, NA)
       )
       expect_message(
-        result <- atlas_view_remove_small(atlas, min_area = 2),
+        result <- atlas_prune_small(atlas, min_area = 2),
         "Removed"
       )
       remaining_labels <- unique(atlas_polygons(result)$label)
@@ -1625,11 +1712,11 @@ describe("atlas_view_remove_small", {
     it(paste0("scopes to specific views [", rep_name(polygons), "]"), {
       atlas <- make_multiview_atlas(polygons = polygons)
       expect_message(
-        result_all <- atlas_view_remove_small(atlas, min_area = 2),
+        result_all <- atlas_prune_small(atlas, min_area = 2),
         "Removed"
       )
       expect_message(
-        result_axial <- atlas_view_remove_small(
+        result_axial <- atlas_prune_small(
           atlas,
           min_area = 2,
           views = "axial"
@@ -1644,7 +1731,7 @@ describe("atlas_view_remove_small", {
   it("preserves core and palette", {
     atlas <- make_multiview_atlas(polygons = TRUE)
     expect_message(
-      result <- atlas_view_remove_small(atlas, min_area = 2),
+      result <- atlas_prune_small(atlas, min_area = 2),
       "Removed"
     )
     expect_identical(result$core, atlas$core)
@@ -1655,7 +1742,7 @@ describe("atlas_view_remove_small", {
     atlas <- make_test_atlas(polygons = TRUE)
     atlas$data$geom <- NULL
     expect_warning(
-      atlas_view_remove_small(atlas, min_area = 1),
+      atlas_prune_small(atlas, min_area = 1),
       "no 2D geometry"
     )
   })
@@ -1663,7 +1750,7 @@ describe("atlas_view_remove_small", {
   it("removes small geometries from a polygon-only atlas", {
     poly <- make_multiview_atlas(polygons = TRUE)
     expect_message(
-      result <- atlas_view_remove_small(poly, min_area = 2),
+      result <- atlas_prune_small(poly, min_area = 2),
       "Removed"
     )
     expect_null(result$data$sf)
@@ -1817,19 +1904,19 @@ describe("view operations on polygon-only atlases", {
     expect_identical(poly_views(result), "axial_1")
   })
 
-  it("atlas_view_remove_region drops a region's geometry without sf", {
+  it("atlas_prune_region drops a region's geometry without sf", {
     poly <- make_test_atlas(polygons = TRUE)
-    result <- atlas_view_remove_region(poly, "lh_frontal", match_on = "label")
+    result <- atlas_prune_region(poly, "lh_frontal", match_on = "label")
     expect_null(result$data$sf)
     expect_false("lh_frontal" %in% result$data$geom$label)
     # core is untouched by a view-only removal
     expect_true("lh_frontal" %in% result$core$label)
   })
 
-  it("atlas_view_remove_region by region matches sf-path geometry", {
+  it("atlas_prune_region by region matches sf-path geometry", {
     atlas <- make_multiview_atlas()
-    sf_res <- atlas_view_remove_region(atlas, "frontal", match_on = "region")
-    poly_res <- atlas_view_remove_region(
+    sf_res <- atlas_prune_region(atlas, "frontal", match_on = "region")
+    poly_res <- atlas_prune_region(
       as_polygon_atlas(atlas),
       "frontal",
       match_on = "region"
@@ -1929,11 +2016,11 @@ describe("subclass preservation", {
       "cortical_atlas"
     )
     expect_s3_class(
-      atlas_view_remove_region(atlas, "lh_frontal"),
+      atlas_prune_region(atlas, "lh_frontal"),
       "cortical_atlas"
     )
     expect_message(
-      removed <- atlas_view_remove_small(atlas, min_area = 2),
+      removed <- atlas_prune_small(atlas, min_area = 2),
       "Removed"
     )
     expect_s3_class(removed, "cortical_atlas")
@@ -2023,7 +2110,7 @@ describe("atlas_region_contextual", {
 })
 
 
-describe("atlas_view_remove_region", {
+describe("atlas_prune_region", {
   for (polygons in c(FALSE, TRUE)) {
     it(
       paste0(
@@ -2033,7 +2120,7 @@ describe("atlas_view_remove_region", {
       ),
       {
         atlas <- make_multiview_atlas(polygons = polygons)
-        result <- atlas_view_remove_region(
+        result <- atlas_prune_region(
           atlas,
           "frontal",
           match_on = "region",
@@ -2050,7 +2137,7 @@ describe("atlas_view_remove_region", {
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("removes by label pattern [", rep_name(polygons), "]"), {
       atlas <- make_multiview_atlas(polygons = polygons)
-      result <- atlas_view_remove_region(
+      result <- atlas_prune_region(
         atlas,
         "lh_frontal",
         match_on = "label"
@@ -2075,7 +2162,7 @@ describe("atlas_view_remove_region", {
       data = ggseg_data_cortical(vertices = vertices)
     )
     expect_warning(
-      atlas_view_remove_region(atlas, "frontal"),
+      atlas_prune_region(atlas, "frontal"),
       "no 2D geometry"
     )
   })
@@ -2301,7 +2388,7 @@ describe("atlas_region_keep with subcortical atlas", {
 })
 
 
-describe("atlas_view_remove_region matching by region", {
+describe("atlas_prune_region matching by region", {
   for (polygons in c(FALSE, TRUE)) {
     it(
       paste0(
@@ -2311,7 +2398,7 @@ describe("atlas_view_remove_region matching by region", {
       ),
       {
         atlas <- make_test_atlas(polygons = polygons)
-        result <- atlas_view_remove_region(
+        result <- atlas_prune_region(
           atlas,
           "frontal",
           match_on = "region"
@@ -2335,7 +2422,7 @@ describe("atlas_view_remove_region matching by region", {
         atlas <- make_test_atlas(polygons = polygons)
         expect_warning(
           expect_warning(
-            atlas_view_remove_region(atlas, ".*", match_on = "label"),
+            atlas_prune_region(atlas, ".*", match_on = "label"),
             "All region geometries removed"
           ),
           "no 2D geometry"
@@ -2883,12 +2970,12 @@ describe("rebuild_data_with_geom on a cerebellar atlas", {
 })
 
 
-describe("view_remove_region_poly removing all geometry", {
+describe("prune_region_poly removing all geometry", {
   it("warns when all region geometries are removed", {
     poly <- as_polygon_atlas(dk())
     expect_warning(
       expect_warning(
-        atlas_view_remove_region(poly, ".*", match_on = "label"),
+        atlas_prune_region(poly, ".*", match_on = "label"),
         "All region geometries removed",
         fixed = TRUE
       ),
@@ -3024,7 +3111,7 @@ describe("rebuild_data_with_geom() cerebellar vertices-only branch", {
 })
 
 
-describe("atlas_view_remove_small(scope = 'piece')", {
+describe("atlas_prune_small(scope = 'piece')", {
   # One region drawn as a big square plus a detached speck, in one view.
   speck_atlas <- function() {
     skip_if_not_installed("sf")
@@ -3061,32 +3148,32 @@ describe("atlas_view_remove_small(scope = 'piece')", {
   }
 
   it("drops the speck and keeps the main piece", {
-    result <- atlas_view_remove_small(speck_atlas(), 10, scope = "piece")
+    result <- atlas_prune_small(speck_atlas(), 10, scope = "piece")
     # 20x20 kept, 2x2 speck dropped
     expect_identical(total_area(result), 400)
   })
 
   it("keeps the region present rather than removing it wholesale", {
-    result <- atlas_view_remove_small(speck_atlas(), 10, scope = "piece")
+    result <- atlas_prune_small(speck_atlas(), 10, scope = "piece")
     expect_identical(nrow(result$core), 1L)
     expect_true("a" %in% atlas_labels(result))
   })
 
   it("never removes a region's largest piece, even below min_area", {
     # min_area far above everything: the biggest piece must still survive.
-    result <- atlas_view_remove_small(speck_atlas(), 1e6, scope = "piece")
+    result <- atlas_prune_small(speck_atlas(), 1e6, scope = "piece")
     expect_identical(total_area(result), 400)
   })
 
   it("leaves geometry untouched when nothing is small enough", {
-    result <- atlas_view_remove_small(speck_atlas(), 1, scope = "piece")
+    result <- atlas_prune_small(speck_atlas(), 1, scope = "piece")
     expect_identical(total_area(result), 404)
   })
 
   it("defaults to region scope", {
     expect_identical(
-      atlas_view_remove_small(speck_atlas(), 10),
-      atlas_view_remove_small(speck_atlas(), 10, scope = "region")
+      atlas_prune_small(speck_atlas(), 10),
+      atlas_prune_small(speck_atlas(), 10, scope = "region")
     )
   })
 })
@@ -3148,7 +3235,7 @@ describe("the view verbs on a view that does not exist", {
 })
 
 
-describe("atlas_view_remove_small() piece guard", {
+describe("atlas_prune_small() piece guard", {
   it("drops a speck in one view when the region is drawn in another", {
     # The guard exists so no region disappears. Held per view, it kept a
     # 15-unit square outside the brain outline in one slab of
@@ -3163,7 +3250,7 @@ describe("atlas_view_remove_small() piece guard", {
     biggest <- max(as.numeric(sf::st_area(
       before$geometry[before$label == label]
     )))
-    cleaned <- atlas_view_remove_small(
+    cleaned <- atlas_prune_small(
       atlas,
       min_area = biggest * 0.9,
       scope = "piece"

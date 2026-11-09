@@ -59,10 +59,10 @@ describe("polygons_remove_region()", {
     expect_false(any(kept$label == target & kept$view == view))
   })
 
-  it("removes scoped geometry via atlas_view_remove_region()", {
+  it("removes scoped geometry via atlas_prune_region()", {
     atlas <- as_polygon_atlas(dk())
     view <- unique(polygons_unnest(atlas_polygons(atlas))$view)[1]
-    out <- atlas_view_remove_region(atlas, "bankssts", views = view)
+    out <- atlas_prune_region(atlas, "bankssts", views = view)
     expect_true(is_atlas_polygon(out))
   })
 })
@@ -82,11 +82,11 @@ describe("polygons_remove_small()", {
     expect_gt(res$n_removed, 0L)
   })
 
-  it("removes scoped small geometry via atlas_view_remove_small()", {
+  it("removes scoped small geometry via atlas_prune_small()", {
     atlas <- as_polygon_atlas(dk())
     view <- unique(polygons_unnest(atlas_polygons(atlas))$view)[1]
     expect_message(
-      out <- atlas_view_remove_small(atlas, min_area = Inf, views = view),
+      out <- atlas_prune_small(atlas, min_area = Inf, views = view),
       "Removed"
     )
     expect_true(is_atlas_polygon(out))

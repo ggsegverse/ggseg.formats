@@ -29,6 +29,15 @@
 
 ## Minor changes
 
+- `atlas_view_remove_region()` and `atlas_view_remove_small()` are renamed
+  `atlas_prune_region()` and `atlas_prune_small()`, joining
+  `atlas_prune_weak()`. None of the three removes a view, which the old
+  `atlas_view_*` names implied -- the region stays in `core` and only its
+  depiction goes. The old names still work and warn, pointing at the new ones;
+  they will be removed in a future release. `atlas_view_remove()`,
+  `atlas_view_keep()`, `atlas_view_reorder()` and `atlas_view_gather()` are
+  unchanged: those do act on views.
+
 - `atlas_view_select()` is renamed `atlas_prune_weak()`. The old name read as
   the verb for choosing which views an atlas keeps --- which is
   `atlas_view_keep()` --- rather than for choosing, per region, which views
@@ -41,7 +50,7 @@
   split by what each group acts on: `region_manipulation` (which regions the
   atlas has), `view_manipulation` (which views exist, and where they sit),
   `drawing_manipulation` (which regions are drawn inside a view) and
-  `atlas_core_add()`. `atlas_view_remove_region()`, `atlas_view_remove_small()`
+  `atlas_core_add()`. `atlas_prune_region()`, `atlas_prune_small()`
   and `atlas_prune_weak()` prune depictions and add no views, which the shared
   page had filed under view manipulation alongside the verbs that do.
   `?atlas_manipulation` still resolves, now as an overview.
@@ -68,7 +77,7 @@
   been writing `"^cortex"` by hand, which is a guess about what the pipeline
   named the backdrop: measured across the library, it misses the backdrop in
   109 of the 121 objects that have one, and a pattern matching nothing is
-  silent. `atlas_view_remove_small()` and `atlas_region_op()`'s `x` and `y`
+  silent. `atlas_prune_small()` and `atlas_region_op()`'s `x` and `y`
   resolve a function selector now, as the `ggseg.extra` verbs already did.
 
 - `atlas_context()` returns the labels an atlas draws but does not treat as
@@ -116,7 +125,7 @@
 
 ### Breaking changes
 
-- `atlas_view_remove_small(scope = "piece")` keeps a region's largest piece
+- `atlas_prune_small(scope = "piece")` keeps a region's largest piece
   anywhere in the atlas, where it kept the largest in each view. A region
   whose only piece in one view is a speck of a few square units now loses it,
   because the same region is still drawn properly in another view and the
@@ -154,7 +163,7 @@
 - Every verb that takes a pattern matches it against `label` by default.
   `atlas_region_remove()`, `atlas_region_keep()`, `atlas_region_contextual()`
   and `atlas_region_rename()` matched `region`; `atlas_region_op()`,
-  `atlas_view_remove_region()` and `atlas_structure_reorder()` already matched
+  `atlas_prune_region()` and `atlas_structure_reorder()` already matched
   `label`. `label` is the identifier that is unique within an atlas and stable
   across them. A pattern written for a region spelling that differs from its
   label, such as `"brain stem"` for `Brain-Stem`, now needs

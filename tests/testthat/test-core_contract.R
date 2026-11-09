@@ -217,7 +217,7 @@ describe("context() and regions()", {
   it("is accepted by a geometry verb in place of a pattern", {
     atlas <- aseg()
     expect_no_error(
-      atlas_view_remove_small(
+      atlas_prune_small(
         atlas,
         min_area = 1,
         scope = "piece",
