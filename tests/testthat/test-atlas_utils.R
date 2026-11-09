@@ -1084,6 +1084,25 @@ describe("the deprecated pruning wrappers", {
       formals(atlas_prune_small)
     )
     expect_identical(formals(atlas_view_select), formals(atlas_prune_weak))
+    expect_identical(formals(relabel_atlas), formals(atlas_relabel))
+  })
+
+  it("warn, naming their replacement, and forward their arguments", {
+    # `relabel_atlas()` is the fourth of these and the only one renamed for
+    # findability rather than for reading wrong: a verb-first name never
+    # appeared when completing `atlas_`, so the function was there and
+    # unfindable.
+    mapping <- c("Left-Thalamus" = "lh_thalamus")
+
+    lifecycle::expect_deprecated(
+      old <- relabel_atlas(aseg(), mapping),
+      regexp = "atlas_relabel"
+    )
+    expect_identical(old, atlas_relabel(aseg(), mapping))
+
+    # The mapping has to travel: relabelling with it differs from the atlas
+    # left alone, so a wrapper that dropped it would be invisible otherwise.
+    expect_false(identical(atlas_relabel(aseg(), mapping), aseg()))
   })
 })
 

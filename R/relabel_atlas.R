@@ -24,9 +24,9 @@
 #' @seealso [atlas_region_rename()] to rename regions rather than re-key labels.
 #' @export
 #' @examples
-#' a <- relabel_atlas(aseg(), c("Left-Thalamus" = "lh_thalamus"))
+#' a <- atlas_relabel(aseg(), c("Left-Thalamus" = "lh_thalamus"))
 #' head(atlas_labels(a))
-relabel_atlas <- function(atlas, mapping) {
+atlas_relabel <- function(atlas, mapping) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
@@ -61,4 +61,24 @@ relabel_atlas <- function(atlas, mapping) {
     data = data,
     provenance = atlas$provenance
   )
+}
+
+
+#' Deprecated name for [atlas_relabel()]
+#'
+#' Renamed so it sits with the rest of the atlas vocabulary: everything else
+#' that acts on an atlas begins `atlas_`, and a verb-first name never appeared
+#' when completing `atlas_`, so the function was there but unfindable.
+#'
+#' @inheritParams atlas_relabel
+#' @return The `ggseg_atlas` [atlas_relabel()] returns.
+#' @keywords internal
+#' @export
+relabel_atlas <- function(atlas, mapping) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "relabel_atlas()",
+    "atlas_relabel()"
+  )
+  atlas_relabel(atlas, mapping)
 }

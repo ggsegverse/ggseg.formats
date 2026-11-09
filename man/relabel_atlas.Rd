@@ -2,7 +2,7 @@
 % Please edit documentation in R/relabel_atlas.R
 \name{relabel_atlas}
 \alias{relabel_atlas}
-\title{Re-key an atlas's labels}
+\title{Deprecated name for \code{\link[=atlas_relabel]{atlas_relabel()}}}
 \usage{
 relabel_atlas(atlas, mapping)
 }
@@ -13,38 +13,11 @@ relabel_atlas(atlas, mapping)
 values the replacements.}
 }
 \value{
-The \code{ggseg_atlas} with \code{mapping} applied to \code{core$label}, the
-palette's names and every payload slot that carries a \code{label} column.
+The \code{ggseg_atlas} \code{\link[=atlas_relabel]{atlas_relabel()}} returns.
 }
 \description{
-\code{label} is an atlas's join key: \code{core}, the palette's names and every
-geometry payload (\code{geom}, \code{vertices}, \code{meshes}, \code{centerlines}) are keyed on
-it. Rewriting it in one of those places and not the others silently decouples
-geometry from metadata, which is how a renamed region ends up drawn in the
-wrong colour or not at all, so this rewrites all of them together.
+Renamed so it sits with the rest of the atlas vocabulary: everything else
+that acts on an atlas begins \code{atlas_}, and a verb-first name never appeared
+when completing \code{atlas_}, so the function was there but unfindable.
 }
-\details{
-Labels absent from \code{mapping} are left alone, so contextual geometry such as
-the \code{cortex_} silhouette survives a partial re-key untouched.
-
-This is the supported way to correct an atlas's identifiers -- the operation
-\code{tracula()} itself needed when its \code{.bbr.prep} suffix was restored. Use
-\code{\link[=atlas_region_rename]{atlas_region_rename()}} instead to change the display names in \code{region},
-which is not a join key.
-}
-\examples{
-a <- relabel_atlas(aseg(), c("Left-Thalamus" = "lh_thalamus"))
-head(atlas_labels(a))
-}
-\seealso{
-\code{\link[=atlas_region_rename]{atlas_region_rename()}} to rename regions rather than re-key labels.
-
-Other atlas manipulations:
-\code{\link[=atlas_core_add]{atlas_core_add()}},
-\code{\link{atlas_manipulation}},
-\code{\link[=atlas_structure_reorder]{atlas_structure_reorder()}},
-\code{\link{drawing_manipulation}},
-\code{\link{region_manipulation}},
-\code{\link{view_manipulation}}
-}
-\concept{atlas manipulations}
+\keyword{internal}

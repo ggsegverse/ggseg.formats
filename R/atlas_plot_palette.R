@@ -33,6 +33,7 @@ context_label_pattern <- paste0(
 #' @inheritParams atlas_palette
 #' @return Named character vector of colours keyed by label.
 #' @seealso [atlas_palette()] for the palette exactly as stored.
+#' @family atlas accessors
 #' @export
 #' @examples
 #' # A well-formed palette comes back untouched

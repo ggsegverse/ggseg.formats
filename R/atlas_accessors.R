@@ -356,6 +356,7 @@ print.ggseg_meshes <- function(x, n = 10, ...) {
 #' @examples
 #' atlas_provenance(dk())
 #' @export
+#' @family atlas accessors
 atlas_provenance <- function(atlas) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
