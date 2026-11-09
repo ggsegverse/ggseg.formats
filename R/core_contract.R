@@ -266,6 +266,87 @@ atlas_undrawn <- function(atlas) {
 }
 
 
+#' The views an atlas has that draw no region
+#'
+#' A view holding nothing but context is a panel of grey: it takes up room in
+#' the layout, carries a title, and shows no region of the atlas. It is the
+#' mirror of [atlas_undrawn()] -- that reports regions no view draws, this
+#' reports views that draw no region -- and the same silence applies, since
+#' the atlas validates and plots without complaint.
+#'
+#' Usually it is a consequence of your own editing rather than of the build:
+#' remove the ventricles from an `aseg`, or prune small depictions, and a view
+#' whose only content was those regions is left empty. Pair it with
+#' [atlas_view_remove()] to clear them:
+#'
+#' ```r
+#' atlas |> atlas_view_remove(atlas_views_empty(atlas))
+#' ```
+#'
+#' Reported rather than removed on purpose, so the decision stays with you.
+#' `ggseg.extra::atlas_view_remove_sparse()` is the build-time counterpart,
+#' which drops views a pipeline left *thin* against a threshold rather than
+#' empty.
+#'
+#' @param atlas A `ggseg_atlas`.
+#' @return The view names drawing no `core` region, as a character vector;
+#'   empty when every view draws at least one, and when the atlas carries no
+#'   2D geometry at all.
+#' @seealso [atlas_undrawn()], its mirror, and [atlas_view_remove()] to act on
+#'   the result.
+#' @examples
+#' atlas_views_empty(aseg())
+#' @export
+#' @family atlas accessors
+atlas_views_empty <- function(atlas) {
+  if (!is_ggseg_atlas(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
+  }
+  views <- atlas_views(atlas)
+  if (is.null(views) || length(views) == 0) {
+    return(character(0))
+  }
+  drawn <- drawn_label_views(atlas)
+  core_labels <- as.character(atlas$core$label)
+  drawn <- drawn[drawn$label %in% core_labels, , drop = FALSE]
+  setdiff(as.character(views), unique(as.character(drawn$view)))
+}
+
+
+#' Every label/view pair an atlas's 2D geometry draws, whichever backend
+#' holds it
+#'
+#' The polygon backend nests `view` inside each label's geometry while the sf
+#' backend carries one row per label and view, so the pairs have to be read
+#' differently from each.
+#' @noRd
+drawn_label_views <- function(atlas) {
+  empty <- data.frame(
+    label = character(0),
+    view = character(0),
+    stringsAsFactors = FALSE
+  )
+  poly <- data_poly(atlas$data)
+  if (!is.null(poly)) {
+    flat <- polygons_unnest(poly)
+    return(data.frame(
+      label = as.character(flat$label),
+      view = as.character(flat$view),
+      stringsAsFactors = FALSE
+    ))
+  }
+  sf_data <- data_sf(atlas$data)
+  if (!is.null(sf_data)) {
+    return(data.frame(
+      label = as.character(sf_data$label),
+      view = as.character(sf_data$view),
+      stringsAsFactors = FALSE
+    ))
+  }
+  empty
+}
+
+
 #' Every label an atlas's 2D geometry draws, whichever backend holds it
 #' @noRd
 drawn_labels <- function(atlas) {
