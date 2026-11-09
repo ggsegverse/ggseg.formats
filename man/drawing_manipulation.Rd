@@ -4,6 +4,7 @@
 \alias{drawing_manipulation}
 \alias{atlas_view_remove_region}
 \alias{atlas_view_remove_small}
+\alias{atlas_prune_weak}
 \alias{atlas_view_select}
 \title{Change which regions are drawn inside a view}
 \usage{
@@ -22,6 +23,8 @@ atlas_view_remove_small(
   labels = NULL,
   exclude = NULL
 )
+
+atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
 
 atlas_view_select(atlas, threshold = 0.5, weights = NULL)
 }
@@ -53,11 +56,11 @@ matching labels, \code{exclude} spares them. Only one may be given. Useful
 with \code{scope = "piece"}, where a thin structure such as a cortical ribbon
 has legitimately small pieces that should not be treated as specks.}
 
-\item{threshold}{For \code{atlas_view_select()}: minimum share, between 0 and 1,
+\item{threshold}{For \code{atlas_prune_weak()}: minimum share, between 0 and 1,
 of a region's best-view area that a view must hold to keep drawing it.
 Higher values are more aggressive.}
 
-\item{weights}{For \code{atlas_view_select()}: optional named numeric vector of
+\item{weights}{For \code{atlas_prune_weak()}: optional named numeric vector of
 per-view multipliers applied before comparing areas. Overrides the
 automatic hemisphere-coverage weighting for the views named.}
 }
@@ -71,19 +74,19 @@ Verbs that prune depictions, each by a different criterion:
 \itemize{
 \item \code{atlas_view_remove_region()}: by name
 \item \code{atlas_view_remove_small()}: by absolute area
-\item \code{atlas_view_select()}: by area as a share of the region's best view
+\item \code{atlas_prune_weak()}: by area as a share of the region's best view
 }
 
 None of these adds a view, and none removes a region from \code{core}: the
 region stays and is still legended, while its depiction in some view goes.
-A view can still disappear as a consequence --- \code{atlas_view_select()} drops
+A view can still disappear as a consequence --- \code{atlas_prune_weak()} drops
 a view that keeps no region, and the other two drop a view whose last
 remaining geometry they removed.
 
-\code{atlas_view_remove_small()} and \code{atlas_view_select()} are the same
+\code{atlas_view_remove_small()} and \code{atlas_prune_weak()} are the same
 operation asked two ways, an absolute area against a share of the region's
 largest appearance, with one difference that decides between them:
-\code{atlas_view_select()} keeps every region in at least one view, while
+\code{atlas_prune_weak()} keeps every region in at least one view, while
 \code{atlas_view_remove_small()} with the default \code{scope = "region"} can take a
 region's geometry out of every view, leaving it legended but drawn nowhere
 --- and the higher the threshold, the more regions that happens to. Check
@@ -106,7 +109,7 @@ the same region is drawn properly in another. Context is cleaned too.
 Optionally scope to specific views. Views are re-packed via
 \code{\link[=atlas_view_gather]{atlas_view_gather()}} in case any view shrank.
 
-\item \code{atlas_view_select()}: Keep each region only in the views that show
+\item \code{atlas_prune_weak()}: Keep each region only in the views that show
 it well.
 
 A slice or projection slab catches a structure in cross-section as readily
@@ -127,6 +130,10 @@ hemisphere while axial and coronal panels show both, so on raw area it
 loses every comparison and empties out. Such views are detected from the
 hemispheres actually present in each view and their areas scaled to
 match, so they compete fairly. Pass \code{weights} to override.
+
+\item \code{atlas_view_select()}: Deprecated. Use \code{atlas_prune_weak()}: the
+old name read as the verb for choosing which views an atlas keeps, which
+is \code{\link[=atlas_view_keep]{atlas_view_keep()}}, and not for choosing which views draw a region.
 
 }}
 \examples{

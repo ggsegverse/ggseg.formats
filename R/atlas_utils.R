@@ -738,18 +738,18 @@ atlas_view_keep <- function(atlas, views) {
 #'
 #' - `atlas_view_remove_region()`: by name
 #' - `atlas_view_remove_small()`: by absolute area
-#' - `atlas_view_select()`: by area as a share of the region's best view
+#' - `atlas_prune_weak()`: by area as a share of the region's best view
 #'
 #' None of these adds a view, and none removes a region from `core`: the
 #' region stays and is still legended, while its depiction in some view goes.
-#' A view can still disappear as a consequence --- `atlas_view_select()` drops
+#' A view can still disappear as a consequence --- `atlas_prune_weak()` drops
 #' a view that keeps no region, and the other two drop a view whose last
 #' remaining geometry they removed.
 #'
-#' `atlas_view_remove_small()` and `atlas_view_select()` are the same
+#' `atlas_view_remove_small()` and `atlas_prune_weak()` are the same
 #' operation asked two ways, an absolute area against a share of the region's
 #' largest appearance, with one difference that decides between them:
-#' `atlas_view_select()` keeps every region in at least one view, while
+#' `atlas_prune_weak()` keeps every region in at least one view, while
 #' `atlas_view_remove_small()` with the default `scope = "region"` can take a
 #' region's geometry out of every view, leaving it legended but drawn nowhere
 #' --- and the higher the threshold, the more regions that happens to. Check
@@ -925,19 +925,19 @@ atlas_view_remove_small <- function(
 #'   loses every comparison and empties out. Such views are detected from the
 #'   hemispheres actually present in each view and their areas scaled to
 #'   match, so they compete fairly. Pass `weights` to override.
-#' @param threshold For `atlas_view_select()`: minimum share, between 0 and 1,
+#' @param threshold For `atlas_prune_weak()`: minimum share, between 0 and 1,
 #'   of a region's best-view area that a view must hold to keep drawing it.
 #'   Higher values are more aggressive.
-#' @param weights For `atlas_view_select()`: optional named numeric vector of
+#' @param weights For `atlas_prune_weak()`: optional named numeric vector of
 #'   per-view multipliers applied before comparing areas. Overrides the
 #'   automatic hemisphere-coverage weighting for the views named.
 #' @export
-atlas_view_select <- function(
+atlas_prune_weak <- function(
   atlas,
   threshold = 0.5,
   weights = NULL
 ) {
-  check_select_threshold(threshold)
+  check_prune_threshold(threshold)
 
   if (is.null(geom_from_data(atlas$data))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to select")
@@ -953,8 +953,8 @@ atlas_view_select <- function(
   }
 
   view_names <- atlas_views(atlas)
-  keep <- view_selection_matrix(atlas, flat, view_names, threshold, weights)
-  atlas <- apply_view_selection(atlas, keep, view_names)
+  keep <- prune_weak_matrix(atlas, flat, view_names, threshold, weights)
+  atlas <- apply_prune_weak(atlas, keep, view_names)
 
   cli::cli_alert_info(
     "Regions drawn per view: \\
@@ -962,6 +962,24 @@ atlas_view_select <- function(
   )
 
   atlas_view_gather(atlas)
+}
+
+
+#' @describeIn drawing_manipulation Deprecated. Use `atlas_prune_weak()`: the
+#'   old name read as the verb for choosing which views an atlas keeps, which
+#'   is [atlas_view_keep()], and not for choosing which views draw a region.
+#' @export
+atlas_view_select <- function(
+  atlas,
+  threshold = 0.5,
+  weights = NULL
+) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "atlas_view_select()",
+    "atlas_prune_weak()"
+  )
+  atlas_prune_weak(atlas, threshold = threshold, weights = weights)
 }
 
 
@@ -1770,9 +1788,9 @@ remove_small_pieces <- function(
 }
 
 
-#' Validate the `threshold` argument of [atlas_view_select()]
+#' Validate the `threshold` argument of [atlas_prune_weak()]
 #' @noRd
-check_select_threshold <- function(threshold) {
+check_prune_threshold <- function(threshold) {
   if (
     !rlang::is_scalar_double(threshold) && !rlang::is_scalar_integer(threshold)
   ) {
@@ -1812,7 +1830,7 @@ area_with_empty_views <- function(area_by_view, view_names) {
 }
 
 
-view_selection_matrix <- function(atlas, flat, view_names, threshold, weights) {
+prune_weak_matrix <- function(atlas, flat, view_names, threshold, weights) {
   areas <- polygon_geometry_areas(flat)
 
   area_by_view <- tapply(areas$area, list(areas$label, areas$view), sum)
@@ -1843,9 +1861,9 @@ view_selection_matrix <- function(atlas, flat, view_names, threshold, weights) {
 }
 
 
-#' Drop each label from the views its selection matrix rules out
+#' Drop each label from the views its prune matrix rules out
 #' @noRd
-apply_view_selection <- function(atlas, keep, view_names) {
+apply_prune_weak <- function(atlas, keep, view_names) {
   for (label in rownames(keep)) {
     drop_views <- view_names[!keep[label, ]]
     if (length(drop_views)) {

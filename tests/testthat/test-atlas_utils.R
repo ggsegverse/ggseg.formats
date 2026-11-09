@@ -1119,13 +1119,54 @@ describe("atlas_view_remove_region", {
 })
 
 
-# atlas_view_select ----
+# atlas_prune_weak ----
 
 # Three views over two bilateral regions. `frontal` is drawn large in axial_1
 # and as a sliver in axial_2; `temporal` is the other way round. The sagittal
 # view holds left labels only, at the same size as the large drawings, so it
 # is only competitive once single-hemisphere views are weighted up.
-make_view_select_atlas <- function(
+# A prune_weak fixture built straight from a spec, for the cases the shared
+# fixture above cannot express: it is symmetric, so per-label and per-region
+# keying coincide on it and a regression between them is invisible.
+make_prune_weak_spec_atlas <- function(spec, core, polygons = FALSE) {
+  # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
+  square <- function(label, view, x_off, size) {
+    ring(
+      label,
+      view,
+      c(
+        x_off,
+        0,
+        x_off + size,
+        0,
+        x_off + size,
+        size,
+        x_off,
+        size,
+        x_off,
+        0
+      )
+    )
+  }
+
+  all_views <- unique(spec$view)
+  x_off <- (match(spec$view, all_views) - 1) * 40 + seq_len(nrow(spec)) * 0.01
+  rings <- Map(square, spec$label, spec$view, x_off, spec$size)
+
+  ggseg_atlas(
+    atlas = "test",
+    type = "cortical",
+    core = core,
+    palette = stats::setNames(
+      rep("#FF0000", nrow(core)),
+      core$label
+    ),
+    data = ggseg_data_cortical(geom = rings_as_geom(rings, polygons))
+  )
+  # nolint end
+}
+
+make_prune_weak_atlas <- function(
   polygons = FALSE,
   context_only_view = FALSE
 ) {
@@ -1199,7 +1240,129 @@ make_view_select_atlas <- function(
   # nolint end
 }
 
-describe("atlas_view_select", {
+describe("atlas_view_select (deprecated)", {
+  it("warns, and delegates to atlas_prune_weak", {
+    atlas <- make_prune_weak_atlas()
+
+    lifecycle::expect_deprecated(
+      suppressMessages(old <- atlas_view_select(atlas)),
+      # The name the warning points at is the point of the rename, so pin it:
+      # without this, naming any other replacement still passes.
+      regexp = "atlas_prune_weak"
+    )
+    suppressMessages(new <- atlas_prune_weak(atlas))
+
+    expect_identical(old, new)
+  })
+
+  it("forwards its arguments rather than falling back on the defaults", {
+    atlas <- make_prune_weak_atlas()
+
+    # `threshold` reaches the new verb: only its own validation raises this,
+    # and only when handed the value.
+    suppressWarnings(
+      expect_error(
+        atlas_view_select(atlas, threshold = 1.5),
+        "between 0 and 1"
+      )
+    )
+
+    # `weights` reaches it too. This weighting has to change the answer for
+    # the comparison below to mean anything, so that is asserted rather than
+    # assumed -- a fixture where weights stopped mattering would otherwise
+    # leave this passing while testing nothing.
+    w <- c(sagittal = 0.1)
+    suppressWarnings(
+      suppressMessages(weighted <- atlas_view_select(atlas, weights = w))
+    )
+    suppressMessages(expected <- atlas_prune_weak(atlas, weights = w))
+    suppressMessages(unweighted <- atlas_prune_weak(atlas))
+
+    expect_false(identical(expected, unweighted))
+    expect_identical(weighted, expected)
+  })
+})
+
+
+describe("atlas_prune_weak region keying", {
+  views_of <- function(atlas, label) {
+    flat <- polygons_unnest(atlas_polygons(atlas))
+    sort(unique(flat$view[flat$label == label]))
+  }
+
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "keeps a pair together when their per-label best views disagree [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        # The shared fixture is symmetric, so per-label and per-region keying
+        # agree on it and swapping one for the other is invisible. Here
+        # `lh_frontal` is largest in axial_1 and `rh_frontal` in axial_2 while
+        # the region covers the same area in each, so keying on region keeps
+        # both labels in both views, and keying on label would split the pair
+        # one view each -- the outcome the docs call an error rather than a
+        # choice.
+        spec <- rbind(
+          data.frame(label = "lh_frontal", view = "axial_1", size = 4),
+          data.frame(label = "rh_frontal", view = "axial_1", size = 1),
+          data.frame(label = "lh_frontal", view = "axial_2", size = 1),
+          data.frame(label = "rh_frontal", view = "axial_2", size = 4)
+        )
+        core <- data.frame(
+          hemi = c("left", "right"),
+          region = c("frontal", "frontal"),
+          label = c("lh_frontal", "rh_frontal"),
+          display = c("frontal", "frontal")
+        )
+        atlas <- make_prune_weak_spec_atlas(spec, core, polygons = polygons)
+
+        result <- suppressMessages(atlas_prune_weak(atlas))
+
+        expect_setequal(views_of(result, "lh_frontal"), c("axial_1", "axial_2"))
+        expect_setequal(views_of(result, "rh_frontal"), c("axial_1", "axial_2"))
+      }
+    )
+  }
+
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "keeps a label whose region's chosen views do not hold it [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        # The region is largest in the view holding only its left label, so at
+        # this threshold the view holding the right label loses on area and the
+        # region does not select it. The per-label fallback is what then keeps
+        # that label drawn; without it the label stays in `core`, stays
+        # legended, and is depicted nowhere.
+        spec <- rbind(
+          data.frame(label = "lh_frontal", view = "view_a", size = 4),
+          data.frame(label = "rh_frontal", view = "view_b", size = 1)
+        )
+        core <- data.frame(
+          hemi = c("left", "right"),
+          region = c("frontal", "frontal"),
+          label = c("lh_frontal", "rh_frontal"),
+          display = c("frontal", "frontal")
+        )
+        atlas <- make_prune_weak_spec_atlas(spec, core, polygons = polygons)
+
+        result <- suppressMessages(atlas_prune_weak(atlas, threshold = 0.6))
+
+        expect_identical(views_of(result, "rh_frontal"), "view_b")
+        expect_identical(views_of(result, "lh_frontal"), "view_a")
+      }
+    )
+  }
+})
+
+
+describe("atlas_prune_weak", {
   views_of <- function(atlas, label) {
     flat <- polygons_unnest(atlas_polygons(atlas))
     sort(unique(flat$view[flat$label == label]))
@@ -1213,13 +1376,13 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(
+        atlas <- make_prune_weak_atlas(
           polygons = polygons,
           context_only_view = TRUE
         )
         expect_true("coronal" %in% atlas_views(atlas))
 
-        expect_message(result <- atlas_view_select(atlas))
+        expect_message(result <- atlas_prune_weak(atlas))
 
         expect_false("coronal" %in% atlas_views(result))
         expect_setequal(
@@ -1238,13 +1401,13 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(
+        atlas <- make_prune_weak_atlas(
           polygons = polygons,
           context_only_view = TRUE
         )
         for (threshold in c(0, 0.5, 1)) {
           expect_message(
-            result <- atlas_view_select(atlas, threshold = threshold)
+            result <- atlas_prune_weak(atlas, threshold = threshold)
           )
           expect_false("coronal" %in% atlas_views(result))
         }
@@ -1260,9 +1423,9 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(polygons = polygons)
+        atlas <- make_prune_weak_atlas(polygons = polygons)
         expect_message(
-          result <- atlas_view_select(atlas),
+          result <- atlas_prune_weak(atlas),
           "Regions drawn per view"
         )
 
@@ -1282,8 +1445,8 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(polygons = polygons)
-        expect_message(result <- atlas_view_select(atlas))
+        atlas <- make_prune_weak_atlas(polygons = polygons)
+        expect_message(result <- atlas_prune_weak(atlas))
 
         for (region in c("frontal", "temporal")) {
           expect_identical(
@@ -1305,8 +1468,8 @@ describe("atlas_view_select", {
       {
         # Untouched, sagittal holds half the area of a bilateral view and would
         # lose every region at any threshold above 0.5.
-        atlas <- make_view_select_atlas(polygons = polygons)
-        expect_message(result <- atlas_view_select(atlas, threshold = 0.9))
+        atlas <- make_prune_weak_atlas(polygons = polygons)
+        expect_message(result <- atlas_prune_weak(atlas, threshold = 0.9))
 
         expect_true("sagittal" %in% views_of(result, "lh_frontal"))
         expect_true("sagittal" %in% views_of(result, "lh_temporal"))
@@ -1322,9 +1485,9 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(polygons = polygons)
+        atlas <- make_prune_weak_atlas(polygons = polygons)
         expect_message(
-          result <- atlas_view_select(
+          result <- atlas_prune_weak(
             atlas,
             threshold = 0.9,
             weights = c(sagittal = 0.1)
@@ -1340,8 +1503,8 @@ describe("atlas_view_select", {
     it(
       paste0("never drops a region from every view [", rep_name(polygons), "]"),
       {
-        atlas <- make_view_select_atlas(polygons = polygons)
-        expect_message(result <- atlas_view_select(atlas, threshold = 1))
+        atlas <- make_prune_weak_atlas(polygons = polygons)
+        expect_message(result <- atlas_prune_weak(atlas, threshold = 1))
 
         for (label in atlas_labels(result)) {
           expect_gt(length(views_of(result, label)), 0)
@@ -1352,8 +1515,8 @@ describe("atlas_view_select", {
 
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("leaves context geometry alone [", rep_name(polygons), "]"), {
-      atlas <- make_view_select_atlas(polygons = polygons)
-      expect_message(result <- atlas_view_select(atlas, threshold = 1))
+      atlas <- make_prune_weak_atlas(polygons = polygons)
+      expect_message(result <- atlas_prune_weak(atlas, threshold = 1))
 
       expect_setequal(views_of(result, "outline"), views_of(atlas, "outline"))
     })
@@ -1361,8 +1524,8 @@ describe("atlas_view_select", {
 
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("preserves core and palette [", rep_name(polygons), "]"), {
-      atlas <- make_view_select_atlas(polygons = polygons)
-      expect_message(result <- atlas_view_select(atlas))
+      atlas <- make_prune_weak_atlas(polygons = polygons)
+      expect_message(result <- atlas_prune_weak(atlas))
 
       expect_identical(result$core, atlas$core)
       expect_identical(atlas_palette(result), atlas_palette(atlas))
@@ -1371,9 +1534,9 @@ describe("atlas_view_select", {
 
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("rejects an out-of-range threshold [", rep_name(polygons), "]"), {
-      atlas <- make_view_select_atlas(polygons = polygons)
-      expect_error(atlas_view_select(atlas, threshold = 1.5), "between 0 and 1")
-      expect_error(atlas_view_select(atlas, threshold = -1), "between 0 and 1")
+      atlas <- make_prune_weak_atlas(polygons = polygons)
+      expect_error(atlas_prune_weak(atlas, threshold = 1.5), "between 0 and 1")
+      expect_error(atlas_prune_weak(atlas, threshold = -1), "between 0 and 1")
     })
   }
 
@@ -1385,9 +1548,9 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(polygons = polygons)
+        atlas <- make_prune_weak_atlas(polygons = polygons)
         expect_error(
-          atlas_view_select(atlas, weights = c(coronal = 2)),
+          atlas_prune_weak(atlas, weights = c(coronal = 2)),
           "Unknown view"
         )
       }
@@ -1402,11 +1565,11 @@ describe("atlas_view_select", {
         "]"
       ),
       {
-        atlas <- make_view_select_atlas(polygons = polygons)
+        atlas <- make_prune_weak_atlas(polygons = polygons)
         atlas$data$geom <- NULL
         atlas$data$sf <- NULL
 
-        expect_warning(result <- atlas_view_select(atlas), "no 2D geometry")
+        expect_warning(result <- atlas_prune_weak(atlas), "no 2D geometry")
         expect_identical(result, atlas)
       }
     )

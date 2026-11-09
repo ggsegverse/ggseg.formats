@@ -109,12 +109,12 @@ cli::cli_alert_info(
 # while mid_axial catches the forceps fanning out laterally and covers several
 # times the area. Cut at x = 0 the panel came out with two regions in it, and
 # narrowing the slab so it reads as a single-hemisphere view and earns
-# atlas_view_select()'s weighting did not rescue it. At -12 mm it is off
+# atlas_prune_weak()'s weighting did not rescue it. At -12 mm it is off
 # midline enough to be a bundle plane in its own right -- cingulum, fornix and
 # the association bundles along their length -- while still crossing the
 # callosal body, and it ends up among the best-populated panels. Mirroring it
 # adds nothing: a left/right pair of sagittal panels draws the same bundles
-# twice, since atlas_view_select() keeps bilateral regions together rather
+# twice, since atlas_prune_weak() keeps bilateral regions together rather
 # than splitting them across panels.
 slab_halfwidth <- 8L
 slice_mm <- data.frame(
@@ -295,14 +295,14 @@ tracula <- tracula |>
 #
 # This replaces the hand-curated per-view removals earlier releases carried:
 # nine region/view pairs named one at a time, tuned against a single build and
-# silently wrong after any reslice. atlas_view_select() compares per region
+# silently wrong after any reslice. atlas_prune_weak() compares per region
 # rather than per label, so left and right stay together -- splitting a pair
 # across panels reads as an error rather than a choice -- and weights
 # single-hemisphere views so a sagittal panel is not beaten on raw area by the
 # axial and coronal panels that show both hemispheres.
-tracula <- atlas_view_select(tracula, threshold = 0.7)
+tracula <- atlas_prune_weak(tracula, threshold = 0.7)
 
-# Ordering repositions the panels, so it runs last: atlas_view_select() drops
+# Ordering repositions the panels, so it runs last: atlas_prune_weak() drops
 # regions from views and changes each panel's extent, and packing against the
 # final extents is what keeps the gaps even. Panels then read superior ->
 # inferior, then the other planes.
