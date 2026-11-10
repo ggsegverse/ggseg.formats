@@ -20,12 +20,8 @@
 ## New features
 
 - `atlas_views_empty()` reports the views an atlas has that draw no region,
-  mirroring `atlas_undrawn()`, which reports the regions no view draws. Pair it
-  with `atlas_view_remove()` to clear the panels your own editing emptied:
-  `atlas |> atlas_view_remove(atlas_views_empty(atlas))`. It reports rather
-  than removes, so the decision stays with you;
-  `ggseg.extra::atlas_view_remove_sparse()` remains the build-time counterpart
-  for views a pipeline left thin rather than empty.
+  mirroring `atlas_undrawn()`. It reports rather than removes;
+  `ggseg.extra::atlas_view_remove_empty()` acts on the answer.
 
 - `"wm"` is a fifth atlas type, for white-matter atlases built from a label
   map. A white-matter atlas stores what a subcortical one stores -- polygons

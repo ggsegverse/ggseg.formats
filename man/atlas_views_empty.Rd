@@ -24,23 +24,24 @@ the atlas validates and plots without complaint.
 \details{
 Usually it is a consequence of your own editing rather than of the build:
 remove the ventricles from an \code{aseg}, or prune small depictions, and a view
-whose only content was those regions is left empty. Pair it with
-\code{\link[=atlas_view_remove]{atlas_view_remove()}} to clear them:
+whose only content was those regions is left empty.
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{atlas |> atlas_view_remove(atlas_views_empty(atlas))
-}\if{html}{\out{</div>}}
-
-Reported rather than removed on purpose, so the decision stays with you.
-\code{ggseg.extra::atlas_view_remove_sparse()} is the build-time counterpart,
-which drops views a pipeline left \emph{thin} against a threshold rather than
-empty.
+This reports rather than removes, so the decision stays with you, and it
+measures the atlas you hand it. To act on the answer use
+\code{ggseg.extra::atlas_view_remove_empty()}, which takes the atlas once and so
+always measures the atlas it is about to change --- naming the atlas twice
+to feed this into \code{\link[=atlas_view_remove]{atlas_view_remove()}} reads as a pipe but is not one, and
+in a longer pipeline the name in hand is the atlas \emph{before} the editing
+that emptied the view. \code{ggseg.extra::atlas_view_remove_sparse()} is the
+build-time counterpart, for views a pipeline left \emph{thin} against a
+threshold rather than empty.
 }
 \examples{
 atlas_views_empty(aseg())
 }
 \seealso{
-\code{\link[=atlas_undrawn]{atlas_undrawn()}}, its mirror, and \code{\link[=atlas_view_remove]{atlas_view_remove()}} to act on
-the result.
+\code{\link[=atlas_undrawn]{atlas_undrawn()}}, its mirror, and
+\code{ggseg.extra::atlas_view_remove_empty()} to act on the result.
 
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},

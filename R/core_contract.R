@@ -276,24 +276,24 @@ atlas_undrawn <- function(atlas) {
 #'
 #' Usually it is a consequence of your own editing rather than of the build:
 #' remove the ventricles from an `aseg`, or prune small depictions, and a view
-#' whose only content was those regions is left empty. Pair it with
-#' [atlas_view_remove()] to clear them:
+#' whose only content was those regions is left empty.
 #'
-#' ```r
-#' atlas |> atlas_view_remove(atlas_views_empty(atlas))
-#' ```
-#'
-#' Reported rather than removed on purpose, so the decision stays with you.
-#' `ggseg.extra::atlas_view_remove_sparse()` is the build-time counterpart,
-#' which drops views a pipeline left *thin* against a threshold rather than
-#' empty.
+#' This reports rather than removes, so the decision stays with you, and it
+#' measures the atlas you hand it. To act on the answer use
+#' `ggseg.extra::atlas_view_remove_empty()`, which takes the atlas once and so
+#' always measures the atlas it is about to change --- naming the atlas twice
+#' to feed this into [atlas_view_remove()] reads as a pipe but is not one, and
+#' in a longer pipeline the name in hand is the atlas *before* the editing
+#' that emptied the view. `ggseg.extra::atlas_view_remove_sparse()` is the
+#' build-time counterpart, for views a pipeline left *thin* against a
+#' threshold rather than empty.
 #'
 #' @param atlas A `ggseg_atlas`.
 #' @return The view names drawing no `core` region, as a character vector;
 #'   empty when every view draws at least one, and when the atlas carries no
 #'   2D geometry at all.
-#' @seealso [atlas_undrawn()], its mirror, and [atlas_view_remove()] to act on
-#'   the result.
+#' @seealso [atlas_undrawn()], its mirror, and
+#'   `ggseg.extra::atlas_view_remove_empty()` to act on the result.
 #' @examples
 #' atlas_views_empty(aseg())
 #' @export
