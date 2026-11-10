@@ -650,7 +650,17 @@ brain_views <- function(atlas) {
 #' [drawing_manipulation].
 #'
 #' @template atlas
-#' @template views
+#' @param views View names to act on. Matched whole and case-insensitively
+#'   against the atlas's own views, so a name has to be one
+#'   [atlas_views()] reports. Give them as a character vector, or in one
+#'   string separated by `"|"`; the two are equivalent. Names that match no
+#'   view are warned about and otherwise ignored.
+#' @param match How `views` is read. `"exact"`, the default, takes each name
+#'   as a whole view name. `"pattern"` takes `views` as a regular expression
+#'   instead, matched as a substring --- `"axial"` then reaches `axial_1` and
+#'   `axial_2` as well. Prefer `"exact"`: a name that happens to sit inside
+#'   another view's name silently takes both views with it under
+#'   `"pattern"`.
 #' @param order For `atlas_view_reorder()`: character vector of desired
 #'   view order. Unspecified views appended at end.
 #' @param gap Proportional gap between views (default 0.15 = 15% of max width).
@@ -665,14 +675,22 @@ brain_views <- function(atlas) {
 #' @name view_manipulation
 #' @export
 #' @family atlas manipulations
-atlas_view_remove <- function(atlas, views) {
-  warn_unmatched_views(views, views_from_data(atlas$data))
+atlas_view_remove <- function(atlas, views, match = c("exact", "pattern")) {
+  match <- match.arg(match)
+  available <- views_from_data(atlas$data)
+  warn_unmatched_views(views, available, match = match)
+  matched <- match_views(views, available, match)
+
   if (is.null(data_sf(atlas$data))) {
     if (is.null(data_poly(atlas$data))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
       return(atlas)
     }
-    new_poly <- polygons_filter_view(data_poly(atlas$data), views, keep = FALSE)
+    new_poly <- polygons_filter_view(
+      data_poly(atlas$data),
+      matched,
+      keep = FALSE
+    )
     if (is.null(new_poly)) {
       cli::cli_warn("All views removed, 2D geometry will be NULL")
     }
@@ -680,8 +698,7 @@ atlas_view_remove <- function(atlas, views) {
   }
 
   require_sf("atlas_view_remove()")
-  pattern <- paste(views, collapse = "|")
-  keep_mask <- !grepl(pattern, data_sf(atlas$data)$view, ignore.case = TRUE)
+  keep_mask <- !data_sf(atlas$data)$view %in% matched
   new_sf <- data_sf(atlas$data)[keep_mask, , drop = FALSE]
 
   if (nrow(new_sf) == 0) {
@@ -699,27 +716,34 @@ atlas_view_remove <- function(atlas, views) {
 #'   stays tight, as [atlas_view_remove()] does.
 #' @export
 #' @family atlas manipulations
-atlas_view_keep <- function(atlas, views) {
-  warn_unmatched_views(views, views_from_data(atlas$data))
+atlas_view_keep <- function(atlas, views, match = c("exact", "pattern")) {
+  match <- match.arg(match)
+  available <- views_from_data(atlas$data)
+  warn_unmatched_views(views, available, match = match)
+  matched <- match_views(views, available, match)
+
   if (is.null(data_sf(atlas$data))) {
     if (is.null(data_poly(atlas$data))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to keep")
       return(atlas)
     }
-    new_poly <- polygons_filter_view(data_poly(atlas$data), views, keep = TRUE)
+    new_poly <- polygons_filter_view(
+      data_poly(atlas$data),
+      matched,
+      keep = TRUE
+    )
     if (is.null(new_poly)) {
-      cli::cli_warn("No views matched pattern, 2D geometry will be NULL")
+      cli::cli_warn("No views matched, 2D geometry will be NULL")
       return(set_atlas_polygons(atlas, new_poly))
     }
     return(atlas_view_gather(set_atlas_polygons(atlas, new_poly)))
   }
 
-  pattern <- paste(views, collapse = "|")
-  keep_mask <- grepl(pattern, data_sf(atlas$data)$view, ignore.case = TRUE)
+  keep_mask <- data_sf(atlas$data)$view %in% matched
   new_sf <- data_sf(atlas$data)[keep_mask, , drop = FALSE]
 
   if (nrow(new_sf) == 0) {
-    cli::cli_warn("No views matched pattern, sf data will be NULL")
+    cli::cli_warn("No views matched, sf data will be NULL")
     new_sf <- NULL
   }
 
@@ -1659,18 +1683,26 @@ views_from_data <- function(data) {
 #' @return `invisible(NULL)`, called for the warning.
 #' @noRd
 #' @keywords internal
-warn_unmatched_views <- function(views, available, arg = "views") {
+warn_unmatched_views <- function(
+  views,
+  available,
+  arg = "views",
+  match = "exact"
+) {
   if (length(views) == 0 || length(available) == 0) {
     return(invisible(NULL))
   }
-  wanted <- unlist(strsplit(as.character(views), "|", fixed = TRUE))
-  wanted <- wanted[nzchar(wanted)]
-  matched <- vapply(
-    wanted,
-    function(w) any(grepl(w, available, ignore.case = TRUE)),
-    logical(1)
-  )
-  unmatched <- unique(wanted[!matched])
+  wanted <- split_view_names(views)
+  if (identical(match, "pattern")) {
+    hit <- vapply(
+      wanted,
+      function(w) any(grepl(w, available, ignore.case = TRUE)),
+      logical(1)
+    )
+  } else {
+    hit <- tolower(wanted) %in% tolower(available)
+  }
+  unmatched <- unique(wanted[!hit])
   if (length(unmatched) == 0) {
     return(invisible(NULL))
   }
@@ -1679,6 +1711,36 @@ warn_unmatched_views <- function(views, available, arg = "views") {
     "i" = "Available views: {.val {available}}."
   ))
   invisible(NULL)
+}
+
+
+#' A `views` argument as a flat vector of names
+#'
+#' `"a|b"` and `c("a", "b")` are the same request, so both collapse to the
+#' same vector before anything is matched.
+#' @noRd
+split_view_names <- function(views) {
+  wanted <- unlist(strsplit(as.character(views), "|", fixed = TRUE))
+  wanted[nzchar(wanted)]
+}
+
+
+#' The atlas's own view names that a `views` argument picks out
+#'
+#' Resolving the request against the atlas before any row is touched keeps
+#' one notion of what matched: the callers mask rows with `%in%` on the
+#' result, so a view either matched or it did not, and the backends cannot
+#' disagree about it.
+#' @noRd
+match_views <- function(views, available, match = "exact") {
+  if (length(views) == 0 || length(available) == 0) {
+    return(character(0))
+  }
+  if (identical(match, "pattern")) {
+    pattern <- paste(as.character(views), collapse = "|")
+    return(available[grepl(pattern, available, ignore.case = TRUE)])
+  }
+  available[tolower(available) %in% tolower(split_view_names(views))]
 }
 
 

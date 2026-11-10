@@ -36,7 +36,10 @@ make_test_atlas <- function(polygons = FALSE) {
   # nolint end
 }
 
-make_multiview_atlas <- function(polygons = FALSE) {
+make_multiview_atlas <- function(
+  polygons = FALSE,
+  views = c("axial_1", "axial_2", "sagittal")
+) {
   # nolint start: object_usage_linter. Helpers live in helper-polygons.R.
   core_labels <- c(
     "lh_frontal",
@@ -51,8 +54,7 @@ make_multiview_atlas <- function(polygons = FALSE) {
     "rh_insula"
   )
   small_labels <- c("lh_insula", "rh_insula")
-  ctx <- c("ctx_left", "ctx_left", "ctx_right")
-  views <- c("axial_1", "axial_2", "sagittal")
+  ctx <- rep(c("ctx_left", "ctx_left", "ctx_right"), length.out = length(views))
 
   spec <- list()
   for (v_idx in seq_along(views)) {
@@ -1022,7 +1024,10 @@ describe("atlas_view_remove", {
     it(paste0("warns when all views removed [", rep_name(polygons), "]"), {
       atlas <- make_multiview_atlas(polygons = polygons)
       expect_warning(
-        expect_warning(atlas_view_remove(atlas, ".*"), "All views removed"),
+        expect_warning(
+          atlas_view_remove(atlas, ".*", match = "pattern"),
+          "All views removed"
+        ),
         "no 2D geometry"
       )
     })
@@ -2031,7 +2036,7 @@ describe("subclass preservation", {
       "cortical_atlas"
     )
     expect_s3_class(
-      atlas_view_keep(atlas, "axial"),
+      atlas_view_keep(atlas, c("axial_1", "axial_2")),
       "cortical_atlas"
     )
     expect_s3_class(
@@ -2285,7 +2290,7 @@ describe("atlas_view_reorder", {
 
 describe("rebuild_atlas_data", {
   it("works with subcortical atlas sf", {
-    result <- atlas_view_keep(aseg(), "axial")
+    result <- atlas_view_keep(aseg(), "axial_2")
     expect_s3_class(result, "ggseg_atlas")
     expect_s3_class(result$data, "ggseg_data_subcortical")
   })
@@ -2867,7 +2872,7 @@ describe("polygon-only view removal and keeping", {
 
     expect_warning(
       expect_warning(
-        atlas_view_remove(poly, ".*"),
+        atlas_view_remove(poly, ".*", match = "pattern"),
         "All views removed",
         fixed = TRUE
       ),
@@ -3198,11 +3203,79 @@ describe("atlas_prune_small(scope = 'piece')", {
 })
 
 
+describe("how the view verbs read `views`", {
+  # The reason this argument is exact by default: a view whose name sits
+  # inside another view's name used to take both views with it, silently,
+  # because the request was pasted into a regex and matched as a substring.
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "a name inside another name takes only its own view [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        atlas <- make_multiview_atlas(
+          polygons = polygons,
+          views = c("axial", "axial_2", "sagittal")
+        )
+
+        kept <- atlas_view_keep(atlas, "axial")
+        expect_equal(atlas_views(kept), "axial")
+
+        dropped <- atlas_view_remove(atlas, "axial")
+        expect_setequal(atlas_views(dropped), c("axial_2", "sagittal"))
+      }
+    )
+  }
+
+  it("match = \"pattern\" opts back into substring matching", {
+    atlas <- make_multiview_atlas(views = c("axial", "axial_2", "sagittal"))
+    kept <- atlas_view_keep(atlas, "axial", match = "pattern")
+    expect_setequal(atlas_views(kept), c("axial", "axial_2"))
+  })
+
+  it("treats a regex metacharacter as an ordinary character", {
+    atlas <- make_multiview_atlas()
+    expect_warning(
+      expect_warning(
+        atlas_view_keep(atlas, "axial_."),
+        "axial_\\."
+      ),
+      "No views matched"
+    )
+  })
+
+  it("reads \"a|b\" and c(\"a\", \"b\") as the same request", {
+    atlas <- make_multiview_atlas()
+    joined <- atlas_view_keep(atlas, "axial_1|sagittal")
+    vectored <- atlas_view_keep(atlas, c("axial_1", "sagittal"))
+    expect_equal(atlas_views(joined), atlas_views(vectored))
+    expect_setequal(atlas_views(joined), c("axial_1", "sagittal"))
+  })
+
+  it("ignores the case of a requested name", {
+    atlas <- make_multiview_atlas()
+    expect_no_warning(kept <- atlas_view_keep(atlas, "AXIAL_1"))
+    expect_equal(atlas_views(kept), "axial_1")
+  })
+
+  it("rejects a match mode it does not have", {
+    atlas <- make_multiview_atlas()
+    expect_error(atlas_view_keep(atlas, "axial_1", match = "fuzzy"))
+    expect_error(atlas_view_remove(atlas, "axial_1", match = "fuzzy"))
+  })
+})
+
+
 describe("the view verbs on a view that does not exist", {
   it("names the half of an alternation that matched nothing", {
     expect_warning(
-      atlas_view_keep(aseg(), "coronal_3|axial_3"),
-      "coronal_3"
+      expect_warning(
+        atlas_view_keep(aseg(), "coronal_3|axial_3"),
+        "coronal_3"
+      ),
+      "No views matched"
     )
   })
 

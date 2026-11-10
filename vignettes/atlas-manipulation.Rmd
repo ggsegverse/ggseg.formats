@@ -139,12 +139,13 @@ head(unique(atlas_regions(upper)))
 atlas_views(aseg())
 ```
 
-`atlas_view_keep()` and `atlas_view_remove()` filter views by pattern. If you
-only want the sagittal slice:
+`atlas_view_keep()` and `atlas_view_remove()` filter views by name, matched
+whole against the names `atlas_views()` just listed. If you only want the
+sagittal slice:
 
 ```{r}
 #| label: view-keep
-sag <- atlas_view_keep(aseg(), "sagittal")
+sag <- atlas_view_keep(aseg(), "sagittal_left")
 atlas_views(sag)
 ```
 
@@ -152,7 +153,7 @@ Or remove several views at once by passing a vector:
 
 ```{r}
 #| label: view-remove
-fewer <- atlas_view_remove(aseg(), c("axial_3", "coronal_2"))
+fewer <- atlas_view_remove(aseg(), c("axial_2", "coronal_2"))
 atlas_views(fewer)
 ```
 
@@ -200,7 +201,7 @@ side-by-side with a configurable gap:
 ```{r}
 #| label: view-gather
 trimmed <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
+  atlas_view_keep(c("sagittal_left", "coronal_2", "axial_2")) |>
   atlas_view_gather()
 atlas_views(trimmed)
 ```
@@ -211,8 +212,8 @@ at the same time. Views not mentioned in `order` are appended at the end:
 ```{r}
 #| label: view-reorder
 reordered <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
-  atlas_view_reorder(c("axial_3", "sagittal", "coronal_2"))
+  atlas_view_keep(c("sagittal_left", "coronal_2", "axial_2")) |>
+  atlas_view_reorder(c("axial_2", "sagittal_left", "coronal_2"))
 atlas_views(reordered)
 ```
 
@@ -247,7 +248,7 @@ two-view figure of deep grey matter structures:
 ```{r}
 #| label: full-pipeline
 publication_aseg <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_2")) |>
+  atlas_view_keep(c("sagittal_left", "coronal_2")) |>
   atlas_region_contextual("ventricle|choroid|white|cc") |>
   atlas_prune_small(min_area = 30) |>
   atlas_view_gather(gap = 0.1)

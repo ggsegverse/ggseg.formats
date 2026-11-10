@@ -73,13 +73,12 @@ polygons_drop_pattern <- function(polygons, pattern) {
 }
 
 
-#' Filter geometry by view pattern (keep or remove the matches)
+#' Filter geometry to a resolved set of view names (keep or remove them)
 #' @noRd
 #' @keywords internal
 polygons_filter_view <- function(polygons, views, keep) {
   flat <- polygons_unnest(polygons)
-  pattern <- paste(views, collapse = "|")
-  match <- grepl(pattern, flat$view, ignore.case = TRUE)
+  match <- flat$view %in% views
   polygons_renest(flat[if (keep) match else !match, , drop = FALSE])
 }
 
