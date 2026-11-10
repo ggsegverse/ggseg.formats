@@ -159,6 +159,10 @@ Query atlas contents without reaching into slots directly.
   [`brain_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
   : Extract the region column of an atlas
 
+- [`atlas_relabel()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md)
+  [`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md)
+  : Re-key an atlas's labels
+
 - [`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md)
   : Get atlas data for 2D rendering
 
@@ -275,7 +279,8 @@ inside a view. All return a new `ggseg_atlas`.
   : Join additional metadata columns to an atlas's core
 - [`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md)
   : Reorder the structures of an atlas
-- [`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md)
+- [`atlas_relabel()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md)
+  [`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md)
   : Re-key an atlas's labels
 - [`context()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md)
   [`regions()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md)

@@ -194,9 +194,9 @@ for the other groups
 Other atlas manipulations:
 [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md),
 [`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
+[`atlas_relabel()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md),
 [`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md),
 [`region_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
-[`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md),
 [`view_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 
 ## Examples

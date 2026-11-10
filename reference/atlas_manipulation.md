@@ -31,8 +31,8 @@ All of them return a new `ggseg_atlas`.
 
 Other atlas manipulations:
 [`atlas_core_add()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.md),
+[`atlas_relabel()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md),
 [`atlas_structure_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.md),
 [`drawing_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md),
 [`region_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
-[`relabel_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/relabel_atlas.md),
 [`view_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
