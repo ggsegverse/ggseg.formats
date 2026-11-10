@@ -428,9 +428,9 @@ describe("display is preserved by the atlas verbs", {
   })
 })
 
-describe("relabel_atlas", {
+describe("atlas_relabel", {
   it("re-keys core, palette and every payload slot at once", {
-    atlas <- relabel_atlas(aseg(), c("Left-Thalamus" = "Left-Thal"))
+    atlas <- atlas_relabel(aseg(), c("Left-Thalamus" = "Left-Thal"))
     expect_true("Left-Thal" %in% atlas$core$label)
     expect_false("Left-Thalamus" %in% atlas$core$label)
     expect_true("Left-Thal" %in% names(atlas$palette))
@@ -439,13 +439,13 @@ describe("relabel_atlas", {
   })
 
   it("leaves labels absent from the mapping alone", {
-    atlas <- relabel_atlas(aseg(), c("Left-Thalamus" = "Left-Thal"))
+    atlas <- atlas_relabel(aseg(), c("Left-Thalamus" = "Left-Thal"))
     expect_true("Right-Thalamus" %in% atlas$core$label)
   })
 
   it("errors on a non-atlas or an unnamed mapping", {
-    expect_error(relabel_atlas(list(), c(a = "b")), "must be a")
-    expect_error(relabel_atlas(aseg(), "b"), "named character vector")
+    expect_error(atlas_relabel(list(), c(a = "b")), "must be a")
+    expect_error(atlas_relabel(aseg(), "b"), "named character vector")
   })
 })
 

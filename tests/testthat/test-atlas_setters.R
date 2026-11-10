@@ -143,7 +143,7 @@ describe("atlas provenance", {
         match_on = "region"
       ),
       set_type = set_atlas_type(atlas, atlas_type(atlas)),
-      relabel = relabel_atlas(atlas, stats::setNames(labels[1], labels[1]))
+      relabel = atlas_relabel(atlas, stats::setNames(labels[1], labels[1]))
     )
 
     for (verb in names(reshaped)) {

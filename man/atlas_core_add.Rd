@@ -31,10 +31,10 @@ atlas_core_add(dk(), lobes)
 
 Other atlas manipulations:
 \code{\link{atlas_manipulation}},
+\code{\link[=atlas_relabel]{atlas_relabel()}},
 \code{\link[=atlas_structure_reorder]{atlas_structure_reorder()}},
 \code{\link{drawing_manipulation}},
 \code{\link{region_manipulation}},
-\code{\link[=relabel_atlas]{relabel_atlas()}},
 \code{\link{view_manipulation}}
 }
 \concept{atlas manipulations}

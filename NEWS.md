@@ -29,6 +29,14 @@
 
 ## Minor changes
 
+- `relabel_atlas()` is renamed `atlas_relabel()`. It was the one function
+  acting on an atlas whose name did not begin `atlas_`, so it never appeared
+  when completing `atlas_` and was effectively unfindable. The old name still
+  works and warns.
+- `atlas_context()`, `atlas_provenance()`, `atlas_region_semantics()` and
+  `atlas_plot_palette()` join the `atlas accessors` family, so they are listed
+  with the other read-only accessors in the reference index and in each
+  other's `See also`.
 - `atlas_view_remove_region()` and `atlas_view_remove_small()` are renamed
   `atlas_prune_region()` and `atlas_prune_small()`, joining
   `atlas_prune_weak()`. None of the three removes a view, which the old

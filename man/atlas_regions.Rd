@@ -30,6 +30,7 @@ atlas_regions(aseg())
 \seealso{
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
+\code{\link[=atlas_context]{atlas_context()}},
 \code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
@@ -37,7 +38,10 @@ Other atlas accessors:
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
+\code{\link[=atlas_plot_palette]{atlas_plot_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
+\code{\link[=atlas_provenance]{atlas_provenance()}},
+\code{\link[=atlas_region_semantics]{atlas_region_semantics()}},
 \code{\link[=atlas_sf]{atlas_sf()}},
 \code{\link[=atlas_type]{atlas_type()}},
 \code{\link[=atlas_undrawn]{atlas_undrawn()}},

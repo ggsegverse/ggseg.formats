@@ -60,6 +60,7 @@ reference:
       - drawing_manipulation
       - atlas_core_add
       - atlas_structure_reorder
+      - atlas_relabel
       - relabel_atlas
       - selectors
   - title: Bundled atlases

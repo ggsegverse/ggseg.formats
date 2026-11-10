@@ -77,6 +77,7 @@ NULL
 #' atlas_region_semantics(dk())
 #' atlas_region_semantics(aseg())
 #' @export
+#' @family atlas accessors
 atlas_region_semantics <- function(atlas) {
   assert_ggseg_atlas(atlas)
   core <- as.data.frame(atlas$core)
@@ -109,6 +110,7 @@ atlas_region_semantics <- function(atlas) {
 #' @examples
 #' atlas_context(aseg())
 #' @export
+#' @family atlas accessors
 atlas_context <- function(atlas) {
   assert_ggseg_atlas(atlas)
   drawn <- drawn_labels(atlas)

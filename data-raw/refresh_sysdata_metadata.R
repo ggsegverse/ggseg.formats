@@ -74,7 +74,7 @@ env$.aseg_atlas <- apply_metadata(
 
 # TRACULA is keyed on the .bbr.prep name FreeSurfer emits, so the shipped
 # labels are re-keyed from the short LUT form before the metadata is merged.
-env$.tracula_atlas <- relabel_atlas(
+env$.tracula_atlas <- atlas_relabel(
   env$.tracula_atlas,
   stats::setNames(tracula_metadata$label, tracula_metadata$label_short)
 )

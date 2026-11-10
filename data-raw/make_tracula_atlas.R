@@ -208,7 +208,7 @@ cli::cli_h2("Post-processing atlas")
 # users join their own TRACULA tables on. Depending on how much of the
 # filename the reader strips, the raw labels may arrive in the short LUT form
 # instead; relabelling to the canonical form is a no-op when they do not.
-tracula_raw <- relabel_atlas(
+tracula_raw <- atlas_relabel(
   tracula_raw,
   setNames(tracula_metadata$label, tracula_metadata$label_short)
 )
