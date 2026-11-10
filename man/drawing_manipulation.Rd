@@ -14,7 +14,8 @@ atlas_prune_region(
   atlas,
   pattern,
   match_on = c("label", "region"),
-  views = NULL
+  views = NULL,
+  match = c("exact", "pattern")
 )
 
 atlas_prune_small(
@@ -23,7 +24,8 @@ atlas_prune_small(
   views = NULL,
   scope = c("region", "piece"),
   labels = NULL,
-  exclude = NULL
+  exclude = NULL,
+  match = c("exact", "pattern")
 )
 
 atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
@@ -34,7 +36,8 @@ atlas_view_remove_region(
   atlas,
   pattern,
   match_on = c("label", "region"),
-  views = NULL
+  views = NULL,
+  match = c("exact", "pattern")
 )
 
 atlas_view_remove_small(
@@ -43,7 +46,8 @@ atlas_view_remove_small(
   views = NULL,
   scope = c("region", "piece"),
   labels = NULL,
-  exclude = NULL
+  exclude = NULL,
+  match = c("exact", "pattern")
 )
 }
 \arguments{
@@ -57,8 +61,18 @@ or \code{"region"}. \code{label} is the identifier that is unique within an atla
 and stable across them, so every verb that selects rows by name or
 pattern reads it unless told otherwise.}
 
-\item{views}{Character vector of view names or patterns. Multiple values
-are collapsed with \code{"|"} for matching.}
+\item{views}{Views to scope the pruning to, or \code{NULL} (the default) for
+every view. Matched whole and case-insensitively against the atlas's own
+views, so a name has to be one \code{\link[=atlas_views]{atlas_views()}} reports. Give them as a
+character vector, or in one string separated by \code{"|"}; the two are
+equivalent. Names that match no view are warned about and otherwise
+ignored.}
+
+\item{match}{How \code{views} is read. \code{"exact"}, the default, takes each name
+as a whole view name. \code{"pattern"} takes \code{views} as a regular expression
+instead, matched as a substring --- \code{"axial"} then reaches \code{axial_1} and
+\code{axial_2} as well. Prefer \code{"exact"}: a name that happens to sit inside
+another view's name silently scopes to both views under \code{"pattern"}.}
 
 \item{min_area}{For \code{atlas_prune_small()}: minimum area to keep.
 What it applies to depends on \code{scope}; with the default

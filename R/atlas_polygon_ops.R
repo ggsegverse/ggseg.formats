@@ -83,15 +83,14 @@ polygons_filter_view <- function(polygons, views, keep) {
 }
 
 
-#' Remove geometry for a set of labels, optionally scoped to views
+#' Remove geometry for a set of labels, optionally scoped to resolved views
 #' @noRd
 #' @keywords internal
 polygons_remove_region <- function(polygons, drop_labels, views = NULL) {
   flat <- polygons_unnest(polygons)
   is_match <- flat$label %in% drop_labels
   if (!is.null(views)) {
-    view_pattern <- paste(views, collapse = "|")
-    is_match <- is_match & grepl(view_pattern, flat$view, ignore.case = TRUE)
+    is_match <- is_match & flat$view %in% views
   }
   polygons_renest(flat[!is_match, , drop = FALSE])
 }
@@ -201,9 +200,7 @@ polygons_remove_small <- function(
 
   is_small <- areas$area < min_area & areas$label %in% core_labels
   if (!is.null(views)) {
-    view_pattern <- paste(views, collapse = "|")
-    is_small <- is_small &
-      grepl(view_pattern, areas$view, ignore.case = TRUE)
+    is_small <- is_small & areas$view %in% views
   }
   small <- areas[is_small, c("label", "view"), drop = FALSE]
 
@@ -280,8 +277,7 @@ polygons_remove_small_pieces <- function(
       character(1),
       2
     )
-    drop <- drop &
-      grepl(paste(views, collapse = "|"), view_of, ignore.case = TRUE)
+    drop <- drop & view_of %in% views
   }
 
   if (!is.null(labels) || !is.null(exclude)) {
