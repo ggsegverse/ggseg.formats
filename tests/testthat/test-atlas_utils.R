@@ -3221,7 +3221,7 @@ describe("how the view verbs read `views`", {
         )
 
         kept <- atlas_view_keep(atlas, "axial")
-        expect_equal(atlas_views(kept), "axial")
+        expect_identical(atlas_views(kept), "axial")
 
         dropped <- atlas_view_remove(atlas, "axial")
         expect_setequal(atlas_views(dropped), c("axial_2", "sagittal"))
@@ -3250,14 +3250,14 @@ describe("how the view verbs read `views`", {
     atlas <- make_multiview_atlas()
     joined <- atlas_view_keep(atlas, "axial_1|sagittal")
     vectored <- atlas_view_keep(atlas, c("axial_1", "sagittal"))
-    expect_equal(atlas_views(joined), atlas_views(vectored))
+    expect_identical(atlas_views(joined), atlas_views(vectored))
     expect_setequal(atlas_views(joined), c("axial_1", "sagittal"))
   })
 
   it("ignores the case of a requested name", {
     atlas <- make_multiview_atlas()
     expect_no_warning(kept <- atlas_view_keep(atlas, "AXIAL_1"))
-    expect_equal(atlas_views(kept), "axial_1")
+    expect_identical(atlas_views(kept), "axial_1")
   })
 
   it("rejects a match mode it does not have", {

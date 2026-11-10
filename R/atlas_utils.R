@@ -1736,9 +1736,10 @@ match_views <- function(views, available, match = "exact") {
   if (length(views) == 0 || length(available) == 0) {
     return(character(0))
   }
+  available <- as.character(available)
   if (identical(match, "pattern")) {
     pattern <- paste(as.character(views), collapse = "|")
-    return(available[grepl(pattern, available, ignore.case = TRUE)])
+    return(grep(pattern, available, ignore.case = TRUE, value = TRUE))
   }
   available[tolower(available) %in% tolower(split_view_names(views))]
 }
