@@ -1743,7 +1743,7 @@ describe("atlas_prune_small", {
         result_axial <- atlas_prune_small(
           atlas,
           min_area = 2,
-          views = "axial"
+          views = c("axial_1", "axial_2")
         ),
         "Removed"
       )
@@ -3198,6 +3198,95 @@ describe("atlas_prune_small(scope = 'piece')", {
     expect_identical(
       atlas_prune_small(speck_atlas(), 10),
       atlas_prune_small(speck_atlas(), 10, scope = "region")
+    )
+  })
+})
+
+
+describe("how the prune verbs read `views`", {
+  # Same reason as the view verbs: the scope used to be pasted into a regex
+  # and matched as a substring, so scoping to one view silently scoped to
+  # every view whose name contained it. Asserted through atlas_views_empty():
+  # pruning every core region out of a view is exactly what empties it, and
+  # context geometry legitimately stays behind under scope = "region".
+  for (polygons in c(FALSE, TRUE)) {
+    it(
+      paste0(
+        "a name inside another name scopes to its own view only [",
+        rep_name(polygons),
+        "]"
+      ),
+      {
+        atlas <- make_multiview_atlas(
+          polygons = polygons,
+          views = c("axial", "axial_2", "sagittal")
+        )
+        expect_identical(atlas_views_empty(atlas), character(0))
+
+        expect_message(
+          scoped <- atlas_prune_small(atlas, min_area = Inf, views = "axial"),
+          "Removed"
+        )
+        expect_identical(atlas_views_empty(scoped), "axial")
+      }
+    )
+  }
+
+  it("scopes by pattern when asked", {
+    atlas <- make_multiview_atlas(views = c("axial", "axial_2", "sagittal"))
+
+    expect_message(
+      scoped <- atlas_prune_small(
+        atlas,
+        min_area = Inf,
+        views = "axial",
+        match = "pattern"
+      ),
+      "Removed"
+    )
+    expect_setequal(atlas_views_empty(scoped), c("axial", "axial_2"))
+  })
+
+  it("warns on a scope that names no view, and prunes nothing", {
+    atlas <- make_multiview_atlas()
+
+    expect_warning(
+      unscoped <- atlas_prune_region(atlas, ".", views = "no_such_view"),
+      "matched no view"
+    )
+    expect_identical(atlas_views(unscoped), atlas_views(atlas))
+    expect_identical(atlas_views_empty(unscoped), character(0))
+  })
+
+  it("reads \"a|b\" and c(\"a\", \"b\") as the same scope", {
+    atlas <- make_multiview_atlas()
+
+    # `pattern = "."` takes the context outlines as well as the regions, so
+    # the scoped views lose every row and drop out of the atlas rather than
+    # surviving as empty panels.
+    joined <- atlas_prune_region(atlas, ".", views = "axial_1|sagittal")
+    vectored <- atlas_prune_region(atlas, ".", views = c("axial_1", "sagittal"))
+    expect_identical(atlas_views(joined), atlas_views(vectored))
+    expect_setequal(
+      setdiff(atlas_views(atlas), atlas_views(joined)),
+      c("axial_1", "sagittal")
+    )
+  })
+
+  it("leaves every view in scope when `views` is NULL", {
+    atlas <- make_multiview_atlas()
+
+    pruned <- atlas_prune_region(atlas, "^lh_frontal$", match_on = "label")
+    expect_true("lh_frontal" %in% atlas_undrawn(pruned))
+  })
+
+  it("rejects a match mode it does not have", {
+    atlas <- make_multiview_atlas()
+    expect_error(
+      atlas_prune_region(atlas, ".", views = "axial_1", match = "fuzzy")
+    )
+    expect_error(
+      atlas_prune_small(atlas, min_area = 2, views = "axial_1", match = "fuzzy")
     )
   })
 })

@@ -2,6 +2,10 @@
 
 ## Breaking changes
 
+- `atlas_prune_region()` and `atlas_prune_small()` scope `views` by whole
+  view name, case-insensitively, rather than as a regular expression, and
+  gain `match = "pattern"` for the old behaviour. This is the same change
+  the view verbs got, applied to the argument that scopes a prune.
 - `atlas_view_remove()` and `atlas_view_keep()` match `views` as whole view
   names, case-insensitively, rather than as a regular expression. A name
   inside another view's name no longer takes both views with it. Pass

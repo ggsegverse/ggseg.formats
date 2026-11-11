@@ -786,6 +786,7 @@ atlas_view_keep <- function(atlas, views, match = c("exact", "pattern")) {
 #' @template pattern
 #' @template match_on
 #' @template views
+#' @template match
 #' @param min_area For `atlas_prune_small()`: minimum area to keep.
 #'   What it applies to depends on `scope`; with the default
 #'   `scope = "region"` context geometries are never removed.
@@ -803,9 +804,12 @@ atlas_prune_region <- function(
   atlas,
   pattern,
   match_on = c("label", "region"),
-  views = NULL
+  views = NULL,
+  match = c("exact", "pattern")
 ) {
   match_on <- match.arg(match_on)
+  match <- match.arg(match)
+  views <- resolve_view_scope(views, atlas, match)
 
   if (is.null(data_sf(atlas$data))) {
     return(prune_region_poly(atlas, pattern, match_on, views))
@@ -823,9 +827,7 @@ atlas_prune_region <- function(
   }
 
   if (!is.null(views)) {
-    view_pattern <- paste(views, collapse = "|")
-    in_view <- grepl(view_pattern, data_sf(atlas$data)$view, ignore.case = TRUE)
-    is_match <- is_match & in_view
+    is_match <- is_match & data_sf(atlas$data)$view %in% views
   }
 
   is_match[is.na(data_sf(atlas$data)$label)] <- FALSE
@@ -868,9 +870,12 @@ atlas_prune_small <- function(
   views = NULL,
   scope = c("region", "piece"),
   labels = NULL,
-  exclude = NULL
+  exclude = NULL,
+  match = c("exact", "pattern")
 ) {
   scope <- match.arg(scope)
+  match <- match.arg(match)
+  views <- resolve_view_scope(views, atlas, match)
   labels <- resolve_label_pattern(labels, atlas)
   exclude <- resolve_label_pattern(exclude, atlas)
 
@@ -910,9 +915,7 @@ atlas_prune_small <- function(
   is_small <- areas < min_area & !is_context
 
   if (!is.null(views)) {
-    pattern <- paste(views, collapse = "|")
-    in_view <- grepl(pattern, data_sf(atlas$data)$view, ignore.case = TRUE)
-    is_small <- is_small & in_view
+    is_small <- is_small & data_sf(atlas$data)$view %in% views
   }
 
   n_removed <- sum(is_small)
@@ -1016,7 +1019,8 @@ atlas_view_remove_region <- function(
   atlas,
   pattern,
   match_on = c("label", "region"),
-  views = NULL
+  views = NULL,
+  match = c("exact", "pattern")
 ) {
   lifecycle::deprecate_warn(
     "0.1.0",
@@ -1027,7 +1031,8 @@ atlas_view_remove_region <- function(
     atlas,
     pattern = pattern,
     match_on = match_on,
-    views = views
+    views = views,
+    match = match
   )
 }
 
@@ -1044,7 +1049,8 @@ atlas_view_remove_small <- function(
   views = NULL,
   scope = c("region", "piece"),
   labels = NULL,
-  exclude = NULL
+  exclude = NULL,
+  match = c("exact", "pattern")
 ) {
   lifecycle::deprecate_warn(
     "0.1.0",
@@ -1057,7 +1063,8 @@ atlas_view_remove_small <- function(
     views = views,
     scope = scope,
     labels = labels,
-    exclude = exclude
+    exclude = exclude,
+    match = match
   )
 }
 
@@ -1711,6 +1718,23 @@ warn_unmatched_views <- function(
     "i" = "Available views: {.val {available}}."
   ))
   invisible(NULL)
+}
+
+
+#' A view scope resolved to the atlas's own view names
+#'
+#' `NULL` means every view, and has to survive as `NULL` rather than becoming
+#' "all of them": the verbs read it as "do not scope at all". Anything else is
+#' resolved here, once, so the internals downstream mask rows with `%in%`
+#' instead of each running its own match.
+#' @noRd
+resolve_view_scope <- function(views, atlas, match = "exact") {
+  if (is.null(views)) {
+    return(NULL)
+  }
+  available <- views_from_data(atlas$data)
+  warn_unmatched_views(views, available, match = match)
+  match_views(views, available, match)
 }
 
 
