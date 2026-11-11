@@ -19,6 +19,10 @@
 
 ## New features
 
+- `atlas_views_empty()` reports the views an atlas has that draw no region,
+  mirroring `atlas_undrawn()`. It reports rather than removes;
+  `ggseg.extra::atlas_view_remove_empty()` acts on the answer.
+
 - `"wm"` is a fifth atlas type, for white-matter atlases built from a label
   map. A white-matter atlas stores what a subcortical one stores -- polygons
   for the slab views and a mesh per structure -- and is drawn the same way,

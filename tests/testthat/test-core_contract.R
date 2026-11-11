@@ -253,3 +253,65 @@ describe("the published dispatch surface", {
     expect_snapshot(print(surface))
   })
 })
+
+describe("atlas_views_empty", {
+  # The flow this exists for: the user's own edits leave a view drawing
+  # nothing. Keeping a single region strips every other region from every
+  # view, and whichever view that region never appears in is left with
+  # context only.
+  stripped <- function(atlas) {
+    keep <- atlas_regions(atlas)[1]
+    suppressMessages(
+      atlas_region_keep(atlas, paste0("^", keep, "$"), match_on = "region")
+    )
+  }
+
+  it("reports nothing for the shipped atlases", {
+    expect_identical(atlas_views_empty(aseg()), character(0))
+    expect_identical(atlas_views_empty(dk()), character(0))
+  })
+
+  it("names a view left with context but no region", {
+    before <- aseg()
+    after <- stripped(before)
+
+    empty <- atlas_views_empty(after)
+
+    # The view is still there -- that is the point, it has to be reported
+    # rather than silently gone -- and it still holds context geometry, so
+    # emptiness has to be judged against `core`, not against any geometry.
+    expect_gt(length(empty), 0L)
+    expect_in(empty, atlas_views(after))
+    still_drawn <- unique(polygons_unnest(atlas_polygons(after))$view)
+    expect_in(empty, still_drawn)
+  })
+
+  it("agrees across the sf and polygon backends", {
+    poly <- stripped(aseg())
+    sf_backed <- stripped(suppressMessages(as_sf_atlas(aseg())))
+
+    expect_identical(
+      sort(atlas_views_empty(poly)),
+      sort(atlas_views_empty(sf_backed))
+    )
+  })
+
+  it("composes with atlas_view_remove, which is the documented use", {
+    after <- stripped(aseg())
+    empty <- atlas_views_empty(after)
+
+    cleared <- suppressMessages(atlas_view_remove(after, empty))
+
+    expect_identical(atlas_views_empty(cleared), character(0))
+    expect_false(any(empty %in% atlas_views(cleared)))
+  })
+
+  it("returns nothing without 2D geometry, and rejects non-atlases", {
+    bare <- aseg()
+    bare$data$geom <- NULL
+    bare$data$sf <- NULL
+
+    expect_identical(atlas_views_empty(bare), character(0))
+    expect_error(atlas_views_empty(mtcars), "ggseg_atlas")
+  })
+})

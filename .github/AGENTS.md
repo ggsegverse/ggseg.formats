@@ -23,6 +23,36 @@ Dependencies are deliberately lean: `Imports` is only `cli`, `lifecycle`,
 `rlang`, `sfheaders`. `sf` is in **Suggests** (see sf-optional below). Do not
 add Imports without a strong reason — the ecosystem values a light base.
 
+### What belongs here, and what belongs in ggseg.extra
+
+The line is the **audience**, not the dependencies. This package owns the class
+and its contract: constructing an atlas, validating it, reading it, reshaping a
+finished one, and migrating its files. `ggseg.extra` owns deriving geometry from
+neuroimaging sources, and the diagnostics and clean-ups that only make sense
+while doing that.
+
+So the question for a new function is not "could this live in ggseg.formats" —
+a function needing nothing but accessors always could. It is **"would someone
+reach for this on a finished atlas while preparing a visualisation?"** If it is
+something only the person building an atlas does, it belongs in `ggseg.extra`
+even when it would import cleanly here.
+
+Worked examples, because the distinction is easy to get backwards:
+
+- `ggseg.extra::atlas_view_remove_sparse()` depends on nothing but this
+  package's accessors and `cli`, and still belongs there: it exists because the
+  volumetric pipelines tile a bounding box and leave slabs where no structure
+  is, and every call site is a build script.
+- `atlas_views_empty()` belongs here, because a view drawing nothing is usually
+  a consequence of the *user's* own editing — remove the ventricles, prune
+  small depictions — and clearing it is visualisation prep.
+- `convert_legacy_brain_atlas()` and `migrate_atlas_files()` smell like
+  "creation" but belong here: they are about the *format*, not about source
+  data.
+- `set_atlas_polygons()` stays internal. Replacing an atlas's geometry wholesale
+  is something a builder does having just computed new geometry, not something a
+  user does preparing a plot.
+
 ## The `ggseg_atlas` object
 
 Built and validated by the `ggseg_atlas()` constructor in
