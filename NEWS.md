@@ -2,6 +2,11 @@
 
 ## Breaking changes
 
+- `atlas_view_remove()` and `atlas_view_keep()` match `views` as whole view
+  names, case-insensitively, rather than as a regular expression. A name
+  inside another view's name no longer takes both views with it. Pass
+  `match = "pattern"` for the old behaviour. `"a|b"` still means
+  `c("a", "b")`.
 - The bundled `aseg()` atlas is rebuilt. Its 29 labels and 18 regions are
   unchanged, but it now carries three views rather than seven: `axial_2`,
   `coronal_2` and `sagittal_left`, one per plane. `axial_3` through

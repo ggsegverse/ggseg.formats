@@ -8,9 +8,9 @@
 \alias{atlas_view_reorder}
 \title{Change which views an atlas has, and where they sit}
 \usage{
-atlas_view_remove(atlas, views)
+atlas_view_remove(atlas, views, match = c("exact", "pattern"))
 
-atlas_view_keep(atlas, views)
+atlas_view_keep(atlas, views, match = c("exact", "pattern"))
 
 atlas_view_gather(atlas, gap = 0.15)
 
@@ -19,8 +19,18 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 \arguments{
 \item{atlas}{A \code{ggseg_atlas} object}
 
-\item{views}{Character vector of view names or patterns. Multiple values
-are collapsed with \code{"|"} for matching.}
+\item{views}{View names to act on. Matched whole and case-insensitively
+against the atlas's own views, so a name has to be one
+\code{\link[=atlas_views]{atlas_views()}} reports. Give them as a character vector, or in one
+string separated by \code{"|"}; the two are equivalent. Names that match no
+view are warned about and otherwise ignored.}
+
+\item{match}{How \code{views} is read. \code{"exact"}, the default, takes each name
+as a whole view name. \code{"pattern"} takes \code{views} as a regular expression
+instead, matched as a substring --- \code{"axial"} then reaches \code{axial_1} and
+\code{axial_2} as well. Prefer \code{"exact"}: a name that happens to sit inside
+another view's name silently takes both views with it under
+\code{"pattern"}.}
 
 \item{gap}{Proportional gap between views (default 0.15 = 15\% of max width).}
 
