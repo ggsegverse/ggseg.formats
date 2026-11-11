@@ -57,7 +57,7 @@ query regions, filter views, and pipe operations together:
 
 aseg_small <- aseg() |>
   atlas_region_keep("hippocampus|amygdala|thalamus") |>
-  atlas_view_keep("coronal_2|axial_3") |>
+  atlas_view_keep("coronal_2") |>
   atlas_view_gather()
 plot(aseg_small)
 ```
@@ -275,6 +275,9 @@ Query atlas contents without reaching into slots directly.
 - [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
+
+- [`atlas_views_empty()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views_empty.md)
+  : The views an atlas has that draw no region
 
 - [`atlas_prune_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_prune_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)

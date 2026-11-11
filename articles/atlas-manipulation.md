@@ -155,11 +155,13 @@ atlas_views(aseg())
 [`atlas_view_keep()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 and
 [`atlas_view_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
-filter views by pattern. If you only want the sagittal slice:
+filter views by name, matched whole against the names
+[`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
+just listed. If you only want the sagittal slice:
 
 ``` r
 
-sag <- atlas_view_keep(aseg(), "sagittal")
+sag <- atlas_view_keep(aseg(), "sagittal_left")
 atlas_views(sag)
 #> [1] "sagittal_left"
 ```
@@ -168,11 +170,9 @@ Or remove several views at once by passing a vector:
 
 ``` r
 
-fewer <- atlas_view_remove(aseg(), c("axial_3", "coronal_2"))
-#> Warning: `views` matched no view in this atlas: "axial_3".
-#> ℹ Available views: "axial_2", "coronal_2", and "sagittal_left".
+fewer <- atlas_view_remove(aseg(), c("axial_2", "coronal_2"))
 atlas_views(fewer)
-#> [1] "axial_2"       "sagittal_left"
+#> [1] "sagittal_left"
 ```
 
 ## Cleaning up geometry
@@ -225,12 +225,10 @@ repositions views side-by-side with a configurable gap:
 ``` r
 
 trimmed <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
+  atlas_view_keep(c("sagittal_left", "coronal_2", "axial_2")) |>
   atlas_view_gather()
-#> Warning: `views` matched no view in this atlas: "axial_3".
-#> ℹ Available views: "axial_2", "coronal_2", and "sagittal_left".
 atlas_views(trimmed)
-#> [1] "coronal_2"     "sagittal_left"
+#> [1] "axial_2"       "coronal_2"     "sagittal_left"
 ```
 
 [`atlas_view_reorder()`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
@@ -240,14 +238,10 @@ time. Views not mentioned in `order` are appended at the end:
 ``` r
 
 reordered <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_2", "axial_3")) |>
-  atlas_view_reorder(c("axial_3", "sagittal", "coronal_2"))
-#> Warning: `views` matched no view in this atlas: "axial_3".
-#> ℹ Available views: "axial_2", "coronal_2", and "sagittal_left".
-#> Warning: `order` names no view in this atlas: "axial_3" and "sagittal".
-#> ℹ Available views: "coronal_2" and "sagittal_left".
+  atlas_view_keep(c("sagittal_left", "coronal_2", "axial_2")) |>
+  atlas_view_reorder(c("axial_2", "sagittal_left", "coronal_2"))
 atlas_views(reordered)
-#> [1] "coronal_2"     "sagittal_left"
+#> [1] "axial_2"       "sagittal_left" "coronal_2"
 ```
 
 ## Adding metadata
@@ -293,7 +287,7 @@ compact two-view figure of deep grey matter structures:
 ``` r
 
 publication_aseg <- aseg() |>
-  atlas_view_keep(c("sagittal", "coronal_2")) |>
+  atlas_view_keep(c("sagittal_left", "coronal_2")) |>
   atlas_region_contextual("ventricle|choroid|white|cc") |>
   atlas_prune_small(min_area = 30) |>
   atlas_view_gather(gap = 0.1)

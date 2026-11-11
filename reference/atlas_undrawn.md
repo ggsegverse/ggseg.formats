@@ -55,6 +55,7 @@ Other atlas accessors:
 [`atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_type.md),
 [`atlas_vertices()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_vertices.md),
 [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md),
+[`atlas_views_empty()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views_empty.md),
 [`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
 
 ## Examples

@@ -5,9 +5,9 @@ Verbs that act on views as objects:
 ## Usage
 
 ``` r
-atlas_view_remove(atlas, views)
+atlas_view_remove(atlas, views, match = c("exact", "pattern"))
 
-atlas_view_keep(atlas, views)
+atlas_view_keep(atlas, views, match = c("exact", "pattern"))
 
 atlas_view_gather(atlas, gap = 0.15)
 
@@ -22,8 +22,21 @@ atlas_view_reorder(atlas, order, gap = 0.15)
 
 - views:
 
-  Character vector of view names or patterns. Multiple values are
-  collapsed with `"|"` for matching.
+  View names to act on. Matched whole and case-insensitively against the
+  atlas's own views, so a name has to be one
+  [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
+  reports. Give them as a character vector, or in one string separated
+  by `"|"`; the two are equivalent. Names that match no view are warned
+  about and otherwise ignored.
+
+- match:
+
+  How `views` is read. `"exact"`, the default, takes each name as a
+  whole view name. `"pattern"` takes `views` as a regular expression
+  instead, matched as a substring — `"axial"` then reaches `axial_1` and
+  `axial_2` as well. Prefer `"exact"`: a name that happens to sit inside
+  another view's name silently takes both views with it under
+  `"pattern"`.
 
 - gap:
 

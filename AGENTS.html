@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9019</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9021</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,20 @@
 <p><code>ggseg.formats</code> is the foundational data-structure package of the <a href="https://ggsegverse.github.io/ggseg/" class="external-link"><code>ggsegverse</code></a>. It owns the <code>ggseg_atlas</code> S3 class and the accessor API that <code>ggseg</code> (2D), <code>ggseg3d</code> (3D), and <code>ggseg.extra</code> build on. It ships bundled atlases and FreeSurfer stat readers — it does <strong>not</strong> itself do the high-level plotting beyond a base-R <code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code> overview.</p>
 <p>Because it sits at the bottom of the dependency tree, <strong>any change to the class shape, accessor signatures, or atlas object contents is a breaking change for downstream packages</strong>. Treat the public API as a contract. When in doubt, add behaviour behind a new accessor rather than mutating an existing structure.</p>
 <p>Dependencies are deliberately lean: <code>Imports</code> is only <code>cli</code>, <code>lifecycle</code>, <code>rlang</code>, <code>sfheaders</code>. <code>sf</code> is in <strong>Suggests</strong> (see sf-optional below). Do not add Imports without a strong reason — the ecosystem values a light base.</p>
+<div class="section level3">
+<h3 id="what-belongs-here-and-what-belongs-in-ggsegextra">What belongs here, and what belongs in ggseg.extra<a class="anchor" aria-label="anchor" href="#what-belongs-here-and-what-belongs-in-ggsegextra"></a></h3>
+<p>The line is the <strong>audience</strong>, not the dependencies. This package owns the class and its contract: constructing an atlas, validating it, reading it, reshaping a finished one, and migrating its files. <code>ggseg.extra</code> owns deriving geometry from neuroimaging sources, and the diagnostics and clean-ups that only make sense while doing that.</p>
+<p>So the question for a new function is not “could this live in ggseg.formats” — a function needing nothing but accessors always could. It is <strong>“would someone reach for this on a finished atlas while preparing a visualisation?”</strong> If it is something only the person building an atlas does, it belongs in <code>ggseg.extra</code> even when it would import cleanly here.</p>
+<p>Worked examples, because the distinction is easy to get backwards:</p>
+<ul><li>
+<code>ggseg.extra::atlas_view_remove_sparse()</code> depends on nothing but this package’s accessors and <code>cli</code>, and still belongs there: it exists because the volumetric pipelines tile a bounding box and leave slabs where no structure is, and every call site is a build script.</li>
+<li>
+<code><a href="reference/atlas_views_empty.html">atlas_views_empty()</a></code> belongs here, because a view drawing nothing is usually a consequence of the <em>user’s</em> own editing — remove the ventricles, prune small depictions — and clearing it is visualisation prep.</li>
+<li>
+<code><a href="reference/convert_legacy_brain_atlas.html">convert_legacy_brain_atlas()</a></code> and <code><a href="reference/migrate_atlas_files.html">migrate_atlas_files()</a></code> smell like “creation” but belong here: they are about the <em>format</em>, not about source data.</li>
+<li>
+<code>set_atlas_polygons()</code> stays internal. Replacing an atlas’s geometry wholesale is something a builder does having just computed new geometry, not something a user does preparing a plot.</li>
+</ul></div>
 </div>
 <div class="section level2">
 <h2 id="the-ggseg_atlas-object">The <code>ggseg_atlas</code> object<a class="anchor" aria-label="anchor" href="#the-ggseg_atlas-object"></a></h2>

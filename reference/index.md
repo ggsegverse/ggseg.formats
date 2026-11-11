@@ -182,6 +182,9 @@ Query atlas contents without reaching into slots directly.
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
 
+- [`atlas_views_empty()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views_empty.md)
+  : The views an atlas has that draw no region
+
 - [`atlas_prune_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_prune_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_prune_weak()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
