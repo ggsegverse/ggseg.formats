@@ -1,15 +1,24 @@
+# The README has executable chunks that plot the bundled atlases, so its
+# figures go stale when the atlas data or the plotting code changes, not
+# only when README.Rmd is edited. Every push to main therefore re-renders.
+# Pull requests stay filtered: a full render is expensive and on a PR the
+# reusable workflow renders without opening a PR, so it only earns its
+# keep when the README source or this stub is what changed.
 on:
   push:
     branches: [main, master]
-    paths: ["README.Rmd"]
   pull_request:
-    paths: ["README.Rmd"]
+    paths:
+      - README.Rmd
+      - .github/workflows/render-readme.yaml
 
 name: render-readme
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   render-readme:
     uses: ggsegverse/.github/.github/workflows/render-readme.yaml@main
+    secrets: inherit
