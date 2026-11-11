@@ -1,4 +1,5 @@
 
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # ggseg.formats <img src="man/figures/logo.png" align="right" height="138" alt="" />
@@ -37,25 +38,25 @@ library(ggseg.formats)
 plot(dk())
 ```
 
-<img src="man/figures/README-plot-dk-1.png" alt="" width="100%" />
+<img src="man/figures/README-plot-dk-1.png" style="width:100.0%" />
 
 ``` r
 plot(aseg())
 ```
 
-<img src="man/figures/README-plot-aseg-1.png" alt="" width="100%" />
+<img src="man/figures/README-plot-aseg-1.png" style="width:100.0%" />
 
 ``` r
 plot(tracula())
 ```
 
-<img src="man/figures/README-plot-tracula-1.png" alt="" width="100%" />
+<img src="man/figures/README-plot-tracula-1.png" style="width:100.0%" />
 
 ``` r
 plot(suit())
 ```
 
-<img src="man/figures/README-plot-suit-1.png" alt="" width="100%" />
+<img src="man/figures/README-plot-suit-1.png" style="width:100.0%" />
 
 ## Quick example
 
@@ -70,7 +71,7 @@ aseg_small <- aseg() |>
 plot(aseg_small)
 ```
 
-<img src="man/figures/README-subset-aseg-1.png" alt="" width="100%" />
+<img src="man/figures/README-subset-aseg-1.png" style="width:100.0%" />
 
 ## Installation
 
