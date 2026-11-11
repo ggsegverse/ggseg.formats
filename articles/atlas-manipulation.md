@@ -196,7 +196,7 @@ You can scope the removal to specific views:
 cleaned_sag <- atlas_prune_small(
   aseg(),
   min_area = 50,
-  views = "sagittal"
+  views = "sagittal_left"
 )
 #> ℹ Removed 3 geometries below area 50
 ```

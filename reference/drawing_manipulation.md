@@ -9,7 +9,8 @@ atlas_prune_region(
   atlas,
   pattern,
   match_on = c("label", "region"),
-  views = NULL
+  views = NULL,
+  match = c("exact", "pattern")
 )
 
 atlas_prune_small(
@@ -18,7 +19,8 @@ atlas_prune_small(
   views = NULL,
   scope = c("region", "piece"),
   labels = NULL,
-  exclude = NULL
+  exclude = NULL,
+  match = c("exact", "pattern")
 )
 
 atlas_prune_weak(atlas, threshold = 0.5, weights = NULL)
@@ -29,7 +31,8 @@ atlas_view_remove_region(
   atlas,
   pattern,
   match_on = c("label", "region"),
-  views = NULL
+  views = NULL,
+  match = c("exact", "pattern")
 )
 
 atlas_view_remove_small(
@@ -38,7 +41,8 @@ atlas_view_remove_small(
   views = NULL,
   scope = c("region", "piece"),
   labels = NULL,
-  exclude = NULL
+  exclude = NULL,
+  match = c("exact", "pattern")
 )
 ```
 
@@ -61,8 +65,21 @@ atlas_view_remove_small(
 
 - views:
 
-  Character vector of view names or patterns. Multiple values are
-  collapsed with `"|"` for matching.
+  Views to scope the pruning to, or `NULL` (the default) for every view.
+  Matched whole and case-insensitively against the atlas's own views, so
+  a name has to be one
+  [`atlas_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
+  reports. Give them as a character vector, or in one string separated
+  by `"|"`; the two are equivalent. Names that match no view are warned
+  about and otherwise ignored.
+
+- match:
+
+  How `views` is read. `"exact"`, the default, takes each name as a
+  whole view name. `"pattern"` takes `views` as a regular expression
+  instead, matched as a substring — `"axial"` then reaches `axial_1` and
+  `axial_2` as well. Prefer `"exact"`: a name that happens to sit inside
+  another view's name silently scopes to both views under `"pattern"`.
 
 - min_area:
 
