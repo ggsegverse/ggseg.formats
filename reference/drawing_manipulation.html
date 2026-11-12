@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9022</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9023</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -218,7 +218,13 @@ as a cortical outline) is never touched.</p>
 hemisphere while axial and coronal panels show both, so on raw area it
 loses every comparison and empties out. Such views are detected from the
 hemispheres actually present in each view and their areas scaled to
-match, so they compete fairly. Pass <code>weights</code> to override.</p></li>
+match, so they compete fairly. Pass <code>weights</code> to override.</p>
+<p>What it costs. The shares are spread rather than clustered, so no
+threshold separates slivers from substance: on the bundled <code><a href="aseg.html">aseg()</a></code> the
+median depiction outside a region's best view still holds 56% of it.
+Raising <code>threshold</code> buys a less crowded figure by dropping depictions
+that are anatomically real, and <code><a href="atlas_undrawn.html">atlas_undrawn()</a></code> will not report the
+loss, because every region is kept somewhere. Look at the views.</p></li>
 <li><p><code>atlas_view_select()</code>: Deprecated. Use <code>atlas_prune_weak()</code>: the
 old name read as the verb for choosing which views an atlas keeps, which
 is <code><a href="view_manipulation.html">atlas_view_keep()</a></code>, and not for choosing which views draw a region.</p></li>

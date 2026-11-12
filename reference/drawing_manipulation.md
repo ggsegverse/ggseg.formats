@@ -185,6 +185,16 @@ to remove a region from the atlas altogether,
   areas scaled to match, so they compete fairly. Pass `weights` to
   override.
 
+  What it costs. The shares are spread rather than clustered, so no
+  threshold separates slivers from substance: on the bundled
+  [`aseg()`](https://ggsegverse.github.io/ggseg.formats/reference/aseg.md)
+  the median depiction outside a region's best view still holds 56% of
+  it. Raising `threshold` buys a less crowded figure by dropping
+  depictions that are anatomically real, and
+  [`atlas_undrawn()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_undrawn.md)
+  will not report the loss, because every region is kept somewhere. Look
+  at the views.
+
 - `atlas_view_select()`: Deprecated. Use `atlas_prune_weak()`: the old
   name read as the verb for choosing which views an atlas keeps, which
   is
