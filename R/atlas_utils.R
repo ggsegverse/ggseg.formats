@@ -952,6 +952,13 @@ atlas_prune_small <- function(
 #'   loses every comparison and empties out. Such views are detected from the
 #'   hemispheres actually present in each view and their areas scaled to
 #'   match, so they compete fairly. Pass `weights` to override.
+#'
+#'   What it costs. The shares are spread rather than clustered, so no
+#'   threshold separates slivers from substance: on the bundled [aseg()] the
+#'   median depiction outside a region's best view still holds 56% of it.
+#'   Raising `threshold` buys a less crowded figure by dropping depictions
+#'   that are anatomically real, and [atlas_undrawn()] will not report the
+#'   loss, because every region is kept somewhere. Look at the views.
 #' @param threshold For `atlas_prune_weak()`: minimum share, between 0 and 1,
 #'   of a region's best-view area that a view must hold to keep drawing it.
 #'   Higher values are more aggressive.
