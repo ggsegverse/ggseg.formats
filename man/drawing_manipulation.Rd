@@ -163,6 +163,13 @@ loses every comparison and empties out. Such views are detected from the
 hemispheres actually present in each view and their areas scaled to
 match, so they compete fairly. Pass \code{weights} to override.
 
+What it costs. The shares are spread rather than clustered, so no
+threshold separates slivers from substance: on the bundled \code{\link[=aseg]{aseg()}} the
+median depiction outside a region's best view still holds 56\% of it.
+Raising \code{threshold} buys a less crowded figure by dropping depictions
+that are anatomically real, and \code{\link[=atlas_undrawn]{atlas_undrawn()}} will not report the
+loss, because every region is kept somewhere. Look at the views.
+
 \item \code{atlas_view_select()}: Deprecated. Use \code{atlas_prune_weak()}: the
 old name read as the verb for choosing which views an atlas keeps, which
 is \code{\link[=atlas_view_keep]{atlas_view_keep()}}, and not for choosing which views draw a region.
