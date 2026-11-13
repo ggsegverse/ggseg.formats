@@ -50,6 +50,6 @@ Other atlas accessors:
 atlas_views(aseg())
 #> [1] "axial_2"       "coronal_2"     "sagittal_left"
 atlas_views(tracula())
-#> [1] "coronal"        "inferior_axial" "mid_axial"      "sagittal"      
-#> [5] "superior_axial"
+#> [1] "superior_axial" "mid_axial"      "inferior_axial" "coronal"       
+#> [5] "sagittal"      
 ```
