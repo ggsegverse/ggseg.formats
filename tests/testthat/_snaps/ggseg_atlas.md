@@ -109,7 +109,7 @@
       Type: tract
       Regions: 26
       Hemispheres: midline, left, right
-      Views: coronal, inferior_axial, mid_axial, sagittal, superior_axial
+      Views: superior_axial, mid_axial, inferior_axial, coronal, sagittal
       Palette: v
       Rendering: v ggseg
       v ggseg3d (centerlines)
