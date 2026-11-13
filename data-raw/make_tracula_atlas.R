@@ -22,11 +22,14 @@
 #
 # Run with: source("data-raw/make_tracula_atlas.R")
 #
-# Set TRACULA_REBUILD to any non-empty value to discard the cached projection
-# artefacts. Step 1 (streamline reading and tube meshes) is slab-independent
-# and always reused; everything downstream of it depends on `tract_slabs`, so
-# changing a slab position without clearing the cache silently reuses the old
-# geometry.
+# Set TRACULA_REBUILD to any non-empty value to discard the whole cache,
+# step 1 included. Step 1 is slab-independent and by far the slowest part, so
+# keeping it across rebuilds is tempting -- but that is exactly how this atlas
+# shipped mirrored: its step 1 was written in August 2025, before ggseg.extra
+# learned to read .trk streamlines into RAS world millimetres (#356), and
+# every rebuild afterwards reused those voxel-space, LAS-ordered coordinates.
+# The cache records which ggseg.extra wrote it, not what it was built from, so
+# nothing downstream can tell. A rebuild now means a rebuild.
 
 library(dplyr)
 library(ggseg.extra) # nolint
@@ -166,17 +169,13 @@ print(tract_slabs)
 # ── Fit a centerline per tract and build the tract atlas ─────────────────
 cli::cli_h1("Fitting tract centerlines")
 
-# Everything from the projection step onward is slab-dependent. Step 1 is not,
-# and is by far the slowest part, so it survives a rebuild.
+# A rebuild clears everything, step 1 included -- see the note at the top.
 rebuild <- !identical(Sys.getenv("TRACULA_REBUILD", ""), "")
 if (rebuild) {
   cache <- file.path("data-raw", "tracula")
-  keep <- file.path(cache, "step1_data.rds")
-  stale <- setdiff(
-    list.files(cache, full.names = TRUE, include.dirs = TRUE),
-    keep
+  unlink(list.files(cache, full.names = TRUE, include.dirs = TRUE),
+    recursive = TRUE
   )
-  unlink(stale, recursive = TRUE)
 }
 
 tracula_raw <- create_tract_from_tractography(
@@ -186,9 +185,7 @@ tracula_raw <- create_tract_from_tractography(
   atlas_name = "tracula",
   output_dir = "data-raw",
   slabs = tract_slabs,
-  tube_radius = 3,
-  tube_segments = 6,
-  n_points = 100,
+  tube_opts = list(tube_radius = 3, tube_segments = 6, n_points = 100),
   cleanup = FALSE,
   skip_existing = !rebuild,
   verbose = TRUE
@@ -215,12 +212,15 @@ tracula_raw <- atlas_relabel(
 
 core_with_meta <- tracula_raw$core |>
   rename(region_raw = region) |>
+  # The pipeline derives a mechanical `display` from the label; the curated
+  # spelled-out one below replaces it, so drop it rather than collide.
+  select(-any_of("display")) |>
   left_join(
-    select(tracula_metadata, label, label_short, region, names, group),
+    select(tracula_metadata, label, label_short, region, display, group),
     by = "label"
   ) |>
   mutate(region = coalesce(region, region_raw)) |>
-  select(hemi, region, label, label_short, names, group)
+  select(hemi, region, label, label_short, display, group)
 
 n_with_group <- sum(!is.na(core_with_meta$group))
 n_total <- nrow(core_with_meta)
@@ -265,19 +265,17 @@ tracula <- tracula |>
     exclude = "^cortex"
   ) |>
   atlas_smooth(
-    keep = 1,
     smoothness = 0.8,
     method = "close",
     exclude = "^cortex"
   ) |>
   atlas_smooth(
-    keep = 1,
     smoothness = 0.6,
     method = "ksmooth",
     labels = "^cortex"
   ) |>
-  atlas_smooth(keep = 0.2, labels = "^cortex") |>
-  atlas_smooth(keep = 0.2, exclude = "^cortex")
+  atlas_simplify(keep = 0.2, labels = "^cortex") |>
+  atlas_simplify(keep = 0.2, exclude = "^cortex")
 
 # The cortex silhouette carries ~90% of the atlas's vertices -- it is a
 # convoluted ribbon drawn across every view, against 42 smooth tubes -- so its

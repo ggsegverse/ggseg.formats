@@ -1,5 +1,14 @@
 # ggseg.formats
 
+## Bug fixes
+
+- `tracula()` is no longer mirrored left-to-right in 3D. Its cached build
+  artefact predated the fix that reads `.trk` streamlines into RAS world
+  millimetres, so every tract sat on the opposite side of the midline from the
+  hemisphere it was labelled. 2D was unaffected. Rebuilding also clears the
+  whole cache now, step 1 included, so a stale artefact cannot survive a
+  rebuild again.
+
 ## Breaking changes
 
 - `atlas_prune_region()` and `atlas_prune_small()` scope `views` by whole
