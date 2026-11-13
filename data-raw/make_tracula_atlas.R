@@ -173,7 +173,8 @@ cli::cli_h1("Fitting tract centerlines")
 rebuild <- !identical(Sys.getenv("TRACULA_REBUILD", ""), "")
 if (rebuild) {
   cache <- file.path("data-raw", "tracula")
-  unlink(list.files(cache, full.names = TRUE, include.dirs = TRUE),
+  unlink(
+    list.files(cache, full.names = TRUE, include.dirs = TRUE),
     recursive = TRUE
   )
 }
