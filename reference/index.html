@@ -9,7 +9,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9023</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9024</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -255,13 +255,6 @@
 
         <dt>
 
-          <code><a href="atlas_core_add.html">atlas_core_add()</a></code>
-
-        </dt>
-        <dd>Join additional metadata columns to an atlas's core</dd>
-
-        <dt>
-
           <code><a href="atlas_display.html">atlas_display()</a></code>
 
         </dt>
@@ -294,13 +287,6 @@
 
         </dt>
         <dd>Extract the label column of an atlas</dd>
-
-        <dt>
-
-          <code><a href="atlas_manipulation.html">atlas_manipulation</a></code>
-
-        </dt>
-        <dd>Manipulate brain atlas regions, views and drawings</dd>
 
         <dt>
 
@@ -353,24 +339,10 @@
 
         <dt>
 
-          <code><a href="atlas_relabel.html">atlas_relabel()</a></code> <code><a href="atlas_relabel.html">relabel_atlas()</a></code>
-
-        </dt>
-        <dd>Re-key an atlas's labels</dd>
-
-        <dt>
-
           <code><a href="atlas_sf.html">atlas_sf()</a></code>
 
         </dt>
         <dd>Get atlas data for 2D rendering</dd>
-
-        <dt>
-
-          <code><a href="atlas_structure_reorder.html">atlas_structure_reorder()</a></code>
-
-        </dt>
-        <dd>Reorder the structures of an atlas</dd>
 
         <dt>
 
@@ -409,24 +381,10 @@
 
         <dt>
 
-          <code><a href="drawing_manipulation.html">atlas_prune_region()</a></code> <code><a href="drawing_manipulation.html">atlas_prune_small()</a></code> <code><a href="drawing_manipulation.html">atlas_prune_weak()</a></code> <code><a href="drawing_manipulation.html">atlas_view_select()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_small()</a></code>
+          <code><a href="legacy_region_map.html">legacy_region_map()</a></code>
 
         </dt>
-        <dd>Change which regions are drawn inside a view</dd>
-
-        <dt>
-
-          <code><a href="region_manipulation.html">atlas_region_remove()</a></code> <code><a href="region_manipulation.html">atlas_region_contextual()</a></code> <code><a href="region_manipulation.html">atlas_region_op()</a></code> <code><a href="region_manipulation.html">atlas_context_remove()</a></code> <code><a href="region_manipulation.html">atlas_region_rename()</a></code> <code><a href="region_manipulation.html">atlas_region_keep()</a></code>
-
-        </dt>
-        <dd>Change which regions an atlas has</dd>
-
-        <dt>
-
-          <code><a href="view_manipulation.html">atlas_view_remove()</a></code> <code><a href="view_manipulation.html">atlas_view_keep()</a></code> <code><a href="view_manipulation.html">atlas_view_gather()</a></code> <code><a href="view_manipulation.html">atlas_view_reorder()</a></code>
-
-        </dt>
-        <dd>Change which views an atlas has, and where they sit</dd>
+        <dd>Map pre-0.1.0 region names to current region keys</dd>
 
         <dt>
 
@@ -434,13 +392,6 @@
 
         </dt>
         <dd>Get SUIT cerebellar surface mesh</dd>
-
-        <dt>
-
-          <code><a href="legacy_region_map.html">legacy_region_map()</a></code>
-
-        </dt>
-        <dd>Map pre-0.1.0 region names to current region keys</dd>
       </dl></div><div class="section level2">
       <h2 id="setters">Setters<a class="anchor" aria-label="anchor" href="#setters"></a></h2>
 
@@ -527,10 +478,38 @@
 
       <dl><dt>
 
+          <code><a href="atlas_core_add.html">atlas_core_add()</a></code>
+
+        </dt>
+        <dd>Join additional metadata columns to an atlas's core</dd>
+
+        <dt>
+
           <code><a href="atlas_manipulation.html">atlas_manipulation</a></code>
 
         </dt>
         <dd>Manipulate brain atlas regions, views and drawings</dd>
+
+        <dt>
+
+          <code><a href="atlas_relabel.html">atlas_relabel()</a></code> <code><a href="atlas_relabel.html">relabel_atlas()</a></code>
+
+        </dt>
+        <dd>Re-key an atlas's labels</dd>
+
+        <dt>
+
+          <code><a href="atlas_structure_reorder.html">atlas_structure_reorder()</a></code>
+
+        </dt>
+        <dd>Reorder the structures of an atlas</dd>
+
+        <dt>
+
+          <code><a href="drawing_manipulation.html">atlas_prune_region()</a></code> <code><a href="drawing_manipulation.html">atlas_prune_small()</a></code> <code><a href="drawing_manipulation.html">atlas_prune_weak()</a></code> <code><a href="drawing_manipulation.html">atlas_view_select()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_small()</a></code>
+
+        </dt>
+        <dd>Change which regions are drawn inside a view</dd>
 
         <dt>
 
@@ -545,34 +524,6 @@
 
         </dt>
         <dd>Change which views an atlas has, and where they sit</dd>
-
-        <dt>
-
-          <code><a href="drawing_manipulation.html">atlas_prune_region()</a></code> <code><a href="drawing_manipulation.html">atlas_prune_small()</a></code> <code><a href="drawing_manipulation.html">atlas_prune_weak()</a></code> <code><a href="drawing_manipulation.html">atlas_view_select()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_region()</a></code> <code><a href="drawing_manipulation.html">atlas_view_remove_small()</a></code>
-
-        </dt>
-        <dd>Change which regions are drawn inside a view</dd>
-
-        <dt>
-
-          <code><a href="atlas_core_add.html">atlas_core_add()</a></code>
-
-        </dt>
-        <dd>Join additional metadata columns to an atlas's core</dd>
-
-        <dt>
-
-          <code><a href="atlas_structure_reorder.html">atlas_structure_reorder()</a></code>
-
-        </dt>
-        <dd>Reorder the structures of an atlas</dd>
-
-        <dt>
-
-          <code><a href="atlas_relabel.html">atlas_relabel()</a></code> <code><a href="atlas_relabel.html">relabel_atlas()</a></code>
-
-        </dt>
-        <dd>Re-key an atlas's labels</dd>
 
         <dt>
 
