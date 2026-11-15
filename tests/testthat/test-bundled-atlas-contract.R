@@ -9,15 +9,10 @@ bundled_atlases <- function() {
 }
 
 label_side <- function(labels) {
-  ifelse(
-    grepl("^(lh|left|l)[-_.]", labels, ignore.case = TRUE),
-    "left",
-    ifelse(
-      grepl("^(rh|right|r)[-_.]", labels, ignore.case = TRUE),
-      "right",
-      NA_character_
-    )
-  )
+  sides <- rep(NA_character_, length(labels))
+  sides[grepl("^(lh|left|l)[-_.]", labels, ignore.case = TRUE)] <- "left"
+  sides[grepl("^(rh|right|r)[-_.]", labels, ignore.case = TRUE)] <- "right"
+  sides
 }
 
 describe("bundled atlas laterality", {
