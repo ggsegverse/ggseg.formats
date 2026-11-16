@@ -37,6 +37,12 @@
 
 ## New features
 
+- `mesh_space()` records what a mesh's coordinates mean: its vertex space,
+  hemisphere, whether the coordinates are anatomical, and a 4x4 affine to
+  MNI305. Attached with `set_mesh_space()`, read with `get_mesh_space()`.
+  Consumers previously inferred these from which package a mesh came from,
+  and a mesh inferred wrongly still renders.
+
 - `atlas_views_empty()` reports the views an atlas has that draw no region,
   mirroring `atlas_undrawn()`. It reports rather than removes;
   `ggseg.extra::atlas_view_remove_empty()` acts on the answer.
