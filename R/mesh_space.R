@@ -13,6 +13,14 @@
 #' space and drawn on another puts every region somewhere else. Checking that
 #' indices merely fit catches only the case where the other mesh is smaller.
 #'
+#' Name a *numbered* space -- `"fsaverage5"`, `"fsaverage6"` -- because those
+#' are fixed templates and stable across FreeSurfer releases: `fsaverage5` is
+#' vertex-for-vertex the same mesh in 7.4.1 and 8.2.0, which is what makes an
+#' atlas's indices portable. Unnumbered `"fsaverage"` is not a stable
+#' identifier: it is whichever densest mesh that release ships, so the same
+#' string can mean different vertex counts and different indices. Record
+#' `source` if you must use it.
+#'
 #' `hemi` is recorded because left and right are the one distinction this
 #' ecosystem must never get wrong, and a mesh that cannot state its own side
 #' cannot be checked against the data drawn on it.

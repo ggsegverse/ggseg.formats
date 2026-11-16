@@ -159,7 +159,14 @@ describe("set_mesh_space() and get_mesh_space()", {
   })
 
   it("returns NULL for a mesh carrying no record", {
-    expect_null(get_mesh_space(get_brain_mesh("lh")))
+    # Built here rather than taken from the package: the bundled meshes now
+    # carry a record, and meshes from outside the core packages are exactly
+    # the case this has to keep handling.
+    bare <- list(
+      vertices = data.frame(x = 0, y = 0, z = 0),
+      faces = data.frame(i = 0L, j = 0L, k = 0L)
+    )
+    expect_null(get_mesh_space(bare))
   })
 
   it("refuses anything that is not a mesh_space", {
@@ -188,5 +195,41 @@ describe("print.mesh_space()", {
       "right",
       anatomical = FALSE
     )))
+  })
+})
+
+describe("the bundled inflated meshes describe themselves", {
+  # Pinned because the alternative is inference. A consumer that guesses a
+  # mesh's vertex space or hemisphere gets it right until a rebuild changes
+  # something, and a mesh guessed wrongly still renders a convincing brain.
+  it("records vertex space, hemisphere and that they are not anatomical", {
+    expected_hemi <- c(lh = "left", rh = "right")
+    for (hemi in names(expected_hemi)) {
+      space <- get_mesh_space(get_brain_mesh(hemi))
+      expect_s3_class(space, "mesh_space")
+      expect_identical(space$vertex_space, "fsaverage5")
+      expect_identical(space$hemi, expected_hemi[[hemi]])
+      expect_false(space$anatomical)
+      expect_null(space$to_mni305)
+      expect_identical(space$surface, "inflated")
+    }
+  })
+
+  it("records the face index base rather than leaving it to be inferred", {
+    for (hemi in c("lh", "rh")) {
+      expect_identical(
+        attr(get_brain_mesh(hemi), "face_index_base"),
+        0L
+      )
+    }
+  })
+
+  it("keeps the face indices consistent with the base it claims", {
+    for (hemi in c("lh", "rh")) {
+      mesh <- get_brain_mesh(hemi)
+      indices <- unlist(mesh$faces, use.names = FALSE)
+      expect_identical(min(indices), attr(mesh, "face_index_base"))
+      expect_identical(max(indices), nrow(mesh$vertices) - 1L)
+    }
   })
 })
