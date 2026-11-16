@@ -58,6 +58,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg3d_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/mesh_space.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/migrate_atlas_display.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/migrate_atlas_files.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/migrate_atlas_hemi.html</loc></url>
@@ -71,6 +72,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_provenance.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_mesh_space.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/sf_to_polygons.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/suit.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/tracula.html</loc></url>

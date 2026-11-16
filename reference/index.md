@@ -188,6 +188,9 @@ Replace atlas properties, returning a modified `ggseg_atlas`.
   : Record how an atlas was built
 - [`set_atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.md)
   : Set the type of an atlas
+- [`set_mesh_space()`](https://ggsegverse.github.io/ggseg.formats/reference/set_mesh_space.md)
+  [`get_mesh_space()`](https://ggsegverse.github.io/ggseg.formats/reference/set_mesh_space.md)
+  : Attach or read a mesh's coordinate record
 
 ## Geometry representation (sf-optional)
 
@@ -215,6 +218,14 @@ migrate atlas files.
   :
 
   Reorder an `sfc` without sf
+
+## Mesh coordinate spaces
+
+Record what a mesh’s coordinates mean, so a consumer reads its vertex
+space, hemisphere and mapping to MNI305 rather than inferring them.
+
+- [`mesh_space()`](https://ggsegverse.github.io/ggseg.formats/reference/mesh_space.md)
+  : Record what a mesh's coordinates mean
 
 ## Atlas manipulation
 
