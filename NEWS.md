@@ -37,6 +37,12 @@
 
 ## New features
 
+- `brain_mesh()` assembles vertices, faces and a `mesh_space()` into one
+  object, requiring the face index base to be declared and checking the faces
+  actually count from it. Four build scripts across the ecosystem each decided
+  that base independently, which is why `ggseg.formats` inflated surfaces are
+  0-based and `ggseg.meshes` cortical surfaces are 1-based.
+
 - `mesh_space()` records what a mesh's coordinates mean: its vertex space,
   hemisphere, whether the coordinates are anatomical, and a 4x4 affine to
   MNI305. Attached with `set_mesh_space()`, read with `get_mesh_space()`.

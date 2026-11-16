@@ -57,10 +57,11 @@ reference:
       Record what a mesh's coordinates mean, so a consumer reads its vertex
       space, hemisphere and mapping to MNI305 rather than inferring them.
     contents:
-      # Only the constructor. set_mesh_space() and get_mesh_space() share one
-      # topic that starts_with("set_") already lists under Setters, and
+      # set_mesh_space() and get_mesh_space() share one topic that
+      # starts_with("set_") already lists under Setters, and
       # has_concept("mesh spaces") here would list it a second time.
       - mesh_space
+      - brain_mesh
   - title: Atlas manipulation
     desc: |
       Pipe-friendly functions, each group acting on a different thing: the regions an atlas has, the views it has, and which regions are drawn inside a view. All return a new `ggseg_atlas`.

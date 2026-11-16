@@ -233,3 +233,131 @@ describe("the bundled inflated meshes describe themselves", {
     }
   })
 })
+
+describe("brain_mesh()", {
+  tri_vertices <- function(n = 3) {
+    data.frame(x = seq_len(n) * 1, y = seq_len(n) * 2, z = seq_len(n) * 3)
+  }
+  flat_space <- function() {
+    mesh_space("fsaverage5", "left", anatomical = FALSE)
+  }
+
+  it("assembles a mesh carrying both its space and its face base", {
+    mesh <- brain_mesh(
+      vertices = tri_vertices(),
+      faces = data.frame(i = 0L, j = 1L, k = 2L),
+      space = flat_space(),
+      face_index_base = 0L
+    )
+    expect_identical(names(mesh), c("vertices", "faces"))
+    expect_identical(attr(mesh, "face_index_base"), 0L)
+    expect_s3_class(get_mesh_space(mesh), "mesh_space")
+  })
+
+  it("accepts 1-based faces, which the ecosystem also holds", {
+    mesh <- brain_mesh(
+      vertices = tri_vertices(),
+      faces = data.frame(i = 1L, j = 2L, k = 3L),
+      space = flat_space(),
+      face_index_base = 1L
+    )
+    expect_identical(attr(mesh, "face_index_base"), 1L)
+  })
+
+  it("refuses faces that do not count from the base declared", {
+    # The whole point: 1-based indices declared as 0-based put the last face
+    # out of range and silently misplace a vertex.
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(i = 1L, j = 2L, k = 3L),
+        space = flat_space(),
+        face_index_base = 0L
+      ),
+      "do not count from"
+    )
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(i = 0L, j = 1L, k = 2L),
+        space = flat_space(),
+        face_index_base = 1L
+      ),
+      "do not count from"
+    )
+  })
+
+  it("refuses a face index beyond the vertices", {
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(i = 0L, j = 1L, k = 99L),
+        space = flat_space(),
+        face_index_base = 0L
+      ),
+      "do not count from"
+    )
+  })
+
+  it("requires the base to be stated, with no default to guess", {
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(i = 0L, j = 1L, k = 2L),
+        space = flat_space()
+      ),
+      'argument "face_index_base" is missing'
+    )
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(i = 0L, j = 1L, k = 2L),
+        space = flat_space(),
+        face_index_base = 2L
+      ),
+      "must be"
+    )
+  })
+
+  it("refuses malformed vertices or faces", {
+    expect_error(
+      brain_mesh(
+        vertices = data.frame(a = 1, b = 2, c = 3),
+        faces = data.frame(i = 0L, j = 1L, k = 2L),
+        space = flat_space(),
+        face_index_base = 0L
+      ),
+      "must be a data frame"
+    )
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(a = 0L),
+        space = flat_space(),
+        face_index_base = 0L
+      ),
+      "must be a data frame"
+    )
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices()[0, ],
+        faces = data.frame(i = 0L, j = 1L, k = 2L),
+        space = flat_space(),
+        face_index_base = 0L
+      ),
+      "at least one row"
+    )
+  })
+
+  it("refuses a space that is not a mesh_space", {
+    expect_error(
+      brain_mesh(
+        vertices = tri_vertices(),
+        faces = data.frame(i = 0L, j = 1L, k = 2L),
+        space = list(vertex_space = "fsaverage5"),
+        face_index_base = 0L
+      ),
+      "must be a"
+    )
+  })
+})
