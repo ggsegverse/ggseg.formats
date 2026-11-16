@@ -83,6 +83,7 @@ mesh_space(
 }
 \seealso{
 Other mesh spaces:
+\code{\link[=brain_mesh]{brain_mesh()}},
 \code{\link[=set_mesh_space]{set_mesh_space()}}
 }
 \concept{mesh spaces}

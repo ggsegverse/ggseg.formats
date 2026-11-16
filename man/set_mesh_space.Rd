@@ -30,6 +30,7 @@ get_mesh_space(mesh)$vertex_space
 }
 \seealso{
 Other mesh spaces:
+\code{\link[=brain_mesh]{brain_mesh()}},
 \code{\link[=mesh_space]{mesh_space()}}
 }
 \concept{mesh spaces}
