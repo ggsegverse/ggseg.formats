@@ -1,6 +1,6 @@
 Package: ggseg.formats
 Title: Brain Atlas Data Structures for the 'ggsegverse' Ecosystem
-Version: 0.0.4.9028
+Version: 0.0.4.9029
 Authors@R:
     c(person("Athanasia Mo", "Mowinckel", , "a.m.mowinckel@psykologi.uio.no",
              role = c("aut", "cre"),
@@ -41,6 +41,8 @@ Config/Needs/gp:
     dplyr,
     ggplot2,
     hexSticker
+Config/Needs/data-raw: freesurferformats, ggsegverse/ggseg.extra,
+    usethis
 Encoding: UTF-8
 Language: en-GB
 Roxygen: list(markdown = TRUE)
