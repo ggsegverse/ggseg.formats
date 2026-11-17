@@ -249,7 +249,7 @@ describe("brain_mesh()", {
       space = flat_space(),
       face_index_base = 0L
     )
-    expect_identical(names(mesh), c("vertices", "faces"))
+    expect_named(mesh, c("vertices", "faces"))
     expect_identical(attr(mesh, "face_index_base"), 0L)
     expect_s3_class(get_mesh_space(mesh), "mesh_space")
   })
