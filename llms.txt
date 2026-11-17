@@ -157,6 +157,9 @@ Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
 
+- [`brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/brain_mesh.md)
+  : Build a mesh that describes itself
+
 - [`get_brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/get_brain_mesh.md)
   : Get brain surface mesh
 
@@ -320,6 +323,8 @@ space, hemisphere and mapping to MNI305 rather than inferring them.
 
 - [`mesh_space()`](https://ggsegverse.github.io/ggseg.formats/reference/mesh_space.md)
   : Record what a mesh's coordinates mean
+- [`brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/brain_mesh.md)
+  : Build a mesh that describes itself
 
 ## Atlas manipulation
 

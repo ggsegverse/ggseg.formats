@@ -31,6 +31,7 @@ none – meshes from outside the core packages legitimately do not.
 ## See also
 
 Other mesh spaces:
+[`brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/brain_mesh.md),
 [`mesh_space()`](https://ggsegverse.github.io/ggseg.formats/reference/mesh_space.md)
 
 ## Examples

@@ -97,6 +97,7 @@ so it is deliberately not recorded here.
 ## See also
 
 Other mesh spaces:
+[`brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/brain_mesh.md),
 [`set_mesh_space()`](https://ggsegverse.github.io/ggseg.formats/reference/set_mesh_space.md)
 
 ## Examples
