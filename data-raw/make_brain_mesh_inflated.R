@@ -39,7 +39,18 @@ read_inflated <- function(hemi) {
   path <- file.path(surf_dir, paste0(hemi, ".inflated"))
   surf <- freesurferformats::read.fs.surface(path) # nolint: object_usage_linter
 
-  mesh <- list(
+  # Inflation moves every vertex, so an inflated surface has no anatomical
+  # position: anatomical = FALSE, and no affine to MNI305. It is also why each
+  # hemisphere arrives centred on the origin and the two would superimpose if
+  # drawn as they are -- separating them is the renderer's display decision,
+  # which is why no offset is recorded here.
+  #
+  # brain_mesh() checks the faces actually count from the base declared, so
+  # the 1-based-to-0-based conversion below cannot silently go wrong.
+  # nolint start: object_usage_linter.
+  # lintr cannot resolve this package's own exports from data-raw, even with
+  # library() above.
+  brain_mesh(
     vertices = data.frame(
       x = surf$vertices[, 1],
       y = surf$vertices[, 2],
@@ -51,28 +62,15 @@ read_inflated <- function(hemi) {
       i = surf$faces[, 1] - 1L,
       j = surf$faces[, 2] - 1L,
       k = surf$faces[, 3] - 1L
-    )
-  )
-
-  attr(mesh, "face_index_base") <- 0L
-
-  # Inflation moves every vertex, so an inflated surface has no anatomical
-  # position: anatomical = FALSE, and no affine to MNI305. It is also why each
-  # hemisphere arrives centred on the origin and the two would superimpose if
-  # drawn as they are -- separating them is the renderer's display decision,
-  # which is why no offset is recorded here.
-  # nolint start: object_usage_linter.
-  # lintr cannot resolve this package's own exports from data-raw, even with
-  # library() above.
-  set_mesh_space(
-    mesh,
-    mesh_space(
+    ),
+    space = mesh_space(
       vertex_space = "fsaverage5",
       hemi = hemi_names[[hemi]],
       anatomical = FALSE,
       surface = "inflated",
       source = paste(fs_version, "fsaverage5", paste0(hemi, ".inflated"))
-    )
+    ),
+    face_index_base = 0L
   )
   # nolint end
 }
