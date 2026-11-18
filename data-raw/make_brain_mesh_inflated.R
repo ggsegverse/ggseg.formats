@@ -14,6 +14,13 @@
 # still rendering a perfectly convincing brain. If this script ever produces
 # different geometry, that is a finding, not something to accept.
 #
+# Reading is ggseg.extra::read_surface_mesh()'s job, not this script's. That
+# is a dev-time dependency in the other direction from the package one --
+# ggseg.extra imports ggseg.formats -- so regenerating these meshes means
+# installing ggseg.formats first, then ggseg.extra, then running this. The
+# alternative was a fifth place that decides independently how to read a
+# surface and what its faces count from.
+#
 # Run with: source("data-raw/make_brain_mesh_inflated.R")
 
 library(ggseg.formats)
@@ -36,33 +43,19 @@ fs_version <- local({
 hemi_names <- c(lh = "left", rh = "right")
 
 read_inflated <- function(hemi) {
-  path <- file.path(surf_dir, paste0(hemi, ".inflated"))
-  surf <- freesurferformats::read.fs.surface(path) # nolint: object_usage_linter
-
   # Inflation moves every vertex, so an inflated surface has no anatomical
   # position: anatomical = FALSE, and no affine to MNI305. It is also why each
   # hemisphere arrives centred on the origin and the two would superimpose if
   # drawn as they are -- separating them is the renderer's display decision,
   # which is why no offset is recorded here.
   #
-  # brain_mesh() checks the faces actually count from the base declared, so
-  # the 1-based-to-0-based conversion below cannot silently go wrong.
+  # read_surface_mesh() reads the binary directly rather than through
+  # mris_convert, whose ASCII round-trip moves coordinates by ~5e-7 mm -- too
+  # little to see and more than enough to break the identity check below.
   # nolint start: object_usage_linter.
-  # lintr cannot resolve this package's own exports from data-raw, even with
-  # library() above.
-  brain_mesh(
-    vertices = data.frame(
-      x = surf$vertices[, 1],
-      y = surf$vertices[, 2],
-      z = surf$vertices[, 3]
-    ),
-    # read.fs.surface() returns 1-based faces; the bundled meshes are 0-based
-    # and documented as such in get_brain_mesh(), so consumers rely on it.
-    faces = data.frame(
-      i = surf$faces[, 1] - 1L,
-      j = surf$faces[, 2] - 1L,
-      k = surf$faces[, 3] - 1L
-    ),
+  # lintr cannot resolve this package's own exports from data-raw.
+  ggseg.extra::read_surface_mesh(
+    file.path(surf_dir, paste0(hemi, ".inflated")),
     space = mesh_space(
       vertex_space = "fsaverage5",
       hemi = hemi_names[[hemi]],
@@ -74,6 +67,7 @@ read_inflated <- function(hemi) {
   )
   # nolint end
 }
+
 
 brain_mesh_inflated <- list(
   lh = read_inflated("lh"),
