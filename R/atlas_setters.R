@@ -73,7 +73,7 @@ set_atlas_type <- function(atlas, value) {
   value <- match.arg(value, atlas_types())
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = value,
     core = atlas_slot(atlas, "core"),
     data = atlas_slot(atlas, "data"),

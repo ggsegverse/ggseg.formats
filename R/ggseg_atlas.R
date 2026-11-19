@@ -231,9 +231,9 @@ print_ggseg_atlas <- function(x, n = 10, ...) {
   data <- atlas_slot(x, "data")
   geom <- geom_from_data(data)
   has_sf <- !is.null(geom)
-  has_3d <- !is.null(data$vertices) ||
-    !is.null(data$meshes) ||
-    !is.null(data$centerlines)
+  has_3d <- !is.null(atlas_slot(data, "vertices")) ||
+    !is.null(atlas_slot(data, "meshes")) ||
+    !is.null(atlas_slot(data, "centerlines"))
 
   print_atlas_summary(x, has_sf)
   print_atlas_rendering(x, data, has_sf, has_3d)
@@ -1020,12 +1020,12 @@ print_atlas_rendering <- function(x, data, has_sf, has_3d) {
   cli::cli_text("{.strong Palette:} {check(has_palette)}")
 
   # nolint start: object_usage_linter
-  render_3d <- if (!is.null(data$centerlines)) {
+  render_3d <- if (!is.null(atlas_slot(data, "centerlines"))) {
     # nolint end
     "centerlines"
-  } else if (!is.null(data$meshes)) {
+  } else if (!is.null(atlas_slot(data, "meshes"))) {
     "meshes"
-  } else if (!is.null(data$vertices)) {
+  } else if (!is.null(atlas_slot(data, "vertices"))) {
     "vertices"
   } else {
     "none"

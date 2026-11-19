@@ -25,6 +25,14 @@ as_ggseg_atlas.ggseg_atlas <- function(x) {
     !is.null(atlas_slot(x, "data")) &&
       inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
   ) {
+    # Modern payload, but possibly still the list representation: an atlas
+    # package built before 3.0.0 ships a tagged list, and the point of calling
+    # this on one is to get the S7 object back. Rebuilding through the
+    # constructor is the whole upgrade -- no source data, no pipeline, no
+    # geometry recomputed, so the result is the same atlas in a new shape.
+    if (!S7::S7_inherits(x, ggseg_atlas_class)) {
+      return(restamp_class(x))
+    }
     return(x)
   }
 

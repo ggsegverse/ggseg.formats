@@ -43,8 +43,11 @@ legacy_region_map <- function(atlas) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
-  legacy <- if (length(atlas$atlas) == 1 && !is.na(atlas$atlas)) {
-    .legacy_regions[[atlas$atlas]] # nolint: object_usage_linter.
+  legacy <- if (
+    length(atlas_slot(atlas, "atlas")) == 1 &&
+      !is.na(atlas_slot(atlas, "atlas"))
+  ) {
+    .legacy_regions[[atlas_slot(atlas, "atlas")]] # nolint: object_usage_linter.
   }
   if (is.null(legacy)) {
     cli::cli_warn(c(

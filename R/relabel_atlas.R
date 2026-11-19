@@ -54,7 +54,7 @@ atlas_relabel <- function(atlas, mapping) {
   }
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     palette = palette,
     core = core,

@@ -108,7 +108,7 @@ atlas_structure_reorder <- function(
   )
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     palette = atlas_slot(atlas, "palette"),
     core = atlas_slot(atlas, "core"),

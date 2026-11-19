@@ -402,7 +402,7 @@ strip_hemi_affix <- function(label) {
 #' @noRd
 rebuild_atlas_core <- function(atlas, core) {
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     core = core,
     data = atlas_slot(atlas, "data"),

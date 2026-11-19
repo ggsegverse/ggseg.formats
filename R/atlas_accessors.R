@@ -378,7 +378,7 @@ print.ggseg_sf <- function(x, ...) {
 print.ggseg_vertices <- function(x, n = 10, ...) {
   dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
   vert_lengths <- if ("vertices" %in% names(x)) {
-    vapply(x$vertices, length, integer(1))
+    vapply(atlas_slot(x, "vertices"), length, integer(1))
   }
   cli::cli_rule("{.cls ggseg_vertices} data: {dims}")
   if (!is.null(vert_lengths) && length(vert_lengths) > 0) {
@@ -457,7 +457,7 @@ geom_from_data <- function(data) {
   if (!is.null(data$geom)) {
     return(data$geom)
   }
-  data$sf
+  atlas_slot(data, "sf")
 }
 
 #' The sf-class geometry of an atlas data object, or NULL if it is polygon-only

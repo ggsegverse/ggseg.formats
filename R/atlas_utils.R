@@ -18,12 +18,12 @@ atlas_regions <- function(x) {
 
 #' @export
 atlas_regions.ggseg_atlas <- function(x) {
-  get_col(x$core, "region")
+  get_col(atlas_slot(x, "core"), "region")
 }
 
 #' @export
 atlas_regions.brain_atlas <- function(x) {
-  get_col(x$core, "region")
+  get_col(atlas_slot(x, "core"), "region")
 }
 
 #' @export
@@ -51,12 +51,12 @@ atlas_labels <- function(x) {
 
 #' @export
 atlas_labels.ggseg_atlas <- function(x) {
-  get_col(x$core, "label")
+  get_col(atlas_slot(x, "core"), "label")
 }
 
 #' @export
 atlas_labels.brain_atlas <- function(x) {
-  get_col(x$core, "label")
+  get_col(atlas_slot(x, "core"), "label")
 }
 
 #' @export
@@ -89,12 +89,12 @@ atlas_hemi <- function(x) {
 
 #' @export
 atlas_hemi.ggseg_atlas <- function(x) {
-  get_col(x$core, "hemi")
+  get_col(atlas_slot(x, "core"), "hemi")
 }
 
 #' @export
 atlas_hemi.brain_atlas <- function(x) {
-  get_col(x$core, "hemi")
+  get_col(atlas_slot(x, "core"), "hemi")
 }
 
 #' @export
@@ -130,12 +130,12 @@ atlas_display <- function(x) {
 
 #' @export
 atlas_display.ggseg_atlas <- function(x) {
-  get_col(x$core, "display")
+  get_col(atlas_slot(x, "core"), "display")
 }
 
 #' @export
 atlas_display.brain_atlas <- function(x) {
-  get_col(x$core, "display")
+  get_col(atlas_slot(x, "core"), "display")
 }
 
 #' @export
@@ -292,7 +292,7 @@ atlas_region_remove <- function(
   )
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     palette = new_palette,
     core = new_core,
@@ -353,7 +353,7 @@ atlas_region_contextual <- function(
   validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
 
   new_ggseg_atlas(
-    atlas$atlas,
+    atlas_slot(atlas, "atlas"),
     atlas_slot(atlas, "type"),
     new_palette,
     new_core,
@@ -436,8 +436,8 @@ atlas_region_op <- function(
     into,
     colour
   )
-  new_core <- meta$core
-  new_palette <- meta$palette
+  new_core <- atlas_slot(meta, "core")
+  new_palette <- atlas_slot(meta, "palette")
 
   # Context regions (not in core) draw behind core regions; keep that order.
   new_sf <- order_context_behind(new_sf, new_core$label)
@@ -448,7 +448,7 @@ atlas_region_op <- function(
   new_data <- rebuild_data_with_geom(atlas_slot(atlas, "data"), new_geom)
   validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
   new_ggseg_atlas(
-    atlas$atlas,
+    atlas_slot(atlas, "atlas"),
     atlas_slot(atlas, "type"),
     new_palette,
     new_core,
@@ -525,7 +525,7 @@ atlas_region_rename <- function(
   }
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     palette = atlas_slot(atlas, "palette"),
     core = new_core,
@@ -571,7 +571,7 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
   )
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     palette = new_palette,
     core = new_core,
@@ -611,7 +611,7 @@ atlas_core_add <- function(atlas, data, by = "region") {
   new_core <- df_left_join(atlas_slot(atlas, "core"), data, by = by)
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = atlas_slot(atlas, "type"),
     palette = atlas_slot(atlas, "palette"),
     core = new_core,
@@ -1229,10 +1229,14 @@ warn_no_region_match <- function(
 #' resemble what 0.0.4 shipped.
 #' @noRd
 legacy_region_hint <- function(atlas, pattern) {
-  if (is.null(atlas) || length(atlas$atlas) != 1 || is.na(atlas$atlas)) {
+  if (
+    is.null(atlas) ||
+      length(atlas_slot(atlas, "atlas")) != 1 ||
+      is.na(atlas_slot(atlas, "atlas"))
+  ) {
     return(character(0))
   }
-  legacy <- .legacy_regions[[atlas$atlas]] # nolint: object_usage_linter.
+  legacy <- .legacy_regions[[atlas_slot(atlas, "atlas")]] # nolint: object_usage_linter.
   if (is.null(legacy)) {
     return(character(0))
   }
@@ -1277,8 +1281,8 @@ get_col <- function(x, type) {
 #' @noRd
 #' @keywords internal
 guess_type <- function(x) {
-  if ("type" %in% names(x) && !is.na(x$type[1])) {
-    return(unique(x$type))
+  if ("type" %in% names(x) && !is.na(atlas_slot(x, "type")[1])) {
+    return(unique(atlas_slot(x, "type")))
   }
 
   cli::cli_warn("Atlas type not set, attempting to guess type.")
@@ -1286,10 +1290,10 @@ guess_type <- function(x) {
   # Modern atlases keep 2D geometry in `$data` (sf or polygons); `atlas_views()`
   # reads either. Fall back to the legacy bare `$sf` slot, then to a plain
   # data.frame's own `view` column.
-  views <- if (inherits(x$data, "ggseg_atlas_data")) {
-    views_from_data(x$data)
-  } else if (!is.null(x$sf)) {
-    x$sf$view
+  views <- if (inherits(atlas_slot(x, "data"), "ggseg_atlas_data")) {
+    views_from_data(atlas_slot(x, "data"))
+  } else if (!is.null(atlas_slot(x, "sf"))) {
+    atlas_slot(x, "sf")$view
   } else if ("view" %in% names(x)) {
     x$view
   } else {
@@ -1503,22 +1507,37 @@ rebuild_data_with_geom <- function(data, geom, keep_row = NULL) {
     }
     df[keep_row(df$label), , drop = FALSE]
   }
-  if (!is.null(data$vertices) && !is.null(data$meshes)) {
+  if (
+    !is.null(atlas_slot(data, "vertices")) &&
+      !is.null(atlas_slot(data, "meshes"))
+  ) {
     ggseg_data_cerebellar(
       geom = geom,
-      vertices = filt(data$vertices),
-      meshes = filt(data$meshes)
+      vertices = filt(atlas_slot(data, "vertices")),
+      meshes = filt(atlas_slot(data, "meshes"))
     )
-  } else if (!is.null(data$vertices)) {
+  } else if (!is.null(atlas_slot(data, "vertices"))) {
     if (inherits(data, "ggseg_data_cerebellar")) {
-      ggseg_data_cerebellar(geom = geom, vertices = filt(data$vertices))
+      ggseg_data_cerebellar(
+        geom = geom,
+        vertices = filt(atlas_slot(data, "vertices"))
+      )
     } else {
-      ggseg_data_cortical(geom = geom, vertices = filt(data$vertices))
+      ggseg_data_cortical(
+        geom = geom,
+        vertices = filt(atlas_slot(data, "vertices"))
+      )
     }
-  } else if (!is.null(data$meshes)) {
-    ggseg_data_subcortical(geom = geom, meshes = filt(data$meshes))
-  } else if (!is.null(data$centerlines)) {
-    ggseg_data_tract(geom = geom, centerlines = filt(data$centerlines))
+  } else if (!is.null(atlas_slot(data, "meshes"))) {
+    ggseg_data_subcortical(
+      geom = geom,
+      meshes = filt(atlas_slot(data, "meshes"))
+    )
+  } else if (!is.null(atlas_slot(data, "centerlines"))) {
+    ggseg_data_tract(
+      geom = geom,
+      centerlines = filt(atlas_slot(data, "centerlines"))
+    )
   } else {
     new_data <- data
     new_data$geom <- geom
@@ -1558,7 +1577,7 @@ rebuild_atlas <- function(atlas, new_data) {
   )
 
   new_ggseg_atlas(
-    atlas$atlas,
+    atlas_slot(atlas, "atlas"),
     atlas_slot(atlas, "type"),
     atlas_slot(atlas, "palette"),
     atlas_slot(atlas, "core"),
@@ -1977,7 +1996,7 @@ remove_small_pieces <- function(
   work <- if (was_sf) as_polygon_atlas(atlas) else atlas
 
   res <- polygons_remove_small_pieces(
-    data_poly(work$data),
+    data_poly(atlas_slot(work, "data")),
     min_area,
     views = views,
     labels = labels,
