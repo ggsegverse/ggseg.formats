@@ -59,7 +59,7 @@ atlas_structure_reorder <- function(
     )
   }
 
-  geom <- geom_from_data(atlas$data)
+  geom <- geom_from_data(atlas_slot(atlas, "data"))
   if (is.null(geom)) {
     cli::cli_abort("{.arg atlas} has no 2D geometry to reorder.")
   }
@@ -103,17 +103,17 @@ atlas_structure_reorder <- function(
   }
 
   new_data <- rebuild_data_with_geom(
-    atlas$data,
+    atlas_slot(atlas, "data"),
     geom[new_order, , drop = FALSE]
   )
 
   ggseg_atlas(
     atlas = atlas$atlas,
-    type = atlas$type,
-    palette = atlas$palette,
-    core = atlas$core,
+    type = atlas_slot(atlas, "type"),
+    palette = atlas_slot(atlas, "palette"),
+    core = atlas_slot(atlas, "core"),
     data = new_data,
-    provenance = atlas$provenance
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -132,13 +132,17 @@ resolve_structures <- function(atlas, structures, match_on, drawn, arg) {
   # Resolve each name in turn so the caller's order is the order they move in.
   # One region can name several drawn structures (its two hemispheres).
   resolved <- unlist(lapply(structures, function(x) {
-    from_core <- atlas$core$label[atlas$core[[match_on]] == x]
+    from_core <- atlas_slot(atlas, "core")$label[
+      atlas_slot(atlas, "core")[[match_on]] == x
+    ]
     hit <- unique(c(from_core, x))
     hit[hit %in% drawn]
   }))
   resolved <- unique(resolved)
 
-  named <- structures %in% atlas$core[[match_on]] | structures %in% drawn
+  named <- structures %in%
+    atlas_slot(atlas, "core")[[match_on]] |
+    structures %in% drawn
   if (!all(named)) {
     cli::cli_abort(c(
       "{.arg {arg}} names {cli::qty(sum(!named))}{?a structure/structures}

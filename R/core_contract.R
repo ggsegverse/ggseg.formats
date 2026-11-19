@@ -80,7 +80,7 @@ NULL
 #' @family atlas accessors
 atlas_region_semantics <- function(atlas) {
   assert_ggseg_atlas(atlas)
-  core <- as.data.frame(atlas$core)
+  core <- as.data.frame(atlas_slot(atlas, "core"))
   hemi <- as.character(core$hemi)
   sides <- setdiff(unique(hemi[!is.na(hemi)]), "midline")
   if (length(sides) < 2L) {
@@ -114,7 +114,7 @@ atlas_region_semantics <- function(atlas) {
 atlas_context <- function(atlas) {
   assert_ggseg_atlas(atlas)
   drawn <- drawn_labels(atlas)
-  setdiff(drawn, as.character(atlas$core$label))
+  setdiff(drawn, as.character(atlas_slot(atlas, "core")$label))
 }
 
 
@@ -136,15 +136,15 @@ atlas_context <- function(atlas) {
 #' @return `atlas`, with `display` in `core`.
 #' @examples
 #' atlas <- dk()
-#' atlas$core$display <- NULL
+#' atlas_slot(atlas, "core")$display <- NULL
 #' atlas_display(migrate_atlas_display(atlas))[1:3]
 #' @export
 migrate_atlas_display <- function(atlas, overwrite = FALSE) {
   assert_ggseg_atlas(atlas)
-  if ("display" %in% names(atlas$core) && !overwrite) {
+  if ("display" %in% names(atlas_slot(atlas, "core")) && !overwrite) {
     return(atlas)
   }
-  core <- atlas$core
+  core <- atlas_slot(atlas, "core")
   core$display <- strip_hemi_affix(as.character(core$label))
   rebuild_atlas_core(atlas, core)
 }
@@ -167,15 +167,15 @@ migrate_atlas_display <- function(atlas, overwrite = FALSE) {
 #' @return `atlas`, with `hemi` in the vocabulary.
 #' @examples
 #' atlas <- dk()
-#' atlas$core$hemi[1] <- "middle"
+#' atlas_slot(atlas, "core")$hemi[1] <- "middle"
 #' unique(migrate_atlas_hemi(atlas)$core$hemi)
 #' @export
 migrate_atlas_hemi <- function(atlas) {
-  if (!atlas_has_slots(atlas) || is.null(atlas$core)) {
+  if (!atlas_has_slots(atlas) || is.null(atlas_slot(atlas, "core"))) {
     cli::cli_abort("{.arg atlas} must be a list with a {.field core}.")
   }
-  hemi <- as.character(atlas$core$hemi)
-  atlas$core$hemi <- legacy_hemi_map[hemi] |>
+  hemi <- as.character(atlas_slot(atlas, "core")$hemi)
+  atlas_slot(atlas, "core")$hemi <- legacy_hemi_map[hemi] |>
     unname() |>
     (\(mapped) ifelse(is.na(mapped), hemi, mapped))()
   atlas
@@ -232,7 +232,7 @@ context <- function() {
 #' @export
 regions <- function() {
   function(atlas) {
-    labels_to_pattern(as.character(atlas$core$label))
+    labels_to_pattern(as.character(atlas_slot(atlas, "core")$label))
   }
 }
 
@@ -262,7 +262,7 @@ atlas_undrawn <- function(atlas) {
   if (!is_ggseg_atlas(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
-  setdiff(as.character(atlas$core$label), drawn_labels(atlas))
+  setdiff(as.character(atlas_slot(atlas, "core")$label), drawn_labels(atlas))
 }
 
 
@@ -307,7 +307,7 @@ atlas_views_empty <- function(atlas) {
     return(character(0))
   }
   drawn <- drawn_label_views(atlas)
-  core_labels <- as.character(atlas$core$label)
+  core_labels <- as.character(atlas_slot(atlas, "core")$label)
   drawn <- drawn[drawn$label %in% core_labels, , drop = FALSE]
   setdiff(as.character(views), unique(as.character(drawn$view)))
 }
@@ -326,7 +326,7 @@ drawn_label_views <- function(atlas) {
     view = character(0),
     stringsAsFactors = FALSE
   )
-  poly <- data_poly(atlas$data)
+  poly <- data_poly(atlas_slot(atlas, "data"))
   if (!is.null(poly)) {
     flat <- polygons_unnest(poly)
     return(data.frame(
@@ -335,7 +335,7 @@ drawn_label_views <- function(atlas) {
       stringsAsFactors = FALSE
     ))
   }
-  sf_data <- data_sf(atlas$data)
+  sf_data <- data_sf(atlas_slot(atlas, "data"))
   if (!is.null(sf_data)) {
     return(data.frame(
       label = as.character(sf_data$label),
@@ -350,11 +350,11 @@ drawn_label_views <- function(atlas) {
 #' Every label an atlas's 2D geometry draws, whichever backend holds it
 #' @noRd
 drawn_labels <- function(atlas) {
-  poly <- data_poly(atlas$data)
+  poly <- data_poly(atlas_slot(atlas, "data"))
   if (!is.null(poly)) {
     return(unique(as.character(poly$label)))
   }
-  sf_data <- data_sf(atlas$data)
+  sf_data <- data_sf(atlas_slot(atlas, "data"))
   if (!is.null(sf_data)) {
     return(unique(as.character(sf_data$label)))
   }
@@ -403,11 +403,11 @@ strip_hemi_affix <- function(label) {
 rebuild_atlas_core <- function(atlas, core) {
   ggseg_atlas(
     atlas = atlas$atlas,
-    type = atlas$type,
+    type = atlas_slot(atlas, "type"),
     core = core,
-    data = atlas$data,
-    palette = atlas$palette,
-    provenance = atlas$provenance
+    data = atlas_slot(atlas, "data"),
+    palette = atlas_slot(atlas, "palette"),
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 

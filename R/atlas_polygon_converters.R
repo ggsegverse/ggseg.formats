@@ -30,20 +30,20 @@
 as_polygon_atlas <- function(atlas) {
   assert_ggseg_atlas(atlas)
 
-  geom <- geom_from_data(atlas$data)
+  geom <- geom_from_data(atlas_slot(atlas, "data"))
   if (is.null(geom)) {
     cli::cli_abort(c(
       "Atlas has no 2D geometry to convert.",
-      "i" = "Need {.field geom} in {.code atlas$data}."
+      "i" = "Need {.field geom} in the atlas payload; see {.fn atlas_data}."
     ))
   }
   if (!inherits(geom, "brain_polygons")) {
     geom <- sf_to_polygons(geom)
   }
 
-  atlas$data$geom <- geom
-  atlas$data$sf <- NULL
-  atlas$data$polygons <- NULL
+  atlas_slot(atlas, "data")$geom <- geom
+  atlas_slot(atlas, "data")$sf <- NULL
+  atlas_slot(atlas, "data")$polygons <- NULL
   atlas
 }
 
@@ -72,19 +72,19 @@ as_polygon_atlas <- function(atlas) {
 as_sf_atlas <- function(atlas) {
   assert_ggseg_atlas(atlas)
 
-  geom <- geom_from_data(atlas$data)
+  geom <- geom_from_data(atlas_slot(atlas, "data"))
   if (is.null(geom)) {
     cli::cli_abort(c(
       "Atlas has no 2D geometry to convert.",
-      "i" = "Need {.field geom} in {.code atlas$data}."
+      "i" = "Need {.field geom} in the atlas payload; see {.fn atlas_data}."
     ))
   }
   if (inherits(geom, "brain_polygons")) {
     geom <- polygons_to_sf(geom)
   }
 
-  atlas$data$geom <- geom
-  atlas$data$sf <- NULL
-  atlas$data$polygons <- NULL
+  atlas_slot(atlas, "data")$geom <- geom
+  atlas_slot(atlas, "data")$sf <- NULL
+  atlas_slot(atlas, "data")$polygons <- NULL
   atlas
 }

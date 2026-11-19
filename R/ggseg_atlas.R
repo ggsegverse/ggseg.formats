@@ -228,7 +228,7 @@ is_ggseg3d_atlas <- function(x) {
 #' @importFrom stats na.omit
 #' @noRd
 print_ggseg_atlas <- function(x, n = 10, ...) {
-  data <- x$data
+  data <- atlas_slot(x, "data")
   geom <- geom_from_data(data)
   has_sf <- !is.null(geom)
   has_3d <- !is.null(data$vertices) ||
@@ -240,7 +240,7 @@ print_ggseg_atlas <- function(x, n = 10, ...) {
 
   cli::cli_rule()
 
-  print_data_head(x$core, n)
+  print_data_head(atlas_slot(x, "core"), n)
 
   invisible(x)
 }
@@ -249,11 +249,11 @@ print_ggseg_atlas <- function(x, n = 10, ...) {
 #' @noRd
 as_list_ggseg_atlas <- function(x, ...) {
   list(
-    atlas = x$atlas,
-    type = x$type,
-    palette = x$palette,
-    core = x$core,
-    data = x$data
+    atlas = atlas_slot(x, "atlas"),
+    type = atlas_slot(x, "type"),
+    palette = atlas_slot(x, "palette"),
+    core = atlas_slot(x, "core"),
+    data = atlas_slot(x, "data")
   )
 }
 
@@ -276,9 +276,9 @@ as_data_frame_ggseg_atlas <- function(x, ...) {
   class(result) <- "data.frame"
   result$.ggseg_row <- seq_len(nrow(result))
 
-  result <- merge_core_into_sf(result, x$core)
+  result <- merge_core_into_sf(result, atlas_slot(x, "core"))
 
-  if (x$type == "cortical") {
+  if (atlas_slot(x, "type") == "cortical") {
     result <- infer_cortical_hemi(result)
   }
 
@@ -288,14 +288,14 @@ as_data_frame_ggseg_atlas <- function(x, ...) {
   # whether sf happens to be installed.
   geom_pos <- ncol(result) - 1L
 
-  result$atlas <- x$atlas
-  result$type <- x$type
+  result$atlas <- atlas_slot(x, "atlas")
+  result$type <- atlas_slot(x, "type")
 
-  if (!is.null(x$palette)) {
-    result$colour <- unname(x$palette[result$label])
+  if (!is.null(atlas_slot(x, "palette"))) {
+    result$colour <- unname(atlas_slot(x, "palette")[result$label])
   }
 
-  result <- order_context_behind(result, x$core$label)
+  result <- order_context_behind(result, atlas_slot(x, "core")$label)
 
   geometry <- reorder_sfc(geometry, result$.ggseg_row)
   result$.ggseg_row <- NULL
@@ -307,18 +307,18 @@ as_data_frame_ggseg_atlas <- function(x, ...) {
 #' @noRd
 plot_ggseg_atlas <- function(x, ...) {
   flat <- polygons_unnest(atlas_polygons(x))
-  flat <- order_context_behind(flat, x$core$label)
+  flat <- order_context_behind(flat, atlas_slot(x, "core")$label)
   fill_colors <- resolve_fill_colors(
     flat$label,
     atlas_plot_palette(x),
-    x$core$label
+    atlas_slot(x, "core")$label
   )
   dots <- list(...)
 
   # One panel per spatially separate piece, arranged in a near-square grid so
   # each gets enough room to read. This is a quick overview of the atlas, not a
   # publication figure.
-  cell <- plot_cells(flat, resolve_plot_hemi(flat$label, x$core))
+  cell <- plot_cells(flat, resolve_plot_hemi(flat$label, atlas_slot(x, "core")))
   cells <- order_cells_spatially(cell, flat$x)
   ncol <- ceiling(sqrt(length(cells)))
   nrow <- ceiling(length(cells) / ncol)
@@ -349,7 +349,12 @@ plot_ggseg_atlas <- function(x, ...) {
     }))
   }
 
-  mtext(paste(x$atlas, x$type, "atlas"), outer = TRUE, cex = 1, line = 0.5)
+  mtext(
+    paste(atlas_slot(x, "atlas"), atlas_slot(x, "type"), "atlas"),
+    outer = TRUE,
+    cex = 1,
+    line = 0.5
+  )
 
   invisible(x)
 }
@@ -414,12 +419,12 @@ atlas_structure_defect <- function(x) {
   rlang::try_fetch(
     suppressMessages(suppressWarnings({
       ggseg_atlas(
-        atlas = x$atlas,
-        type = x$type,
-        core = x$core,
-        data = x$data,
-        palette = x$palette,
-        provenance = x$provenance
+        atlas = atlas_slot(x, "atlas"),
+        type = atlas_slot(x, "type"),
+        core = atlas_slot(x, "core"),
+        data = atlas_slot(x, "data"),
+        palette = atlas_slot(x, "palette"),
+        provenance = atlas_slot(x, "provenance")
       )
       NULL
     })),
@@ -435,26 +440,26 @@ atlas_structure_defect <- function(x) {
 #' @noRd
 #' @keywords internal
 as_sf_for_data_frame <- function(x) {
-  geom <- if (inherits(x$data, "ggseg_atlas_data")) {
-    geom_from_data(x$data)
+  geom <- if (inherits(atlas_slot(x, "data"), "ggseg_atlas_data")) {
+    geom_from_data(atlas_slot(x, "data"))
   } else {
     NULL
   }
   has_2d_slot <- !is.null(geom) ||
-    inherits(x$data, "sf") ||
-    inherits(x$data, "data.frame")
+    inherits(atlas_slot(x, "data"), "sf") ||
+    inherits(atlas_slot(x, "data"), "data.frame")
   if (!has_2d_slot) {
     cli::cli_abort("Cannot convert ggseg_atlas to data.frame: no 2D geometry.")
   }
   # The geom slot is already an sf-class frame in both representations --
   # polygons_to_sf() builds one through sfheaders -- so that path needs no sf.
-  # The legacy fallback does: `x$data` is a plain frame whose geometry column
+  # The legacy fallback does: `atlas_slot(x, "data")` is a plain frame whose geometry column
   # has to be promoted, which only st_as_sf() can do.
   sf_data <- if (!is.null(geom)) {
     if (inherits(geom, "brain_polygons")) polygons_to_sf(geom) else geom
   } else {
     require_sf("as.data.frame.ggseg_atlas()")
-    sf::st_as_sf(x$data)
+    sf::st_as_sf(atlas_slot(x, "data"))
   }
 
   if (nrow(sf_data) == 0) {
@@ -974,12 +979,14 @@ validate_core_display <- function(core, atlas) {
 #' @noRd
 #' @keywords internal
 print_atlas_summary <- function(x, has_sf) {
-  n_regions <- length(stats::na.omit(unique(x$core$region))) # nolint
-  hemis <- paste0(unique(x$core$hemi), collapse = ", ") # nolint
+  n_regions <- length(stats::na.omit(unique(atlas_slot(x, "core")$region))) # nolint
+  hemis <- paste0(unique(atlas_slot(x, "core")$hemi), collapse = ", ") # nolint
 
-  cli::cli_h1("{x$atlas} ggseg atlas")
+  atlas_name <- atlas_slot(x, "atlas")
+  cli::cli_h1("{atlas_name} ggseg atlas")
 
-  cli::cli_text("{.strong Type: {x$type}}")
+  atlas_type <- atlas_slot(x, "type")
+  cli::cli_text("{.strong Type: {atlas_type}}")
   cli::cli_text("{.strong Regions:} {n_regions}")
   cli::cli_text("{.strong Hemispheres:} {hemis}")
 
@@ -999,7 +1006,7 @@ print_atlas_summary <- function(x, has_sf) {
 #' @noRd
 #' @keywords internal
 print_atlas_rendering <- function(x, data, has_sf, has_3d) {
-  has_palette <- !is.null(x$palette) # nolint: object_usage_linter
+  has_palette <- !is.null(atlas_slot(x, "palette")) # nolint: object_usage_linter
 
   check <- function(val) {
     # nolint: object_usage_linter

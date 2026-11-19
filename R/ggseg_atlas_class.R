@@ -169,11 +169,11 @@ atlas_invariant_defect <- function(self) {
 #' reason.
 #'
 #' The tags are *appended*, never prepended. S7 finds a method for a base
-#' generic such as `$<-` by looking up `class(x)[1]` in its own table, so a
-#' leading unqualified tag makes that lookup miss and `atlas$core <- value`
-#' falls through to S7's "can't set properties with `$`" error. Appending
-#' leaves `class(x)[1]` qualified -- `inherits()` scans the whole vector, so
-#' it is satisfied either way.
+#' generic by looking up `class(x)[1]` in its own table, so a leading
+#' unqualified tag makes that lookup miss and `print()`, `plot()` and the
+#' coercions fall back to S7's defaults. Appending leaves `class(x)[1]`
+#' qualified -- `inherits()` scans the whole vector, so it is satisfied
+#' either way.
 #' @noRd
 tag_legacy_atlas_classes <- function(x) {
   class(x) <- c(class(x), legacy_atlas_class_tags(x))

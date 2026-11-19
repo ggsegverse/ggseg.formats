@@ -21,13 +21,18 @@ as_ggseg_atlas.default <- function(x) {
 
 #' @export
 as_ggseg_atlas.ggseg_atlas <- function(x) {
-  if (!is.null(x$data) && inherits(x$data, "ggseg_atlas_data")) {
+  if (
+    !is.null(atlas_slot(x, "data")) &&
+      inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
+  ) {
     return(x)
   }
 
   if (
-    !is.null(x$core) &&
-      (!is.null(x$sf) || !is.null(x$vertices) || !is.null(x$meshes))
+    !is.null(atlas_slot(x, "core")) &&
+      (!is.null(atlas_slot(x, "sf")) ||
+        !is.null(atlas_slot(x, "vertices")) ||
+        !is.null(atlas_slot(x, "meshes")))
   ) {
     return(convert_legacy_structure(x))
   }
@@ -45,22 +50,29 @@ as_ggseg_atlas.brain_atlas <- function(x) {
     always = TRUE
   )
 
-  if (!is.null(x$data) && inherits(x$data, "ggseg_atlas_data")) {
+  if (
+    !is.null(atlas_slot(x, "data")) &&
+      inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
+  ) {
     return(restamp_class(x))
   }
 
   has_legacy_slots <- !all(
     vapply(
-      list(x$sf, x$vertices, x$meshes),
+      list(
+        atlas_slot(x, "sf"),
+        atlas_slot(x, "vertices"),
+        atlas_slot(x, "meshes")
+      ),
       is.null,
       logical(1)
     )
   )
-  if (!is.null(x$core) && has_legacy_slots) {
+  if (!is.null(atlas_slot(x, "core")) && has_legacy_slots) {
     return(convert_legacy_structure(x))
   }
 
-  if (!is.null(x$data) && is.data.frame(x$data)) {
+  if (!is.null(atlas_slot(x, "data")) && is.data.frame(atlas_slot(x, "data"))) {
     return(convert_legacy_brain_data(x))
   }
 
@@ -82,14 +94,16 @@ as_ggseg_atlas.ggseg3d_atlas <- function(x) {
 
 #' @export
 as_ggseg_atlas.list <- function(x) {
-  if ("data" %in% names(x) && inherits(x$data, "ggseg_atlas_data")) {
+  if (
+    "data" %in% names(x) && inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
+  ) {
     return(ggseg_atlas(
-      atlas = x$atlas,
-      type = x$type,
-      palette = x$palette,
-      core = x$core,
-      data = x$data,
-      provenance = x$provenance
+      atlas = atlas_slot(x, "atlas"),
+      type = atlas_slot(x, "type"),
+      palette = atlas_slot(x, "palette"),
+      core = atlas_slot(x, "core"),
+      data = atlas_slot(x, "data"),
+      provenance = atlas_slot(x, "provenance")
     ))
   }
 
@@ -136,15 +150,15 @@ convert_legacy_brain_data <- function(x) {
     )
   }
 
-  if (!is.null(x$core)) {
+  if (!is.null(atlas_slot(x, "core"))) {
     return(restamp_class(x))
   }
 
   require_sf("convert_legacy_brain_data()")
-  sf_data <- normalize_legacy_sf(x$data)
-  type <- x$type %||% "cortical"
+  sf_data <- normalize_legacy_sf(atlas_slot(x, "data"))
+  type <- atlas_slot(x, "type") %||% "cortical"
 
-  core <- legacy_core_from_sf(sf_data, x$atlas)
+  core <- legacy_core_from_sf(sf_data, atlas_slot(x, "atlas"))
   palette <- legacy_palette_from_sf(sf_data)
 
   data <- switch(
@@ -156,12 +170,12 @@ convert_legacy_brain_data <- function(x) {
   )
 
   ggseg_atlas(
-    atlas = x$atlas,
+    atlas = atlas_slot(x, "atlas"),
     type = type,
     palette = palette,
     core = core,
     data = data,
-    provenance = x$provenance
+    provenance = atlas_slot(x, "provenance")
   )
 }
 
@@ -176,32 +190,41 @@ convert_legacy_brain_data <- function(x) {
 #' @keywords internal
 #' @noRd
 convert_legacy_structure <- function(x) {
-  type <- x$type
+  type <- atlas_slot(x, "type")
 
-  core <- x$core
+  core <- atlas_slot(x, "core")
   if (
     !is.null(core) && !"display" %in% names(core) && "region" %in% names(core)
   ) {
     core$display <- core$region
   }
   core <- normalise_legacy_hemi(core)
-  core <- dedupe_legacy_core_labels(core, x$atlas)
+  core <- dedupe_legacy_core_labels(core, atlas_slot(x, "atlas"))
 
   data <- switch(
     type,
-    "cortical" = ggseg_data_cortical(geom = x$sf, vertices = x$vertices),
-    "subcortical" = ggseg_data_subcortical(geom = x$sf, meshes = x$meshes),
-    "tract" = ggseg_data_tract(geom = x$sf, meshes = x$meshes),
+    "cortical" = ggseg_data_cortical(
+      geom = atlas_slot(x, "sf"),
+      vertices = atlas_slot(x, "vertices")
+    ),
+    "subcortical" = ggseg_data_subcortical(
+      geom = atlas_slot(x, "sf"),
+      meshes = atlas_slot(x, "meshes")
+    ),
+    "tract" = ggseg_data_tract(
+      geom = atlas_slot(x, "sf"),
+      meshes = atlas_slot(x, "meshes")
+    ),
     cli::cli_abort("Unknown atlas type: {.val {type}}")
   )
 
   ggseg_atlas(
-    atlas = x$atlas,
+    atlas = atlas_slot(x, "atlas"),
     type = type,
-    palette = x$palette,
+    palette = atlas_slot(x, "palette"),
     core = core,
     data = data,
-    provenance = x$provenance
+    provenance = atlas_slot(x, "provenance")
   )
 }
 
@@ -209,14 +232,14 @@ convert_legacy_structure <- function(x) {
 #' @keywords internal
 #' @noRd
 restamp_class <- function(x) {
-  type <- x$type %||% "cortical"
+  type <- atlas_slot(x, "type") %||% "cortical"
   new_ggseg_atlas(
-    x$atlas,
+    atlas_slot(x, "atlas"),
     type,
-    x$palette,
-    x$core,
-    as_atlas_data(x$data, type),
-    x$provenance
+    atlas_slot(x, "palette"),
+    atlas_slot(x, "core"),
+    as_atlas_data(atlas_slot(x, "data"), type),
+    atlas_slot(x, "provenance")
   )
 }
 

@@ -14,7 +14,7 @@ an sf or \code{brain_polygons} object, or \code{NULL} if the atlas has no 2D
 geometry
 }
 \description{
-Returns the single 2D geometry object stored in \code{atlas$data$geom}, which is
+Returns the single 2D geometry object stored in \code{atlas_slot(atlas, "data")$geom}, which is
 either an sf-class data frame or a \code{brain_polygons} data.frame. Its class
 determines which rendering path is used downstream.
 }
@@ -22,7 +22,7 @@ determines which rendering path is used downstream.
 For backward compatibility with released atlases built before the unified
 \code{geom} slot, this falls back to the legacy \code{sf} slot. Reverse dependencies
 should call this accessor (or \code{\link[=atlas_sf]{atlas_sf()}} / \code{\link[=atlas_polygons]{atlas_polygons()}}) rather than
-reaching into \code{atlas$data} directly.
+reaching into \code{atlas_slot(atlas, "data")} directly.
 }
 \examples{
 g <- atlas_geom(dk())
@@ -32,11 +32,14 @@ atlas_geometry_type(dk())
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
 \code{\link[=atlas_context]{atlas_context()}},
+\code{\link[=atlas_core]{atlas_core()}},
+\code{\link[=atlas_data]{atlas_data()}},
 \code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
 \code{\link[=atlas_hemi]{atlas_hemi()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
+\code{\link[=atlas_name]{atlas_name()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_plot_palette]{atlas_plot_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},

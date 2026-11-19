@@ -33,7 +33,7 @@ set_atlas_palette <- function(atlas, value) {
       "i" = "e.g. {.val {utils::head(absent, 3)}} ({length(absent)} total)."
     ))
   }
-  atlas$palette <- value
+  atlas@palette <- value
   atlas
 }
 
@@ -75,10 +75,10 @@ set_atlas_type <- function(atlas, value) {
   ggseg_atlas(
     atlas = atlas$atlas,
     type = value,
-    core = atlas$core,
-    data = atlas$data,
-    palette = atlas$palette,
-    provenance = atlas$provenance
+    core = atlas_slot(atlas, "core"),
+    data = atlas_slot(atlas, "data"),
+    palette = atlas_slot(atlas, "palette"),
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -110,6 +110,6 @@ set_atlas_provenance <- function(atlas, value) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
-  atlas$provenance <- validate_provenance(value)
+  atlas@provenance <- validate_provenance(value)
   atlas
 }

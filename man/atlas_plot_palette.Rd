@@ -15,7 +15,7 @@ Named character vector of colours keyed by label.
 \description{
 Returns the atlas \code{palette} when it can tell the atlas's regions apart, and
 otherwise a palette of automatically assigned, distinguishable colours. Use
-this instead of reading \code{atlas$palette} directly whenever the palette is
+this instead of reading \code{atlas_slot(atlas, "palette")} directly whenever the palette is
 about to be drawn: some atlases are built from colour lookup tables that give
 every region the same colour (often black), and rendering those faithfully
 produces a solid silhouette in which no region can be told from its
@@ -44,12 +44,15 @@ identical(atlas_plot_palette(dk()), atlas_palette(dk()))
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
 \code{\link[=atlas_context]{atlas_context()}},
+\code{\link[=atlas_core]{atlas_core()}},
+\code{\link[=atlas_data]{atlas_data()}},
 \code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
 \code{\link[=atlas_hemi]{atlas_hemi()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
+\code{\link[=atlas_name]{atlas_name()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
 \code{\link[=atlas_provenance]{atlas_provenance()}},
