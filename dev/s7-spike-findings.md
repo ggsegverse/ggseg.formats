@@ -14,6 +14,7 @@ notices.
 | ggseg.formats (this branch) | 1789 | 5 | 15 |
 | ggseg | 742 | 0 | 0 |
 | ggseg3d | 747 | 0 | 3 |
+| ggseg.extra | 3602 | 0 | 1 |
 
 Six installed atlas packages still shipping **S3 list** atlases
 (ggsegSchaefer, ggsegHO, ggsegJHU, ggsegMelbourne, ggsegThalamus,
@@ -49,12 +50,15 @@ list accepted it in silence.
 
 ## What it costs
 
-### Invalid atlases become unconstructible — 14 of the 23 failures
+### Invalid atlases become unconstructible — 15 of the 24 failures, and every single downstream one
 
-Eleven tests here and three in ggseg3d exist to check what happens when an
-atlas is malformed: a duplicated label, a missing core column, an unnamed
-palette, a payload that disagrees with the type. None of them can build their
-fixture any more.
+Eleven tests here, three in ggseg3d and the one in ggseg.extra exist to check
+what happens when an atlas is malformed: a duplicated label, a missing core
+column, an unnamed palette, a payload that disagrees with the type. None of
+them can build their fixture any more.
+
+Every failure outside this package has this one cause. Nothing in ggseg,
+ggseg3d or ggseg.extra broke because the atlas stopped being a list.
 
 This is not a test problem to paper over. It means `assert_ggseg_atlas()`,
 `validate_ggseg_atlas()` and `is_ggseg_atlas()` can only ever fire for a
