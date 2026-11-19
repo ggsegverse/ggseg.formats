@@ -171,7 +171,7 @@ migrate_atlas_display <- function(atlas, overwrite = FALSE) {
 #' unique(migrate_atlas_hemi(atlas)$core$hemi)
 #' @export
 migrate_atlas_hemi <- function(atlas) {
-  if (!is.list(atlas) || is.null(atlas$core)) {
+  if (!atlas_has_slots(atlas) || is.null(atlas$core)) {
     cli::cli_abort("{.arg atlas} must be a list with a {.field core}.")
   }
   hemi <- as.character(atlas$core$hemi)

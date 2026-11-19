@@ -210,7 +210,44 @@ convert_legacy_structure <- function(x) {
 #' @noRd
 restamp_class <- function(x) {
   type <- x$type %||% "cortical"
-  new_ggseg_atlas(x$atlas, type, x$palette, x$core, x$data, x$provenance)
+  new_ggseg_atlas(
+    x$atlas,
+    type,
+    x$palette,
+    x$core,
+    as_atlas_data(x$data, type),
+    x$provenance
+  )
+}
+
+
+#' Wrap a legacy bare geometry table in the payload class for its type
+#'
+#' Legacy `brain_atlas` objects kept 2D geometry directly in `$data` as an sf
+#' frame, and the old list representation let it stay there: `new_ggseg_atlas()`
+#' was a bare `structure()` call that validated nothing, so a re-stamped atlas
+#' carried whatever `$data` it was handed. An S7 class has no unvalidated
+#' constructor, so the geometry is wrapped in the `ggseg_data_*()` payload its
+#' type calls for, which is what every other construction path already
+#' produces.
+#' @noRd
+as_atlas_data <- function(data, type) {
+  if (
+    is.null(data) || inherits(data, c("ggseg_atlas_data", "brain_atlas_data"))
+  ) {
+    return(data)
+  }
+  if (!is.data.frame(data)) {
+    return(data)
+  }
+  switch(
+    type,
+    subcortical = ggseg_data_subcortical(geom = data, meshes = NULL),
+    tract = ggseg_data_tract(geom = data, meshes = NULL),
+    cerebellar = ggseg_data_cerebellar(geom = data, meshes = NULL),
+    wm = ggseg_data_wm(geom = data, meshes = NULL),
+    ggseg_data_cortical(geom = data, vertices = NULL)
+  )
 }
 
 

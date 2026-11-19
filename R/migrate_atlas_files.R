@@ -161,7 +161,7 @@ migrate_rda_file <- function(f, keep_sf, force = FALSE) {
 #' @keywords internal
 is_atlas_for_migration <- function(x) {
   is_atlas_class(x) &&
-    is.list(x) &&
+    atlas_has_slots(x) &&
     !is.null(x$data) &&
     is.list(x$data)
 }

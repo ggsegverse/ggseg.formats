@@ -19,6 +19,7 @@ Imports:
     cli,
     lifecycle,
     rlang,
+    S7,
     sfheaders
 Suggests:
     covr,

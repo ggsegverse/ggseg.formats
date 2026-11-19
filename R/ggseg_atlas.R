@@ -225,9 +225,9 @@ is_ggseg3d_atlas <- function(x) {
 }
 
 
-#' @export
 #' @importFrom stats na.omit
-print.ggseg_atlas <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_atlas <- function(x, n = 10, ...) {
   data <- x$data
   geom <- geom_from_data(data)
   has_sf <- !is.null(geom)
@@ -246,8 +246,8 @@ print.ggseg_atlas <- function(x, n = 10, ...) {
 }
 
 
-#' @export
-as.list.ggseg_atlas <- function(x, ...) {
+#' @noRd
+as_list_ggseg_atlas <- function(x, ...) {
   list(
     atlas = x$atlas,
     type = x$type,
@@ -258,8 +258,8 @@ as.list.ggseg_atlas <- function(x, ...) {
 }
 
 
-#' @export
-as.data.frame.ggseg_atlas <- function(x, ...) {
+#' @noRd
+as_data_frame_ggseg_atlas <- function(x, ...) {
   sf_data <- as_sf_for_data_frame(x)
 
   # Geometry travels out of band. Base merge(), cbind() and `[` each strip a
@@ -304,8 +304,8 @@ as.data.frame.ggseg_atlas <- function(x, ...) {
 }
 
 #' @importFrom graphics mtext par plot.new plot.window polygon polypath
-#' @export
-plot.ggseg_atlas <- function(x, ...) {
+#' @noRd
+plot_ggseg_atlas <- function(x, ...) {
   flat <- polygons_unnest(atlas_polygons(x))
   flat <- order_context_behind(flat, x$core$label)
   fill_colors <- resolve_fill_colors(
@@ -1066,19 +1066,13 @@ new_ggseg_atlas <- function(
   data,
   provenance = NULL
 ) {
-  slots <- list(
-    atlas = atlas,
-    type = type,
-    palette = palette,
-    core = core,
-    data = data
-  )
-  if (!is.null(provenance)) {
-    slots$provenance <- provenance
-  }
-
-  structure(
-    slots,
-    class = atlas_class(type)
+  tag_legacy_atlas_classes(
+    atlas_class_for_type(type)(
+      atlas = atlas,
+      core = core,
+      data = data,
+      palette = palette,
+      provenance = provenance
+    )
   )
 }
