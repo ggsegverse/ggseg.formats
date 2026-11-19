@@ -184,7 +184,9 @@ is_brain_atlas <- function(x) {
 #' @examples
 #' atlas <- assert_ggseg_atlas(dk())
 #'
-#' broken <- dk()
+#' # An S7 atlas cannot be constructed invalid, so the invalid case is a
+#' # legacy list atlas -- the shape an older release built.
+#' broken <- structure(as.list(dk()), class = c("ggseg_atlas", "list"))
 #' broken$core$label <- NULL
 #' try(assert_ggseg_atlas(broken))
 assert_ggseg_atlas <- function(
@@ -453,7 +455,7 @@ as_sf_for_data_frame <- function(x) {
   }
   # The geom slot is already an sf-class frame in both representations --
   # polygons_to_sf() builds one through sfheaders -- so that path needs no sf.
-  # The legacy fallback does: `atlas_slot(x, "data")` is a plain frame whose geometry column
+  # The legacy fallback does: the payload is a plain frame whose geometry column
   # has to be promoted, which only st_as_sf() can do.
   sf_data <- if (!is.null(geom)) {
     if (inherits(geom, "brain_polygons")) polygons_to_sf(geom) else geom
@@ -982,11 +984,11 @@ print_atlas_summary <- function(x, has_sf) {
   n_regions <- length(stats::na.omit(unique(atlas_slot(x, "core")$region))) # nolint
   hemis <- paste0(unique(atlas_slot(x, "core")$hemi), collapse = ", ") # nolint
 
-  atlas_name <- atlas_slot(x, "atlas")
-  cli::cli_h1("{atlas_name} ggseg atlas")
+  name <- atlas_slot(x, "atlas") # nolint: object_usage_linter
+  cli::cli_h1("{name} ggseg atlas")
 
-  atlas_type <- atlas_slot(x, "type")
-  cli::cli_text("{.strong Type: {atlas_type}}")
+  type <- atlas_slot(x, "type") # nolint: object_usage_linter
+  cli::cli_text("{.strong Type: {type}}")
   cli::cli_text("{.strong Regions:} {n_regions}")
   cli::cli_text("{.strong Hemispheres:} {hemis}")
 

@@ -212,9 +212,10 @@ NULL
 
 S7::method(print, ggseg_atlas_class) <- print_ggseg_atlas
 S7::method(plot, ggseg_atlas_class) <- plot_ggseg_atlas
+# nolint start: object_name_linter.
 S7::method(as.list, ggseg_atlas_class) <- as_list_ggseg_atlas
 S7::method(as.data.frame, ggseg_atlas_class) <- as_data_frame_ggseg_atlas
-
+# nolint end.
 
 #' The same methods, still registered for legacy list atlases
 #'

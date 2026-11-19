@@ -36,12 +36,11 @@ as_ggseg_atlas.ggseg_atlas <- function(x) {
     return(x)
   }
 
-  if (
-    !is.null(atlas_slot(x, "core")) &&
-      (!is.null(atlas_slot(x, "sf")) ||
-        !is.null(atlas_slot(x, "vertices")) ||
-        !is.null(atlas_slot(x, "meshes")))
-  ) {
+  has_legacy_geometry <- !is.null(atlas_slot(x, "sf")) ||
+    !is.null(atlas_slot(x, "vertices")) ||
+    !is.null(atlas_slot(x, "meshes"))
+
+  if (!is.null(atlas_slot(x, "core")) && has_legacy_geometry) {
     return(convert_legacy_structure(x))
   }
 

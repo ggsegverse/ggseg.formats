@@ -25,7 +25,7 @@ describe("ggseg_atlas class", {
   })
 
   it("print method works", {
-    expect_s3_class(dk()$core, "tbl_df")
+    expect_s3_class(atlas_core(dk()), "tbl_df")
     expect_snapshot(print(dk()))
   })
 
@@ -156,8 +156,8 @@ describe("cerebellar atlas construction and data.frame conversion", {
     atlas <- make_cerebellar_atlas()
     expect_s3_class(atlas, "cerebellar_atlas")
     expect_s3_class(atlas, "ggseg_atlas")
-    expect_identical(atlas$type, "cerebellar")
-    expect_identical(nrow(atlas$core), 3L)
+    expect_identical(atlas_type(atlas), "cerebellar")
+    expect_identical(nrow(atlas_core(atlas)), 3L)
   })
 
   it("as.data.frame preserves the midline hemisphere and its label", {
@@ -467,7 +467,7 @@ describe("as.list.ggseg_atlas", {
       sort(names(out)),
       sort(c("atlas", "type", "palette", "core", "data"))
     )
-    expect_identical(out$atlas, dk()$atlas)
+    expect_identical(out$atlas, atlas_name(dk()))
     expect_identical(out$type, "cortical")
   })
 })
@@ -553,7 +553,7 @@ describe("plot.ggseg_atlas", {
       core = core,
       data = ggseg_data_subcortical(geom = sf_geom)
     )
-    expect_null(atlas$palette)
+    expect_null(atlas_palette(atlas))
     local_null_pdf()
     expect_no_error(plot(atlas))
   })

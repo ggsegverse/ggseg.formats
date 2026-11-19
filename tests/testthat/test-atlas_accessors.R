@@ -90,8 +90,8 @@ describe("atlas_sf", {
 
   it("errors when atlas has no 2D geometry", {
     atlas <- dk()
-    atlas$data$geom <- NULL
-    atlas$data$sf <- NULL
+    atlas@data$geom <- NULL
+    atlas@data$sf <- NULL
     expect_error(atlas_sf(atlas), "does not contain 2D geometry")
   })
 
@@ -190,7 +190,7 @@ describe("atlas_sf", {
     demoted <- atlas_region_contextual(atlas, "zzz", match_on = "region")
     result <- atlas_sf(demoted)
 
-    is_core <- result$label %in% demoted$core$label
+    is_core <- result$label %in% atlas_core(demoted)$label
     expect_lt(max(which(!is_core)), min(which(is_core)))
     # alphabetical order (lh_aaa, lh_ctx, lh_zzz) would put a core row first;
     # guard against a regression to the merge() default sort.

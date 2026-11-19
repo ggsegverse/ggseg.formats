@@ -12,7 +12,7 @@ context_label_pattern <- paste0(
 #'
 #' Returns the atlas `palette` when it can tell the atlas's regions apart, and
 #' otherwise a palette of automatically assigned, distinguishable colours. Use
-#' this instead of reading `atlas_slot(atlas, "palette")` directly whenever the palette is
+#' this instead of reading [atlas_palette()] directly whenever the palette is
 #' about to be drawn: some atlases are built from colour lookup tables that give
 #' every region the same colour (often black), and rendering those faithfully
 #' produces a solid silhouette in which no region can be told from its
@@ -52,7 +52,7 @@ atlas_plot_palette <- function(atlas) {
 
   if (!is.null(stored) && length(stored) > 0L) {
     cli::cli_warn(c(
-      "Atlas {.val {atlas$atlas}} has no usable colour palette.",
+      "Atlas {.val {atlas_name(atlas)}} has no usable colour palette.",
       "i" = "Every region is the same colour, so no region can be told from
              its neighbours; falling back to automatically assigned colours.",
       "!" = "Fix the atlas colour lookup table to give each region its

@@ -51,7 +51,7 @@ legacy_region_map <- function(atlas) {
   }
   if (is.null(legacy)) {
     cli::cli_warn(c(
-      "No pre-0.1.0 region names are recorded for {.val {atlas$atlas}}.",
+      "No pre-0.1.0 region names are recorded for {.val {atlas_name(atlas)}}.",
       "i" = "Only the atlases bundled with ggseg.formats were re-keyed in
              0.1.0, so there is nothing to migrate."
     ))

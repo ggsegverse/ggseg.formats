@@ -136,7 +136,7 @@ atlas_context <- function(atlas) {
 #' @return `atlas`, with `display` in `core`.
 #' @examples
 #' atlas <- dk()
-#' atlas_slot(atlas, "core")$display <- NULL
+#' atlas@core$display <- NULL
 #' atlas_display(migrate_atlas_display(atlas))[1:3]
 #' @export
 migrate_atlas_display <- function(atlas, overwrite = FALSE) {
@@ -167,8 +167,8 @@ migrate_atlas_display <- function(atlas, overwrite = FALSE) {
 #' @return `atlas`, with `hemi` in the vocabulary.
 #' @examples
 #' atlas <- dk()
-#' atlas_slot(atlas, "core")$hemi[1] <- "middle"
-#' unique(migrate_atlas_hemi(atlas)$core$hemi)
+#' atlas@core$hemi[1] <- "middle"
+#' unique(atlas_core(migrate_atlas_hemi(atlas))$hemi)
 #' @export
 migrate_atlas_hemi <- function(atlas) {
   if (!atlas_has_slots(atlas) || is.null(atlas_slot(atlas, "core"))) {

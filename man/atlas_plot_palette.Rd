@@ -15,7 +15,7 @@ Named character vector of colours keyed by label.
 \description{
 Returns the atlas \code{palette} when it can tell the atlas's regions apart, and
 otherwise a palette of automatically assigned, distinguishable colours. Use
-this instead of reading \code{atlas_slot(atlas, "palette")} directly whenever the palette is
+this instead of reading \code{\link[=atlas_palette]{atlas_palette()}} directly whenever the palette is
 about to be drawn: some atlases are built from colour lookup tables that give
 every region the same colour (often black), and rendering those faithfully
 produces a solid silhouette in which no region can be told from its

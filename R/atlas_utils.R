@@ -1236,7 +1236,8 @@ legacy_region_hint <- function(atlas, pattern) {
   ) {
     return(character(0))
   }
-  legacy <- .legacy_regions[[atlas_slot(atlas, "atlas")]] # nolint: object_usage_linter.
+  # nolint next: object_usage_linter.
+  legacy <- .legacy_regions[[atlas_slot(atlas, "atlas")]]
   if (is.null(legacy)) {
     return(character(0))
   }

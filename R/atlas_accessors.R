@@ -91,14 +91,14 @@ atlas_palette <- function(atlas, ...) {
 
 #' Get the raw 2D geometry of an atlas
 #'
-#' Returns the single 2D geometry object stored in `atlas_slot(atlas, "data")$geom`, which is
+#' Returns the single 2D geometry object the atlas payload carries, which is
 #' either an sf-class data frame or a `brain_polygons` data.frame. Its class
 #' determines which rendering path is used downstream.
 #'
 #' For backward compatibility with released atlases built before the unified
 #' `geom` slot, this falls back to the legacy `sf` slot. Reverse dependencies
 #' should call this accessor (or [atlas_sf()] / [atlas_polygons()]) rather than
-#' reaching into `atlas_slot(atlas, "data")` directly.
+#' reaching into the payload directly.
 #'
 #' @param atlas a ggseg_atlas object
 #' @return an sf or `brain_polygons` object, or `NULL` if the atlas has no 2D

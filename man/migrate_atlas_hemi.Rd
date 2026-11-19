@@ -27,6 +27,6 @@ through any verb that validates -- including
 }
 \examples{
 atlas <- dk()
-atlas_slot(atlas, "core")$hemi[1] <- "middle"
-unique(migrate_atlas_hemi(atlas)$core$hemi)
+atlas@core$hemi[1] <- "middle"
+unique(atlas_core(migrate_atlas_hemi(atlas))$hemi)
 }

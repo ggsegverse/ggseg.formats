@@ -39,20 +39,22 @@ describe("set_atlas_type", {
     b <- set_atlas_type(a, "tract")
     expect_identical(atlas_type(b), "tract")
     expect_true(is_tract_atlas(b))
-    expect_identical(class(b)[1], "tract_atlas")
+    expect_true(inherits(b, "tract_atlas"))
   })
 
   it("keeps the ggseg_atlas class and ordering intact", {
     b <- set_atlas_type(tracula(), "tract")
-    expect_s3_class(b, c("tract_atlas", "ggseg_atlas", "list"), exact = TRUE)
+    expect_true(inherits(b, "tract_atlas"))
+    expect_true(inherits(b, "ggseg_atlas"))
+    expect_true(is_tract_atlas(b))
   })
 
   it("leaves every other atlas component untouched", {
     a <- tracula()
     b <- set_atlas_type(a, "tract")
-    expect_identical(b$core, a$core)
+    expect_identical(atlas_core(b), atlas_core(a))
     expect_identical(atlas_palette(b), atlas_palette(a))
-    expect_identical(b$data, a$data)
+    expect_identical(atlas_data(b), atlas_data(a))
   })
 
   it("is idempotent when the type is unchanged", {
@@ -102,11 +104,11 @@ describe("atlas provenance", {
   it("is accepted by the constructor and leaves the atlas valid", {
     atlas <- dk()
     rebuilt <- ggseg_atlas(
-      atlas = atlas$atlas,
-      type = atlas$type,
-      core = atlas$core,
-      data = atlas$data,
-      palette = atlas$palette,
+      atlas = atlas_name(atlas),
+      type = atlas_type(atlas),
+      core = atlas_core(atlas),
+      data = atlas_data(atlas),
+      palette = atlas_palette(atlas),
       provenance = record
     )
     expect_true(is_ggseg_atlas(rebuilt))

@@ -61,7 +61,7 @@ describe("atlas_display", {
   it("returns the display column of a bundled atlas in core row order", {
     result <- atlas_display(dk())
     expect_type(result, "character")
-    expect_identical(result, dk()$core$display)
+    expect_identical(result, atlas_core(dk())$display)
     expect_true("banks of superior temporal sulcus" %in% result)
   })
 
@@ -235,7 +235,7 @@ describe("normalise_legacy_hemi", {
 describe("atlas_hemi", {
   it("is row-aligned with the other core accessors", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_length(atlas_hemi(atlas), nrow(atlas$core))
+      expect_length(atlas_hemi(atlas), nrow(atlas_core(atlas)))
     }
   })
 
@@ -310,8 +310,8 @@ describe("core label uniqueness", {
 
   it("gives every bundled atlas unique core labels", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_false(anyDuplicated(atlas$core$label) > 0)
-      expect_identical(nrow(atlas$core), length(atlas_labels(atlas)))
+      expect_false(anyDuplicated(atlas_core(atlas)$label) > 0)
+      expect_identical(nrow(atlas_core(atlas)), length(atlas_labels(atlas)))
     }
   })
 })
@@ -319,7 +319,7 @@ describe("core label uniqueness", {
 describe("core-column accessor alignment", {
   it("returns one element per core row for every bundled atlas", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      n <- nrow(atlas$core)
+      n <- nrow(atlas_core(atlas))
       expect_length(atlas_labels(atlas), n)
       expect_length(atlas_regions(atlas), n)
       expect_length(atlas_display(atlas), n)
@@ -328,19 +328,25 @@ describe("core-column accessor alignment", {
 
   it("returns the core columns in core row order", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_identical(atlas_labels(atlas), atlas$core$label)
-      expect_identical(atlas_regions(atlas), atlas$core$region)
-      expect_identical(atlas_display(atlas), atlas$core$display)
+      expect_identical(atlas_labels(atlas), atlas_core(atlas)$label)
+      expect_identical(atlas_regions(atlas), atlas_core(atlas)$region)
+      expect_identical(atlas_display(atlas), atlas_core(atlas)$display)
     }
   })
 
   it("describes the same row across the three accessors", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      i <- seq_len(nrow(atlas$core))
-      row_of <- match(atlas_labels(atlas)[i], atlas$core$label)
+      i <- seq_len(nrow(atlas_core(atlas)))
+      row_of <- match(atlas_labels(atlas)[i], atlas_core(atlas)$label)
       expect_identical(row_of, i)
-      expect_identical(atlas_regions(atlas)[i], atlas$core$region[row_of])
-      expect_identical(atlas_display(atlas)[i], atlas$core$display[row_of])
+      expect_identical(
+        atlas_regions(atlas)[i],
+        atlas_core(atlas)$region[row_of]
+      )
+      expect_identical(
+        atlas_display(atlas)[i],
+        atlas_core(atlas)$display[row_of]
+      )
     }
   })
 
@@ -348,8 +354,8 @@ describe("core-column accessor alignment", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
       regions <- atlas_regions(atlas)
       distinct <- sort(unique(regions[!is.na(regions)]))
-      expect_identical(distinct, sort(unique(atlas$core$region)))
-      expect_lt(length(distinct), nrow(atlas$core))
+      expect_identical(distinct, sort(unique(atlas_core(atlas)$region)))
+      expect_lt(length(distinct), nrow(atlas_core(atlas)))
     }
   })
 })
@@ -357,9 +363,9 @@ describe("core-column accessor alignment", {
 describe("bundled atlas schema", {
   it("gives every bundled atlas a character display column", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_true("display" %in% names(atlas$core))
-      expect_type(atlas$core$display, "character")
-      expect_false(anyNA(atlas$core$display))
+      expect_true("display" %in% names(atlas_core(atlas)))
+      expect_type(atlas_core(atlas)$display, "character")
+      expect_false(anyNA(atlas_core(atlas)$display))
     }
   })
 
@@ -370,14 +376,14 @@ describe("bundled atlas schema", {
   })
 
   it("keeps the suffix-free tracula identifier in label_short", {
-    core <- tracula()$core
+    core <- atlas_core(tracula())
     expect_true("label_short" %in% names(core))
     expect_identical(core$label, paste0(core$label_short, ".bbr.prep"))
   })
 })
 
 describe("display is preserved by the atlas verbs", {
-  has_display <- function(atlas) "display" %in% names(atlas$core)
+  has_display <- function(atlas) "display" %in% names(atlas_core(atlas))
 
   it("survives the region verbs", {
     expect_true(has_display(atlas_region_remove(aseg(), "vessel")))
@@ -431,16 +437,16 @@ describe("display is preserved by the atlas verbs", {
 describe("atlas_relabel", {
   it("re-keys core, palette and every payload slot at once", {
     atlas <- atlas_relabel(aseg(), c("Left-Thalamus" = "Left-Thal"))
-    expect_true("Left-Thal" %in% atlas$core$label)
-    expect_false("Left-Thalamus" %in% atlas$core$label)
-    expect_true("Left-Thal" %in% names(atlas$palette))
-    expect_true("Left-Thal" %in% atlas$data$meshes$label)
-    expect_true("Left-Thal" %in% atlas$data$geom$label)
+    expect_true("Left-Thal" %in% atlas_core(atlas)$label)
+    expect_false("Left-Thalamus" %in% atlas_core(atlas)$label)
+    expect_true("Left-Thal" %in% names(atlas_palette(atlas)))
+    expect_true("Left-Thal" %in% atlas_data(atlas)$meshes$label)
+    expect_true("Left-Thal" %in% atlas_data(atlas)$geom$label)
   })
 
   it("leaves labels absent from the mapping alone", {
     atlas <- atlas_relabel(aseg(), c("Left-Thalamus" = "Left-Thal"))
-    expect_true("Right-Thalamus" %in% atlas$core$label)
+    expect_true("Right-Thalamus" %in% atlas_core(atlas)$label)
   })
 
   it("errors on a non-atlas or an unnamed mapping", {
@@ -487,7 +493,9 @@ describe("legacy_region_map", {
 
   it("only ever maps onto a key the atlas actually has", {
     for (atlas in list(dk(), aseg(), tracula(), suit())) {
-      expect_true(all(unname(legacy_region_map(atlas)) %in% atlas$core$region))
+      expect_true(all(
+        unname(legacy_region_map(atlas)) %in% atlas_core(atlas)$region
+      ))
     }
   })
 
@@ -514,7 +522,7 @@ describe("display is the curated display name, not the legacy key", {
   # decision, so assert the specific values that would regress if `display` were
   # ever repurposed as the migration table again.
   it("spells out the aseg regions 0.0.4 abbreviated", {
-    core <- aseg()$core
+    core <- atlas_core(aseg())
     name_of <- function(label) core$display[core$label == label]
 
     expect_identical(name_of("Left-VentralDC"), "ventral diencephalon")
@@ -533,7 +541,7 @@ describe("display is the curated display name, not the legacy key", {
   })
 
   it("spells out the tracula tracts 0.0.4 abbreviated", {
-    core <- tracula()$core
+    core <- atlas_core(tracula())
     name_of <- function(label) core$display[core$label == label]
 
     expect_match(
@@ -590,13 +598,13 @@ describe("legacy region no-match hint", {
 
 aseg_without_names <- function() {
   stripped <- aseg()
-  stripped$core$display <- NULL
+  stripped@core$display <- NULL
   suppressMessages(ggseg_atlas(
     atlas = "silent-aseg",
-    type = stripped$type,
-    core = stripped$core,
-    data = stripped$data,
-    palette = stripped$palette
+    type = atlas_type(stripped),
+    core = atlas_core(stripped),
+    data = atlas_data(stripped),
+    palette = atlas_palette(stripped)
   ))
 }
 
@@ -637,13 +645,17 @@ describe("a missing display column is silent outside construction", {
     # Such an atlas can no longer be constructed, but a published one may
     # already carry alias rows. The predicate must report FALSE without
     # signalling, so renderers can branch on it.
-    atlas <- atlas_without_names("dupes-predicate")
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed with
+    # duplicated core labels, so the fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(atlas_without_names("dupes-predicate"))
     atlas$core <- rbind(atlas$core, atlas$core[1, , drop = FALSE])
     expect_no_message(expect_no_warning(expect_false(is_ggseg_atlas(atlas))))
   })
 
   it("still reports a structurally invalid atlas as FALSE, silently", {
-    broken <- atlas_without_names("silent-invalid")
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed with
+    # a core missing its columns, so the fixture is a legacy tagged list.
+    broken <- legacy_list_atlas(atlas_without_names("silent-invalid"))
     broken$core <- data.frame(hemi = "left")
     expect_no_message(expect_no_warning(expect_false(is_ggseg_atlas(broken))))
   })
