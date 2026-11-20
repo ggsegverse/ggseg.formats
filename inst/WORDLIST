@@ -1,13 +1,13 @@
-Accumbens
 accumbens
+Accumbens
 aseg
 Athanasia
 Balsters
 Brodmann
 Busa
 callosal
-Caudate
 caudate
+Caudate
 centerline
 centerlines
 CMD
@@ -45,6 +45,7 @@ Lifecycle
 lite
 losslessly
 LUT
+MCALT
 MNI
 MULTIPOLYGON
 NeuroImage
@@ -82,8 +83,8 @@ symdifference
 tibble
 tidyverse
 TRActs
-TRACULA
 tracula
+TRACULA
 triangularis
 UnderLying
 unioned
