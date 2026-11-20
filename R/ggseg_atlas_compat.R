@@ -28,6 +28,15 @@ S7::method(names, ggseg_atlas_class) <- function(x) {
 #' has to land in one step.
 #' @noRd
 atlas_set_props <- function(atlas, ...) {
-  S7::props(atlas) <- list(...)
+  values <- list(...)
+  if (!S7::S7_inherits(atlas, ggseg_atlas_class)) {
+    # A legacy list has no validator spanning its slots, so there is nothing
+    # to land in one step; assigning them one at a time is the same thing.
+    for (name in names(values)) {
+      atlas[[name]] <- values[[name]]
+    }
+    return(atlas)
+  }
+  S7::props(atlas) <- values
   atlas
 }

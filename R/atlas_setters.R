@@ -25,7 +25,7 @@ set_atlas_palette <- function(atlas, value) {
     # A palette-less atlas is a state the class allows and the renderers cope
     # with, so the setter has to be able to produce it. Without this, clearing
     # a palette was only reachable by assigning the property directly.
-    atlas@palette <- NULL
+    atlas_slot(atlas, "palette") <- NULL
     return(atlas)
   }
 
@@ -43,7 +43,7 @@ set_atlas_palette <- function(atlas, value) {
       "i" = "e.g. {.val {utils::head(absent, 3)}} ({length(absent)} total)."
     ))
   }
-  atlas@palette <- value
+  atlas_slot(atlas, "palette") <- value
   atlas
 }
 
@@ -120,7 +120,7 @@ set_atlas_provenance <- function(atlas, value) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
-  atlas@provenance <- validate_provenance(value)
+  atlas_slot(atlas, "provenance") <- validate_provenance(value)
   atlas
 }
 
@@ -148,7 +148,7 @@ set_atlas_name <- function(atlas, value) {
   if (!is.character(value) || length(value) != 1 || is.na(value)) {
     cli::cli_abort("{.arg value} must be a single, non-missing string.")
   }
-  atlas@atlas <- value
+  atlas_slot(atlas, "atlas") <- value
   atlas
 }
 
@@ -191,7 +191,7 @@ set_atlas_geom <- function(atlas, value) {
   # in place would shadow what was just written, because `atlas_geom()` falls
   # back to it only when `geom` is absent.
   data$sf <- NULL
-  atlas@data <- data
+  atlas_slot(atlas, "data") <- data
   atlas
 }
 
@@ -238,6 +238,5 @@ set_atlas_core <- function(atlas, value, palette = "keep") {
     }
   }
 
-  S7::props(atlas) <- list(core = value, palette = palette)
-  atlas
+  atlas_set_props(atlas, core = value, palette = palette)
 }

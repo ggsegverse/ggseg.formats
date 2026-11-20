@@ -140,3 +140,74 @@ describe("has_atlas_*() geometry predicates", {
     expect_error(atlas_centerlines(dk()))
   })
 })
+
+
+describe("every setter works on a legacy list atlas", {
+  # An atlas package built before 3.0.0 ships a tagged list, and those are
+  # valid atlases -- `is_ggseg_atlas()` says so. Reaching a property with `@`
+  # on one makes R try S4 semantics and fail with "not a defined class", so
+  # every setter has to go through the representation bridge instead. All of
+  # them did this wrong until a published atlas was poked at.
+  legacy <- function() {
+    structure(
+      as.list(dk()),
+      class = c("cortical_atlas", "ggseg_atlas", "list")
+    )
+  }
+
+  it("is a valid atlas to begin with", {
+    expect_true(is_atlas_class(legacy()))
+    expect_true(is_ggseg_atlas(legacy()))
+  })
+
+  it("set_atlas_palette()", {
+    atlas <- legacy()
+    pal <- utils::head(atlas_palette(atlas), 3)
+    expect_identical(
+      atlas_palette(suppressWarnings(set_atlas_palette(atlas, pal))),
+      pal
+    )
+  })
+
+  it("set_atlas_palette(NULL)", {
+    expect_length(atlas_palette(set_atlas_palette(legacy(), NULL)), 0)
+  })
+
+  it("set_atlas_name()", {
+    expect_identical(atlas_name(set_atlas_name(legacy(), "renamed")), "renamed")
+  })
+
+  it("set_atlas_provenance()", {
+    prov <- list(pipeline = "test", created = "2026-11-20")
+    expect_identical(
+      atlas_provenance(set_atlas_provenance(legacy(), prov)),
+      prov
+    )
+  })
+
+  it("set_atlas_geom()", {
+    atlas <- legacy()
+    half <- utils::head(atlas_geom(atlas), 2)
+    expect_identical(nrow(atlas_geom(set_atlas_geom(atlas, half))), 2L)
+  })
+
+  it("set_atlas_core()", {
+    atlas <- legacy()
+    keep <- utils::head(atlas_core(atlas), 5)
+    expect_identical(nrow(atlas_core(set_atlas_core(atlas, keep))), 5L)
+  })
+
+  it("set_atlas_type()", {
+    expect_identical(
+      atlas_type(set_atlas_type(legacy(), "cortical")),
+      "cortical"
+    )
+  })
+
+  it("leaves the atlas a list, not a half-converted object", {
+    out <- set_atlas_name(legacy(), "renamed")
+    expect_true(is.list(out))
+    expect_false(S7::S7_inherits(out))
+    expect_true(is_atlas_class(out))
+  })
+})

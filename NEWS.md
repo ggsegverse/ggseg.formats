@@ -52,6 +52,10 @@
   two are keyed on the same labels and the validator spans properties. It also
   keeps S7 an implementation detail: an atlas-editing package no longer needs
   `Imports: S7` to make a paired edit.
+- Every setter works on a legacy list atlas again. They reached their slot
+  with `@`, which on a tagged list makes R try S4 semantics and fail with
+  `"cortical_atlas" is not a defined class`, so five of the six were broken
+  for exactly the atlases every atlas package still ships.
 - `set_atlas_palette(atlas, NULL)` clears the palette. A palette-less atlas is
   a state the class allows, so the setter can now produce it.
 - `migrate_atlas_hemi()` therefore repairs legacy list atlases only, which is
