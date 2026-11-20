@@ -32,6 +32,17 @@
   `left`/`right`/`midline`/`NA` at any point. The bundled MCALT cerebellar
   atlas once shipped with `hemi == "vermis"` and was refused by both renderers
   at draw time; that is now unreachable.
+- `set_atlas_name()`, `set_atlas_geom()` and `set_atlas_core()` are new, and
+  `has_atlas_geom()`, `has_atlas_vertices()`, `has_atlas_meshes()`,
+  `has_atlas_centerlines()` and `has_atlas_3d()` answer which geometry an
+  atlas carries. Converting the consumer packages found these by what they
+  forced: every one of them was a place a package had to reach past the
+  accessors to write geometry, rename an atlas, or ask whether there was
+  anything to draw in 3D.
+- `set_atlas_core()` takes the palette alongside the core table, because the
+  two are keyed on the same labels and the validator spans properties. It also
+  keeps S7 an implementation detail: an atlas-editing package no longer needs
+  `Imports: S7` to make a paired edit.
 - `set_atlas_palette(atlas, NULL)` clears the palette. A palette-less atlas is
   a state the class allows, so the setter can now produce it.
 - `migrate_atlas_hemi()` therefore repairs legacy list atlases only, which is

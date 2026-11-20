@@ -475,3 +475,73 @@ data_poly <- function(data) {
   geom <- geom_from_data(data)
   if (inherits(geom, "brain_polygons")) geom else NULL
 }
+
+
+#' Does an atlas carry this geometry?
+#'
+#' The geometry accessors abort when the geometry they name is absent, because
+#' a caller that asks for meshes and gets `NULL` usually goes on to fail
+#' further away from the cause. That leaves no way to *ask*, though, and both
+#' renderers want to: ggseg3d decides whether there is anything to draw in 3D,
+#' and ggseg.extra warns before previewing a large atlas. Without these the
+#' only way to ask was to reach into the payload, which is the one thing the
+#' accessors exist to stop.
+#'
+#' @param atlas a `ggseg_atlas` object
+#' @return A logical scalar. `FALSE` for an object that is not an atlas, so
+#'   these are safe to use in control flow.
+#' @name has_atlas_geometry
+#' @family atlas accessors
+#' @examples
+#' has_atlas_vertices(dk())
+#' has_atlas_meshes(dk())
+#' has_atlas_meshes(aseg())
+#' has_atlas_3d(tracula())
+NULL
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_geom <- function(atlas) {
+  if (!is_atlas_class(atlas)) {
+    return(FALSE)
+  }
+  !is.null(geom_from_data(atlas_slot(atlas, "data")))
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_vertices <- function(atlas) {
+  has_atlas_payload(atlas, "vertices")
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_meshes <- function(atlas) {
+  has_atlas_payload(atlas, "meshes")
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_centerlines <- function(atlas) {
+  has_atlas_payload(atlas, "centerlines")
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_3d <- function(atlas) {
+  has_atlas_vertices(atlas) ||
+    has_atlas_meshes(atlas) ||
+    has_atlas_centerlines(atlas)
+}
+
+#' @noRd
+has_atlas_payload <- function(atlas, name) {
+  if (!is_atlas_class(atlas)) {
+    return(FALSE)
+  }
+  data <- atlas_slot(atlas, name)
+  if (!is.null(data)) {
+    return(TRUE)
+  }
+  !is.null(atlas_slot(atlas, "data")[[name]])
+}

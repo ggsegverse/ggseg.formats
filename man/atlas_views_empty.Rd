@@ -66,6 +66,7 @@ Other atlas accessors:
 \code{\link[=atlas_undrawn]{atlas_undrawn()}},
 \code{\link[=atlas_vertices]{atlas_vertices()}},
 \code{\link[=atlas_views]{atlas_views()}},
+\code{\link{has_atlas_geometry}},
 \code{\link[=legacy_region_map]{legacy_region_map()}}
 }
 \concept{atlas accessors}

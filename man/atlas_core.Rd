@@ -49,6 +49,7 @@ Other atlas accessors:
 \code{\link[=atlas_vertices]{atlas_vertices()}},
 \code{\link[=atlas_views]{atlas_views()}},
 \code{\link[=atlas_views_empty]{atlas_views_empty()}},
+\code{\link{has_atlas_geometry}},
 \code{\link[=legacy_region_map]{legacy_region_map()}}
 }
 \concept{atlas accessors}
