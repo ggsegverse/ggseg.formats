@@ -9,7 +9,8 @@ set_atlas_palette(atlas, value)
 \arguments{
 \item{atlas}{a \code{ggseg_atlas} object}
 
-\item{value}{Named character vector of colours keyed by atlas \code{label}.}
+\item{value}{Named character vector of colours keyed by atlas \code{label},
+or \code{NULL} to clear the palette.}
 }
 \value{
 The \code{ggseg_atlas} with its palette replaced.

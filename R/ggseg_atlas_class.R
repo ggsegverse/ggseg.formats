@@ -5,15 +5,15 @@
 #' concrete subclass of the abstract `ggseg_atlas` parent, and `wm_atlas`
 #' descends from `subcortical_atlas` because a white-matter label map stores
 #' and draws exactly what a subcortical atlas does. The abstract parent cannot
-#' be instantiated, so an atlas of an unknown type is unrepresentable rather
-#' than merely rejected.
+#' be instantiated, so there is no way to make an atlas of an unknown type at
+#' all, rather than merely a check that rejects one.
 #'
 #' `type` is a read-only property computed from the class, which is why there
 #' is no way to leave the two disagreeing. Retyping an atlas therefore means
 #' constructing a new one; see [set_atlas_type()].
 #'
 #' @name ggseg_atlas_classes
-#' @keywords internal
+#' @noRd
 NULL
 
 atlas_data_class <- S7::new_union(
@@ -45,8 +45,7 @@ atlas_type_of_class <- function(x) {
   sub("_atlas$", "", S7::S7_class(x)@name)
 }
 
-#' @rdname ggseg_atlas_classes
-#' @export
+#' @noRd
 ggseg_atlas_class <- S7::new_class(
   "ggseg_atlas",
   abstract = TRUE,
@@ -54,36 +53,31 @@ ggseg_atlas_class <- S7::new_class(
   validator = function(self) atlas_invariant_defect(self)
 )
 
-#' @rdname ggseg_atlas_classes
-#' @export
+#' @noRd
 cortical_atlas <- S7::new_class(
   "cortical_atlas",
   parent = ggseg_atlas_class
 )
 
-#' @rdname ggseg_atlas_classes
-#' @export
+#' @noRd
 subcortical_atlas <- S7::new_class(
   "subcortical_atlas",
   parent = ggseg_atlas_class
 )
 
-#' @rdname ggseg_atlas_classes
-#' @export
+#' @noRd
 tract_atlas <- S7::new_class(
   "tract_atlas",
   parent = ggseg_atlas_class
 )
 
-#' @rdname ggseg_atlas_classes
-#' @export
+#' @noRd
 cerebellar_atlas <- S7::new_class(
   "cerebellar_atlas",
   parent = ggseg_atlas_class
 )
 
-#' @rdname ggseg_atlas_classes
-#' @export
+#' @noRd
 wm_atlas <- S7::new_class(
   "wm_atlas",
   parent = subcortical_atlas
@@ -139,6 +133,17 @@ atlas_invariant_defect <- function(self) {
 
   if (!is.null(self@palette) && is.null(names(self@palette))) {
     return("@palette must be a named character vector, keyed by core$label")
+  }
+
+  # `hemi` answers one question with a closed set of answers, and consumers
+  # filter and facet on it, so a fifth spelling is not a stylistic choice but
+  # a row that silently vanishes from `hemi == "left"`. It belongs here rather
+  # than in the constructor alone: the bundled MCALT cerebellar atlas shipped
+  # with `hemi == "vermis"` and was rejected by both renderers at draw time,
+  # which is exactly the failure an invariant checked on assignment prevents.
+  hemi_defect <- core_hemi_defect(core)
+  if (!is.null(hemi_defect)) {
+    return(hemi_defect)
   }
 
   expected <- paste0(c("ggseg_data_", "brain_data_"), self@type)
@@ -244,3 +249,28 @@ as.list.ggseg_atlas <- as_list_ggseg_atlas
 #' @rdname legacy_atlas_methods
 #' @export
 as.data.frame.ggseg_atlas <- as_data_frame_ggseg_atlas
+
+
+#' The `hemi` vocabulary violation in a core table, or `NULL`
+#'
+#' Shares the closed vocabulary with `validate_core_hemi()`, which raises the
+#' same complaint from the constructor with cli bullets and a condition class.
+#' This one returns a bare string, which is all an S7 validator may do.
+#' @noRd
+core_hemi_defect <- function(core) {
+  if (!"hemi" %in% names(core)) {
+    return(NULL)
+  }
+  allowed <- c("left", "right", "midline")
+  present <- unique(as.character(core$hemi[!is.na(core$hemi)]))
+  unexpected <- setdiff(present, allowed)
+  if (length(unexpected) == 0) {
+    return(NULL)
+  }
+  paste0(
+    "@core$hemi must be one of ",
+    toString(allowed),
+    ", or NA; got ",
+    toString(unexpected)
+  )
+}

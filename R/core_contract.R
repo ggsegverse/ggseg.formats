@@ -165,10 +165,18 @@ migrate_atlas_display <- function(atlas, overwrite = FALSE) {
 #' @param atlas A `ggseg_atlas`, or a list shaped like one that no longer
 #'   validates.
 #' @return `atlas`, with `hemi` in the vocabulary.
+#' @section Which atlases this serves:
+#'
+#' A `ggseg_atlas` cannot carry a `hemi` outside the vocabulary: the invariant
+#' is checked on construction and on every assignment, so there is nothing for
+#' this to repair. What it repairs is a *legacy list* atlas -- one built by a
+#' release before 3.0.0 and still shipped by an installed atlas package --
+#' which is why the example builds one.
+#'
 #' @examples
-#' atlas <- dk()
-#' atlas@core$hemi[1] <- "middle"
-#' unique(atlas_core(migrate_atlas_hemi(atlas))$hemi)
+#' legacy <- structure(as.list(dk()), class = c("cortical_atlas", "list"))
+#' legacy$core$hemi[1] <- "middle"
+#' unique(migrate_atlas_hemi(legacy)$core$hemi)
 #' @export
 migrate_atlas_hemi <- function(atlas) {
   if (!atlas_has_slots(atlas) || is.null(atlas_slot(atlas, "core"))) {

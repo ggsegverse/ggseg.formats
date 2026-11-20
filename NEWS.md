@@ -11,6 +11,34 @@
 
 ## Breaking changes
 
+- An atlas is now an S7 object, not a classed list, and `$` is no longer part
+  of its interface. `atlas$core` is an error; use `atlas_core()`. Every
+  property has an accessor, and the accessors work on atlases built by older
+  releases as well as this one.
+- `atlas_core()`, `atlas_data()` and `atlas_name()` are new. There was no
+  supported way to reach the core table before, which is why `$core` was so
+  widely used.
+- `type` is read-only and computed from the class, so it can no longer
+  disagree with the class or the payload. Use `set_atlas_type()` to retype.
+- Assigning to a property validates. `atlas@core <- <table with duplicated
+  labels>` is an error where the list accepted it in silence. A multi-slot
+  edit must land in one step via `S7::props()`, because the validator spans
+  properties.
+- `as_ggseg_atlas()` upgrades a legacy list atlas to the S7 object. No source
+  data is needed and no geometry is recomputed, so a published atlas can be
+  converted without rebuilding it.
+- The closed `hemi` vocabulary is now an invariant of the class, not only a
+  check in the constructor: an atlas cannot be assigned a `hemi` outside
+  `left`/`right`/`midline`/`NA` at any point. The bundled MCALT cerebellar
+  atlas once shipped with `hemi == "vermis"` and was refused by both renderers
+  at draw time; that is now unreachable.
+- `set_atlas_palette(atlas, NULL)` clears the palette. A palette-less atlas is
+  a state the class allows, so the setter can now produce it.
+- `migrate_atlas_hemi()` therefore repairs legacy list atlases only, which is
+  the only kind that can carry a legacy spelling.
+- A structurally invalid atlas can no longer be constructed.
+  `assert_ggseg_atlas()`, `validate_ggseg_atlas()` and `is_ggseg_atlas()`
+  therefore apply to legacy list atlases.
 - `atlas_prune_region()` and `atlas_prune_small()` scope `views` by whole
   view name, case-insensitively, rather than as a regular expression, and
   gain `match = "pattern"` for the old behaviour. This is the same change

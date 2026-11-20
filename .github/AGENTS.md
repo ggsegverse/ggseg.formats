@@ -57,26 +57,73 @@ Worked examples, because the distinction is easy to get backwards:
 
 Built and validated by the `ggseg_atlas()` constructor in
 [ggseg_atlas.R](../R/ggseg_atlas.R) — treat that constructor as the
-authoritative signature, not any argument list copied here. Conceptually an
-atlas is a classed list with:
+authoritative signature, not any argument list copied here. An atlas is an
+**S7 object** with these properties:
 
 - `atlas` — short name string (e.g. `"dk"`).
-- `type` — the atlas kind, drawn from a fixed set (currently `"cortical"`,
-  `"subcortical"`, `"tract"`, `"cerebellar"`) enforced by `match.arg()` in the
-  constructor; extend there if a new type is ever added. It drives the subclass
-  tag (`paste0(type, "_atlas")`).
+- `type` — the atlas kind. **Read-only, and computed from the class**, so the
+  type and the class cannot disagree. Retyping means constructing a new atlas;
+  `set_atlas_type()` does that for you.
 - `palette` — named character vector of hex colours, keyed by `label`.
 - `core` — data.frame, **one row per region**, required columns
   `hemi`, `region`, `label`; may carry extra metadata columns (lobe, network,
   Brodmann, …).
 - `data` — a `ggseg_atlas_data` object matching `type`, built by the per-type
   constructors in [ggseg_atlas_data.R](../R/ggseg_atlas_data.R).
+- `provenance` — optional record of how the atlas was built.
 
-The class vector is `c("<type>_atlas", "ggseg_atlas", "list")`. **Preserve this
-ordering** — the per-type `is_*_atlas()` predicates rely on the subclass tag,
-and the `ggseg_atlas` validity check revalidates structure through the
-constructor (a wrong-but-classed object is rejected). These are the contract;
-extend behaviour by adding accessors rather than reshaping the object.
+### Use accessors. Read slots as little as possible.
+
+**`$` is not part of the interface.** `atlas$core` is an error. Every property
+has an accessor, and the accessor is what you call — not because `@` does not
+work, but because the accessor answers the question you actually have and keeps
+working across representations.
+
+Reach for the accessor that fits the question, not the one that fits the
+storage: `atlas_labels(atlas)`, not `atlas_core(atlas)$label`;
+`atlas_meshes(atlas)`, not `atlas_data(atlas)$meshes`. If no accessor fits,
+that is a gap to fill in
+[atlas_accessors.R](../R/atlas_accessors.R), not a reason to reach past them.
+
+Inside this package, code that may be handed either an S7 atlas or a legacy
+tagged list reads through `atlas_slot()`, which is the single place that
+difference is handled. It is internal — downstream packages have the accessors
+and nothing else.
+
+### The type vocabulary is the class hierarchy
+
+```
+ggseg_atlas (abstract)
+├── cortical_atlas
+├── subcortical_atlas
+│   └── wm_atlas
+├── tract_atlas
+└── cerebellar_atlas
+```
+
+The abstract parent cannot be instantiated, so an atlas of an unknown type is
+unrepresentable rather than merely rejected. Adding a type means adding a
+subclass — and it stays a discussion to raise with the maintainers first.
+
+The class vector carries both the qualified S7 names and the unqualified tags
+(`cortical_atlas`, `ggseg_atlas`) that `inherits()` and the `is_*_atlas()`
+predicates ask for. The unqualified tags are **appended**, never prepended: S7
+resolves methods for base generics through `class(x)[1]`, so a leading
+unqualified tag makes that lookup miss and `print()` falls back to dumping
+every property.
+
+### Validation is in two places, and they must be kept in step
+
+The constructor carries the full diagnosis: cli bullets, a condition class per
+defect, and warning-level nudges about schema gaps that are not yet errors.
+The S7 validator can only return a string, and it runs on **every property
+assignment**, so it carries the cheap invariants that must never be false. A
+check added to one is not enforced by the other until it is added there too.
+
+A consequence worth knowing: an S7 atlas cannot be constructed invalid, so a
+test that needs a malformed atlas builds a legacy tagged list instead — see
+`legacy_list_atlas()` in the test helpers. `assert_ggseg_atlas()`,
+`validate_ggseg_atlas()` and `is_ggseg_atlas()` now serve that legacy path.
 
 ### The 2D `geom` slot (sf-optional)
 

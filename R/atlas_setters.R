@@ -6,7 +6,8 @@
 #' the modified atlas, so it composes with the pipe.
 #'
 #' @inheritParams atlas_palette
-#' @param value Named character vector of colours keyed by atlas `label`.
+#' @param value Named character vector of colours keyed by atlas `label`,
+#'   or `NULL` to clear the palette.
 #'
 #' @return The `ggseg_atlas` with its palette replaced.
 #' @family atlas setters
@@ -20,9 +21,18 @@ set_atlas_palette <- function(atlas, value) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
+  if (is.null(value)) {
+    # A palette-less atlas is a state the class allows and the renderers cope
+    # with, so the setter has to be able to produce it. Without this, clearing
+    # a palette was only reachable by assigning the property directly.
+    atlas@palette <- NULL
+    return(atlas)
+  }
+
   if (!is.character(value) || is.null(names(value))) {
     cli::cli_abort(c(
-      "{.arg value} must be a named character vector of colours.",
+      "{.arg value} must be a named character vector of colours, or {.val NULL}
+       to clear it.",
       "i" = "Names are the atlas region {.field label}s."
     ))
   }

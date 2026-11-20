@@ -149,13 +149,17 @@ describe("migrate_atlas_display()", {
 
 
 describe("migrate_atlas_hemi()", {
+  # The hemi vocabulary is an invariant of the class, checked on construction
+  # and on every assignment, so a `ggseg_atlas` cannot carry a legacy spelling
+  # and there is nothing for the migration to repair. What it repairs is a
+  # legacy list atlas, which is what these fixtures are.
   it("maps the legacy spellings onto the vocabulary", {
-    atlas <- dk()
-    atlas@core$hemi[1] <- "middle"
-    atlas@core$hemi[2] <- "vermis"
+    atlas <- legacy_list_atlas(dk())
+    atlas$core$hemi[1] <- "middle"
+    atlas$core$hemi[2] <- "vermis"
 
     expect_setequal(
-      unique(atlas_core(migrate_atlas_hemi(atlas))$hemi),
+      unique(migrate_atlas_hemi(atlas)$core$hemi),
       c("left", "right", "midline")
     )
   })
@@ -172,8 +176,8 @@ describe("migrate_atlas_hemi()", {
     # `ggsegAal`'s `.aal3_cerebellum` carries "middle", so every verb that
     # validates refuses it -- including the display migration. Repairing
     # `core` directly is the only way in.
-    atlas <- dk()
-    atlas@core$hemi[1] <- "middle"
+    atlas <- legacy_list_atlas(dk())
+    atlas$core$hemi[1] <- "middle"
     expect_error(
       assert_ggseg_atlas(atlas),
       class = "ggseg.formats_invalid_atlas"
