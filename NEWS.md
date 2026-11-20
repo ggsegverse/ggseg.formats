@@ -11,6 +11,15 @@
 
 ## Breaking changes
 
+- Every atlas records the schema version it was built against.
+  `atlas_schema()` reads it, `atlas_schema_version()` is what the installed
+  package builds, and `as_ggseg_atlas()` upgrades a stale one by rebuilding it
+  through the current constructor -- no source data, no geometry recomputed.
+  This exists because a serialized S7 object carries a frozen copy of its
+  class: add a property and an atlas built earlier does not merely lack it,
+  reading it is an error while `S7::validate()` still passes against the
+  frozen validator. `assert_ggseg_atlas()` now refuses a stale atlas and says
+  how to upgrade it.
 - An atlas is now an S7 object, not a classed list, and `$` is no longer part
   of its interface. `atlas$core` is an error; use `atlas_core()`. Every
   property has an accessor, and the accessors work on atlases built by older

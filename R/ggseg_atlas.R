@@ -202,6 +202,11 @@ assert_ggseg_atlas <- function(
     )
   }
 
+  stale <- atlas_schema_defect(x, arg)
+  if (!is.null(stale)) {
+    cli::cli_abort(stale, class = "ggseg.formats_stale_schema", call = call)
+  }
+
   defect <- atlas_structure_defect(x)
   if (!is.null(defect)) {
     cli::cli_abort(
@@ -382,12 +387,31 @@ order_cells_spatially <- function(cell, x) {
 }
 
 
-#' Lightweight class check for atlas-classed objects
+#' Does this object claim to be an atlas?
 #'
 #' `TRUE` when `x` carries the `ggseg_atlas` or legacy `brain_atlas` class
-#' tag, without the structural revalidation that [is_ggseg_atlas()] performs.
-#' @noRd
-#' @keywords internal
+#' tag, without the structural revalidation [is_ggseg_atlas()] performs. The
+#' two answer different questions, and the difference matters at exactly one
+#' kind of boundary: code that has to *repair* an atlas needs to recognise a
+#' broken one, which `is_ggseg_atlas()` reports as `FALSE`.
+#'
+#' Use [is_ggseg_atlas()] to decide whether an atlas can be drawn or saved.
+#' Use this to decide whether an object is an atlas at all -- upgrading a
+#' published atlas, migrating a legacy one, or reporting why one is rejected.
+#'
+#' @param x an object
+#' @return A logical scalar.
+#' @seealso [is_ggseg_atlas()], which also revalidates the structure, and
+#'   [assert_ggseg_atlas()], which aborts with the reason.
+#' @export
+#' @examples
+#' is_atlas_class(dk())
+#'
+#' # A structurally broken atlas still claims to be one, which is what lets
+#' # the migration verbs take hold of it.
+#' broken <- structure(list(atlas = "x"), class = c("ggseg_atlas", "list"))
+#' is_atlas_class(broken)
+#' is_ggseg_atlas(broken)
 is_atlas_class <- function(x) {
   inherits(x, "ggseg_atlas") || inherits(x, "brain_atlas")
 }
@@ -1081,7 +1105,8 @@ new_ggseg_atlas <- function(
       core = core,
       data = data,
       palette = palette,
-      provenance = provenance
+      provenance = provenance,
+      schema = atlas_schema_version()
     )
   )
 }

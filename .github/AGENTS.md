@@ -112,6 +112,21 @@ resolves methods for base generics through `class(x)[1]`, so a leading
 unqualified tag makes that lookup miss and `print()` falls back to dumping
 every property.
 
+### Bump the schema version when stored atlases go stale
+
+A serialized S7 atlas carries a frozen copy of its class. Add a property and
+every atlas built before it fails on read of that property while
+`S7::validate()` still passes, because the validator it runs is the frozen
+one. Roughly 150 atlases live in `R/sysdata.rda` files across the atlas
+packages, each built by whichever `ggseg.formats` was current that day.
+
+So: bump `atlas_schema_version()` whenever an atlas built by the previous
+version would be wrong or incomplete under the current one -- a property added
+or removed, an invariant tightened, a slot's meaning changed -- and rebuild
+`R/sysdata.rda` in the same change, or the package's own atlases are stale.
+Do not bump for a new accessor, a new verb, or a fix that leaves stored data
+alone; a bump costs every published atlas an upgrade.
+
 ### Validation is in two places, and they must be kept in step
 
 The constructor carries the full diagnosis: cli bullets, a condition class per

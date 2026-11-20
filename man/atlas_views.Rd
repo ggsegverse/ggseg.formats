@@ -42,6 +42,7 @@ Other atlas accessors:
 \code{\link[=atlas_provenance]{atlas_provenance()}},
 \code{\link[=atlas_region_semantics]{atlas_region_semantics()}},
 \code{\link[=atlas_regions]{atlas_regions()}},
+\code{\link[=atlas_schema_version]{atlas_schema_version()}},
 \code{\link[=atlas_sf]{atlas_sf()}},
 \code{\link[=atlas_type]{atlas_type()}},
 \code{\link[=atlas_undrawn]{atlas_undrawn()}},

@@ -31,7 +31,8 @@ atlas_shared_properties <- function() {
     palette = NULL | S7::class_character,
     core = S7::class_data.frame,
     data = atlas_data_class,
-    provenance = NULL | S7::class_list
+    provenance = NULL | S7::class_list,
+    schema = S7::class_integer
   )
 }
 

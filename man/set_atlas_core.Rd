@@ -23,8 +23,8 @@ The \code{ggseg_atlas} with its core table, and palette, replaced.
 \code{core} and \code{palette} are keyed on the same labels, so a verb that drops or
 renames regions changes both. The validator spans properties and runs on
 every assignment, which means the two cannot be assigned one after the
-other: the first assignment is checked against the second's old value and
-fails. This lands them together.
+other: the first assignment is checked against the stale value of the
+other and fails. This lands them together.
 }
 \details{
 It also keeps S7 an implementation detail of this package. Without it, every

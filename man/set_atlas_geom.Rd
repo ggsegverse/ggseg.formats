@@ -19,7 +19,7 @@ The \code{ggseg_atlas} with its 2D geometry replaced.
 Replaces the single \code{geom} slot of the atlas payload, which holds either an
 sf data frame or a \code{brain_polygons} data frame. The counterpart to
 \code{\link[=atlas_geom]{atlas_geom()}}: the geometry pipelines in ggseg.extra rewrite geometry
-constantly -- smoothing, eroding, reprojecting -- and had to reach into the
+constantly -- smoothing, eroding, reshaping -- and had to reach into the
 payload to put the result back.
 }
 \details{

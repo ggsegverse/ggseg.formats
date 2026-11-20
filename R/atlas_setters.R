@@ -158,7 +158,7 @@ set_atlas_name <- function(atlas, value) {
 #' Replaces the single `geom` slot of the atlas payload, which holds either an
 #' sf data frame or a `brain_polygons` data frame. The counterpart to
 #' [atlas_geom()]: the geometry pipelines in ggseg.extra rewrite geometry
-#' constantly -- smoothing, eroding, reprojecting -- and had to reach into the
+#' constantly -- smoothing, eroding, reshaping -- and had to reach into the
 #' payload to put the result back.
 #'
 #' Writing geometry does not rewrite `core`. A verb that drops regions as well
@@ -201,8 +201,8 @@ set_atlas_geom <- function(atlas, value) {
 #' `core` and `palette` are keyed on the same labels, so a verb that drops or
 #' renames regions changes both. The validator spans properties and runs on
 #' every assignment, which means the two cannot be assigned one after the
-#' other: the first assignment is checked against the second's old value and
-#' fails. This lands them together.
+#' other: the first assignment is checked against the stale value of the
+#' other and fails. This lands them together.
 #'
 #' It also keeps S7 an implementation detail of this package. Without it, every
 #' atlas-editing package needs `Imports: S7` and has to know that
