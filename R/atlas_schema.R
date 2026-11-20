@@ -36,6 +36,7 @@
 #' @param atlas a `ggseg_atlas` object
 #' @name atlas_schema_version
 #' @family atlas accessors
+#' @seealso [as_ggseg_atlas()], which upgrades a stale atlas.
 #' @examples
 #' atlas_schema_version()
 #' atlas_schema(dk())

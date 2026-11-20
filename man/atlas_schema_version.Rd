@@ -59,6 +59,8 @@ atlas_schema(dk())
 atlas_schema_is_current(dk())
 }
 \seealso{
+\code{\link[=as_ggseg_atlas]{as_ggseg_atlas()}}, which upgrades a stale atlas.
+
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
 \code{\link[=atlas_context]{atlas_context()}},
