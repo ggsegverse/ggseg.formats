@@ -174,15 +174,22 @@ atlas_invariant_defect <- function(self) {
 #' class vector. ggplot2 carries `gg` alongside `ggplot2::ggplot` for the same
 #' reason.
 #'
-#' The tags are *appended*, never prepended. S7 finds a method for a base
-#' generic by looking up `class(x)[1]` in its own table, so a leading
-#' unqualified tag makes that lookup miss and `print()`, `plot()` and the
-#' coercions fall back to S7's defaults. Appending leaves `class(x)[1]`
-#' qualified -- `inherits()` scans the whole vector, so it is satisfied
-#' either way.
+#' The tags lead, so that one set of S3 methods serves both representations.
+#'
+#' This package cannot register an S7 method on a base generic *and* an S3
+#' method on the same generic: with the S7 method present, the `S3method()`
+#' directive lands in this package's own method table and never reaches
+#' base's, where dispatch looks. The symptom is quiet -- `plot()` on a legacy
+#' list atlas fell through to `plot.default()`, and `print()` dumped 520 lines
+#' of raw list where it used to show a 22-line summary.
+#'
+#' So the base generics are served by plain S3 methods alone, and the
+#' unqualified tags lead the class vector so an S7 atlas reaches
+#' `print.ggseg_atlas()` before S7's own `print.S7_object()`. A legacy list
+#' carries the same tags and reaches the same method.
 #' @noRd
 tag_legacy_atlas_classes <- function(x) {
-  class(x) <- c(class(x), legacy_atlas_class_tags(x))
+  class(x) <- c(legacy_atlas_class_tags(x), class(x))
   x
 }
 
@@ -216,12 +223,6 @@ atlas_has_slots <- function(x) {
 #' @noRd
 NULL
 
-S7::method(print, ggseg_atlas_class) <- print_ggseg_atlas
-S7::method(plot, ggseg_atlas_class) <- plot_ggseg_atlas
-# nolint start: object_name_linter.
-S7::method(as.list, ggseg_atlas_class) <- as_list_ggseg_atlas
-S7::method(as.data.frame, ggseg_atlas_class) <- as_data_frame_ggseg_atlas
-# nolint end.
 
 #' The same methods, still registered for legacy list atlases
 #'

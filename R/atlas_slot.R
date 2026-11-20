@@ -6,10 +6,9 @@
 #' older release built and an installed atlas package still ships. These are
 #' the only place that difference is handled.
 #'
-#' They live in a file of their own, with no `S7::new_class()` or
-#' `S7::method()` call at its top level, because `lintr`'s `object_usage_linter`
-#' cannot resolve a function defined alongside those and reports every call to
-#' it as an undefined global -- 381 of them, one per call site.
+#' They live in a file of their own, with no `S7::new_class()` call at its top
+#' level, because `lintr`'s `object_usage_linter` cannot resolve a function
+#' defined alongside one and reports every call to it as an undefined global.
 #' @name atlas_slot_access
 #' @noRd
 NULL

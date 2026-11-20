@@ -52,6 +52,15 @@
   two are keyed on the same labels and the validator spans properties. It also
   keeps S7 an implementation detail: an atlas-editing package no longer needs
   `Imports: S7` to make a paired edit.
+- `print()`, `plot()`, `as.data.frame()`, `as.list()` and `names()` reach a
+  legacy list atlas again. A package cannot register an S7 method on a base
+  generic *and* an S3 method on the same generic: with the S7 method present,
+  the `S3method()` directive lands in the package's own method table and never
+  reaches base's, where dispatch looks. `plot()` on a published atlas fell
+  through to `plot.default()` and failed; `print()` dumped 520 lines of raw
+  list where it had shown a 22-line summary. The base generics are now served
+  by plain S3 methods alone, with the unqualified class tags leading, so one
+  set of methods serves the S7 object and the legacy list identically.
 - Every setter works on a legacy list atlas again. They reached their slot
   with `@`, which on a tagged list makes R try S4 semantics and fail with
   `"cortical_atlas" is not a defined class`, so five of the six were broken

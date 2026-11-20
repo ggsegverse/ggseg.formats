@@ -100,3 +100,76 @@ describe("a stale schema", {
     expect_no_error(assert_ggseg_atlas(legacy))
   })
 })
+
+
+describe("base generics reach both representations", {
+  # The S7 conversion silently broke these. Registering an S7 method on a base
+  # generic stops this package's S3 method for the same generic reaching
+  # base's dispatch table, so `plot()` on a legacy list atlas fell through to
+  # `plot.default()` and `print()` dumped 520 lines of raw list where it had
+  # shown a 22-line summary. No test noticed, because every fixture was an S7
+  # atlas. These check both.
+  both <- function() {
+    list(
+      S7 = dk(),
+      legacy = structure(
+        as.list(dk()),
+        class = c("cortical_atlas", "ggseg_atlas", "list")
+      )
+    )
+  }
+
+  it("print() gives the atlas summary, not a property dump", {
+    for (atlas in both()) {
+      out <- capture.output(print(atlas))
+      expect_lt(length(out), 60)
+      expect_false(any(grepl("^\\$atlas", out)))
+      expect_false(any(grepl("^<ggseg.formats::", out)))
+    }
+  })
+
+  it("print() gives the same summary for both representations", {
+    atlases <- both()
+    expect_identical(
+      capture.output(print(atlases$S7)),
+      capture.output(print(atlases$legacy))
+    )
+  })
+
+  it("plot() draws rather than falling through to plot.default()", {
+    for (atlas in both()) {
+      grDevices::pdf(NULL)
+      expect_no_error(plot(atlas))
+      grDevices::dev.off()
+    }
+  })
+
+  it("as.data.frame() coerces rather than erroring", {
+    skip_if_not_installed("sf")
+    for (atlas in both()) {
+      expect_s3_class(as.data.frame(atlas), "data.frame")
+    }
+  })
+
+  it("as.list() returns the slots", {
+    for (atlas in both()) {
+      expect_true(all(
+        c("atlas", "type", "core", "data") %in%
+          names(as.list(atlas))
+      ))
+    }
+  })
+
+  it("names() reports the slots", {
+    for (atlas in both()) {
+      expect_true(all(c("atlas", "core", "data") %in% names(atlas)))
+    }
+  })
+
+  it("the unqualified class tags lead, so S3 finds our methods first", {
+    # An S7 atlas whose qualified names led reached S7's print.S7_object
+    # before ever reaching print.ggseg_atlas.
+    expect_identical(class(dk())[1], "cortical_atlas")
+    expect_identical(class(dk())[2], "ggseg_atlas")
+  })
+})
