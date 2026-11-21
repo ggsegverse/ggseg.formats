@@ -117,10 +117,11 @@ migrate_atlas_object <- function(obj, keep_sf) {
   if (already_migrated) {
     return(NULL)
   }
-  atlas_slot(obj, "data")$geom <- target
-  atlas_slot(obj, "data")$sf <- NULL
-  atlas_slot(obj, "data")$polygons <- NULL
-  obj
+  data <- atlas_slot(obj, "data")
+  data$geom <- target
+  data$sf <- NULL
+  data$polygons <- NULL
+  set_atlas_slot(obj, "data", data)
 }
 
 
@@ -147,9 +148,37 @@ migrate_rda_file <- function(f, keep_sf, force = FALSE) {
     }
   }
   if (changed) {
-    save(list = nms, file = f, envir = env, compress = "xz")
+    write_rda_atomically(nms, f, env)
   }
   changed
+}
+
+
+#' Save over an `.rda` file without a window in which it is truncated
+#'
+#' `save()` writes straight into the path it is given, so an interrupted
+#' write -- a full disk, Ctrl-C, an error part way through serialising --
+#' leaves the user's only copy of an atlas truncated. Writing a temporary
+#' file in the same directory and renaming it over the original makes the
+#' replacement atomic: the file is either the old one or the new one, never
+#' half of either. The temporary has to be in the same directory, because a
+#' rename across file systems is not atomic.
+#' @noRd
+#' @keywords internal
+write_rda_atomically <- function(nms, f, env) {
+  tmp <- tempfile(tmpdir = dirname(f), fileext = ".rda")
+  renamed <- FALSE
+  on.exit(if (!renamed) unlink(tmp), add = TRUE)
+
+  save(list = nms, file = tmp, envir = env, compress = "xz")
+  renamed <- file.rename(tmp, f)
+  if (!renamed) {
+    cli::cli_abort(c(
+      "Could not replace {.file {basename(f)}} with the migrated atlas.",
+      "i" = "The original is untouched; the migrated copy was discarded."
+    ))
+  }
+  invisible(f)
 }
 
 

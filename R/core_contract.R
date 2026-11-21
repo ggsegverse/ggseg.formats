@@ -184,11 +184,12 @@ migrate_atlas_hemi <- function(atlas) {
   if (!atlas_has_slots(atlas) || is.null(atlas_slot(atlas, "core"))) {
     cli::cli_abort("{.arg atlas} must be a list with a {.field core}.")
   }
-  hemi <- as.character(atlas_slot(atlas, "core")$hemi)
-  atlas_slot(atlas, "core")$hemi <- legacy_hemi_map[hemi] |>
+  core <- atlas_slot(atlas, "core")
+  hemi <- as.character(core$hemi)
+  core$hemi <- legacy_hemi_map[hemi] |>
     unname() |>
     (\(mapped) ifelse(is.na(mapped), hemi, mapped))()
-  atlas
+  set_atlas_slot(atlas, "core", core)
 }
 
 #' Legacy `hemi` spellings and what they mean

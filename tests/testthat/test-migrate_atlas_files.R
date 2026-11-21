@@ -185,3 +185,59 @@ describe("migrate_atlas_files() column-loss guard", {
     expect_true("myannot" %in% names(atlas_geom(env$atlas)))
   })
 })
+describe("write_rda_atomically()", {
+  # `save()` used to write straight into the user's file, so an interrupted
+  # write left a truncated atlas and no backup. These are the only copy of
+  # most published atlases.
+  it("leaves the original intact when the save itself fails", {
+    dir <- withr::local_tempdir()
+    atlas <- dk_sf_atlas()
+    f <- file.path(dir, "atlas.rda")
+    save(atlas, file = f)
+    before <- tools::md5sum(f)
+
+    local_mocked_bindings(
+      save = function(...) {
+        writeBin(raw(8), list(...)$file)
+        stop("disk full")
+      },
+      .package = "base"
+    )
+
+    expect_error(migrate_atlas_files(dir, quiet = TRUE), "disk full")
+    expect_identical(tools::md5sum(f), before)
+  })
+
+  it("reports a failed rename instead of losing the write", {
+    dir <- withr::local_tempdir()
+    atlas <- dk_sf_atlas()
+    f <- file.path(dir, "atlas.rda")
+    save(atlas, file = f)
+    before <- tools::md5sum(f)
+
+    local_mocked_bindings(
+      file.rename = function(from, to) FALSE,
+      .package = "base"
+    )
+
+    expect_error(
+      migrate_atlas_files(dir, quiet = TRUE),
+      "Could not replace"
+    )
+    expect_identical(tools::md5sum(f), before)
+  })
+
+  it("leaves no temporary file behind when it fails", {
+    dir <- withr::local_tempdir()
+    atlas <- dk_sf_atlas()
+    save(atlas, file = file.path(dir, "atlas.rda"))
+
+    local_mocked_bindings(
+      file.rename = function(from, to) FALSE,
+      .package = "base"
+    )
+
+    expect_error(migrate_atlas_files(dir, quiet = TRUE))
+    expect_identical(list.files(dir), "atlas.rda")
+  })
+})

@@ -82,7 +82,7 @@ convert_atlas <- function(x) {
 }
 
 
-#' @noRd
+#' @exportS3Method ggseg.formats::convert_atlas
 convert_atlas.default <- function(x) {
   cli::cli_abort(
     "Cannot convert {.cls {class(x)[1]}} to {.cls ggseg_atlas}."
@@ -90,7 +90,7 @@ convert_atlas.default <- function(x) {
 }
 
 
-#' @noRd
+#' @exportS3Method ggseg.formats::convert_atlas
 convert_atlas.ggseg_atlas <- function(x) {
   if (
     !is.null(atlas_slot(x, "data")) &&
@@ -123,7 +123,7 @@ convert_atlas.ggseg_atlas <- function(x) {
 }
 
 
-#' @noRd
+#' @exportS3Method ggseg.formats::convert_atlas
 convert_atlas.brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
     "0.1.0",
@@ -162,7 +162,7 @@ convert_atlas.brain_atlas <- function(x) {
 }
 
 
-#' @noRd
+#' @exportS3Method ggseg.formats::convert_atlas
 convert_atlas.ggseg3d_atlas <- function(x) {
   lifecycle::deprecate_warn(
     "0.1.0",
@@ -174,7 +174,7 @@ convert_atlas.ggseg3d_atlas <- function(x) {
 }
 
 
-#' @noRd
+#' @exportS3Method ggseg.formats::convert_atlas
 convert_atlas.list <- function(x) {
   if (
     "data" %in% names(x) && inherits(atlas_slot(x, "data"), "ggseg_atlas_data")

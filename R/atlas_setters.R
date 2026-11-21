@@ -25,8 +25,7 @@ set_atlas_palette <- function(atlas, value) {
     # A palette-less atlas is a state the class allows and the renderers cope
     # with, so the setter has to be able to produce it. Without this, clearing
     # a palette was only reachable by assigning the property directly.
-    atlas_slot(atlas, "palette") <- NULL
-    return(atlas)
+    return(set_atlas_slot(atlas, "palette", NULL))
   }
 
   if (!is.character(value) || is.null(names(value))) {
@@ -43,8 +42,7 @@ set_atlas_palette <- function(atlas, value) {
       "i" = "e.g. {.val {utils::head(absent, 3)}} ({length(absent)} total)."
     ))
   }
-  atlas_slot(atlas, "palette") <- value
-  atlas
+  set_atlas_slot(atlas, "palette", value)
 }
 
 
@@ -120,8 +118,7 @@ set_atlas_provenance <- function(atlas, value) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
-  atlas_slot(atlas, "provenance") <- validate_provenance(value)
-  atlas
+  set_atlas_slot(atlas, "provenance", validate_provenance(value))
 }
 
 
@@ -148,8 +145,7 @@ set_atlas_name <- function(atlas, value) {
   if (!is.character(value) || length(value) != 1 || is.na(value)) {
     cli::cli_abort("{.arg value} must be a single, non-missing string.")
   }
-  atlas_slot(atlas, "atlas") <- value
-  atlas
+  set_atlas_slot(atlas, "atlas", value)
 }
 
 
@@ -192,8 +188,7 @@ set_atlas_geom <- function(atlas, value) {
   atlas <- as_ggseg_atlas(atlas)
   data <- atlas_slot(atlas, "data")
   data$geom <- value
-  atlas_slot(atlas, "data") <- data
-  atlas
+  set_atlas_slot(atlas, "data", data)
 }
 
 

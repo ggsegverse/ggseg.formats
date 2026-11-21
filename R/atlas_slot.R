@@ -41,16 +41,18 @@ atlas_slot <- function(atlas, name) {
 #' Write one slot of an atlas, whichever representation it is in
 #'
 #' The counterpart to `atlas_slot()`, for the handful of places that edit one
-#' slot in place. Having it as a replacement function is what lets a nested
-#' edit -- `atlas_slot(atlas, "data")$geom <- geom` -- work on both
-#' representations: R rewrites that into a read of the slot followed by a write
-#' back through here.
+#' slot in place, returning the modified atlas. It is deliberately not a
+#' replacement function: `goodpractice`'s `complexity_unused_internal` check
+#' records a definition of `` `atlas_slot<-` `` but only ever sees the
+#' identifier `atlas_slot` at a call site, so any replacement form here is
+#' reported as dead code. A nested edit therefore has to be written out as a
+#' read of the slot, the edit, and a write back through here.
 #'
 #' Only single-slot edits can go through this, because the validator spans the
 #' properties and runs on every assignment. An edit whose intermediate state is
 #' invalid has to land in one step, through `atlas_set_props()`.
 #' @noRd
-`atlas_slot<-` <- function(atlas, name, value) {
+set_atlas_slot <- function(atlas, name, value) {
   if (S7::S7_inherits(atlas, ggseg_atlas_class)) {
     S7::prop(atlas, name) <- value
     return(atlas)

@@ -41,10 +41,11 @@ as_polygon_atlas <- function(atlas) {
     geom <- sf_to_polygons(geom)
   }
 
-  atlas_slot(atlas, "data")$geom <- geom
-  atlas_slot(atlas, "data")$sf <- NULL
-  atlas_slot(atlas, "data")$polygons <- NULL
-  atlas
+  data <- atlas_slot(atlas, "data")
+  data$geom <- geom
+  data$sf <- NULL
+  data$polygons <- NULL
+  set_atlas_slot(atlas, "data", data)
 }
 
 
@@ -83,8 +84,9 @@ as_sf_atlas <- function(atlas) {
     geom <- polygons_to_sf(geom)
   }
 
-  atlas_slot(atlas, "data")$geom <- geom
-  atlas_slot(atlas, "data")$sf <- NULL
-  atlas_slot(atlas, "data")$polygons <- NULL
-  atlas
+  data <- atlas_slot(atlas, "data")
+  data$geom <- geom
+  data$sf <- NULL
+  data$polygons <- NULL
+  set_atlas_slot(atlas, "data", data)
 }
