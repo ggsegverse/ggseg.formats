@@ -45,8 +45,12 @@ objects that need it.
 # A no-op on a current atlas.
 identical(atlas_input(dk()), dk())
 
-# An atlas built before 3.0.0 comes back current.
-legacy <- structure(as.list(dk()), class = c("cortical_atlas", "list"))
+# An atlas built before 3.0.0 comes back current. A real one carries the
+# `ggseg_atlas` tag as well as its type's.
+legacy <- structure(
+  as.list(dk()),
+  class = c("cortical_atlas", "ggseg_atlas", "list")
+)
 atlas_schema(atlas_input(legacy))
 }
 \seealso{
