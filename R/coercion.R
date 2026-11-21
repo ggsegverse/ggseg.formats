@@ -63,25 +63,6 @@ as_ggseg_atlas <- function(
 }
 
 
-#' Is this atlas the current object, built against the current schema?
-#' @noRd
-atlas_is_current <- function(atlas) {
-  S7::S7_inherits(atlas, ggseg_atlas_class) && atlas_schema_is_current(atlas)
-}
-
-
-#' Dispatch the upgrade over the representations an atlas arrives in
-#'
-#' Internal: the public door is [as_ggseg_atlas()], which owns the boundary
-#' errors. Nothing outside this package registers a method, and the atlas
-#' types are a closed set, so the dispatch is bookkeeping rather than an
-#' extension point.
-#' @noRd
-convert_atlas <- function(x) {
-  UseMethod("convert_atlas")
-}
-
-
 #' @exportS3Method ggseg.formats::convert_atlas
 convert_atlas.default <- function(x) {
   cli::cli_abort(
@@ -408,4 +389,23 @@ legacy_palette_from_sf <- function(sf_data) {
   }
   pal <- stats::setNames(sf_data$colour, sf_data$label)
   pal[!is.na(names(pal)) & !duplicated(names(pal))]
+}
+
+
+#' Is this atlas the current object, built against the current schema?
+#' @noRd
+atlas_is_current <- function(atlas) {
+  S7::S7_inherits(atlas, ggseg_atlas_class) && atlas_schema_is_current(atlas)
+}
+
+
+#' Dispatch the upgrade over the representations an atlas arrives in
+#'
+#' Internal: the public door is [as_ggseg_atlas()], which owns the boundary
+#' errors. Nothing outside this package registers a method, and the atlas
+#' types are a closed set, so the dispatch is bookkeeping rather than an
+#' extension point.
+#' @noRd
+convert_atlas <- function(x) {
+  UseMethod("convert_atlas")
 }
