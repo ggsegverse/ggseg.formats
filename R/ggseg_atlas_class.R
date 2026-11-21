@@ -174,19 +174,18 @@ atlas_invariant_defect <- function(self) {
 #' class vector. ggplot2 carries `gg` alongside `ggplot2::ggplot` for the same
 #' reason.
 #'
-#' The tags lead, so that one set of S3 methods serves both representations.
+#' The tags exist for `inherits()`, and for nothing else.
 #'
-#' This package cannot register an S7 method on a base generic *and* an S3
-#' method on the same generic: with the S7 method present, the `S3method()`
-#' directive lands in this package's own method table and never reaches
-#' base's, where dispatch looks. The symptom is quiet -- `plot()` on a legacy
-#' list atlas fell through to `plot.default()`, and `print()` dumped 520 lines
-#' of raw list where it used to show a 22-line summary.
+#' An S7 class defined in a package is tagged only with its qualified name --
+#' `ggseg.formats::cortical_atlas` -- so `inherits(x, "cortical_atlas")` is
+#' false for a perfectly good atlas. Every renderer, every atlas package's
+#' tests and every `is_*_atlas()` predicate asks exactly that, so the
+#' unqualified tags are carried too.
 #'
-#' So the base generics are served by plain S3 methods alone, and the
-#' unqualified tags lead the class vector so an S7 atlas reaches
-#' `print.ggseg_atlas()` before S7's own `print.S7_object()`. A legacy list
-#' carries the same tags and reaches the same method.
+#' They no longer decide which method runs. The base generics are registered
+#' against both the S7 class and the S3 class, so each representation finds
+#' the same function whatever the class vector looks like. The tags lead
+#' because `class(x)[1]` reads better unqualified in an error message.
 #' @noRd
 tag_legacy_atlas_classes <- function(x) {
   class(x) <- c(legacy_atlas_class_tags(x), class(x))
@@ -222,35 +221,6 @@ atlas_has_slots <- function(x) {
 #' charge, and is where they belong once the class is S7 anyway.
 #' @noRd
 NULL
-
-
-#' The same methods, still registered for legacy list atlases
-#'
-#' An atlas built by an older `ggseg.formats` and shipped inside an installed
-#' atlas package is a plain list carrying the `ggseg_atlas` or `brain_atlas`
-#' S3 tag. It is not an S7 object, so the S7 methods above never see it, and
-#' without these registrations it would print as a raw list. Both sets of
-#' methods delegate to the same functions.
-#' @param x an atlas
-#' @param n rows of `core` to print
-#' @param ... passed on
-#' @return `x`, invisibly, or the coerced object
-#' @name legacy_atlas_methods
-#' @keywords internal
-#' @export
-print.ggseg_atlas <- print_ggseg_atlas
-
-#' @rdname legacy_atlas_methods
-#' @export
-plot.ggseg_atlas <- plot_ggseg_atlas
-
-#' @rdname legacy_atlas_methods
-#' @export
-as.list.ggseg_atlas <- as_list_ggseg_atlas
-
-#' @rdname legacy_atlas_methods
-#' @export
-as.data.frame.ggseg_atlas <- as_data_frame_ggseg_atlas
 
 
 #' The `hemi` vocabulary violation in a core table, or `NULL`

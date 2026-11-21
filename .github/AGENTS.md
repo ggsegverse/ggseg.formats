@@ -112,28 +112,37 @@ resolves methods for base generics through `class(x)[1]`, so a leading
 unqualified tag makes that lookup miss and `print()` falls back to dumping
 every property.
 
-### Base generics are S3 methods, and that is on purpose
+### One mechanism per base generic
 
-The base generics an atlas answers -- `print()`, `plot()`, `as.list()`,
-`as.data.frame()`, `names()` -- are plain S3 methods, with the unqualified
-class tags leading the class vector so an S7 atlas reaches them before S7's
-own defaults. A legacy list atlas carries the same tags and reaches the same
-method.
+Every method this package puts on a base generic -- `print()`, `plot()`,
+`as.list()`, `as.data.frame()`, `names()` -- is registered with
+`S7::method()`, in `R/zzz_methods.R`. That includes the methods for plain S3
+classes like `brain_polygons`, which are registered with
+`S7::new_S3_class()`.
 
-They are *not* S7 methods, and the reason is a tooling one rather than a
-design one. S7 1.0.0 does allow `method(print, new_S3_class("ggseg_atlas"))`,
-which would let one mechanism serve both representations -- but registering
-an S7 method on a base generic leaves an `<S7_generic_sentinel>` in the
-namespace, and `pkgload`'s unregister path calls `rlang::fn_env()` on every
-generic it finds. `devtools::load_all()` and `testthat::test_local()` then
-abort with "`fn` must be a function, not a <S7_generic_sentinel> object".
-Verified against S7 1.0.0 and pkgload 1.5.3, which is the current release.
-The installed package is unaffected; it is the dev workflow that breaks.
+This is not a style preference. A package must not mix S7 and S3 methods on
+the *same* base generic. S7 leaves a sentinel named after the generic in the
+package namespace when it registers a method there, and `pkgload`'s
+unregister path resolves the generic for every `S3method()` entry it finds,
+hits the sentinel, and aborts `devtools::load_all()` with:
 
-Revisit when pkgload handles the sentinel. Until then, do not register an S7
-method on a base generic in this package, and do not mix the two mechanisms
-on one generic -- with an S7 method present, an `S3method()` directive lands
-in this package's own table and never reaches base's, which fails silently.
+    Error in `fn_env()`: `fn` must be a function,
+    not a <S7_generic_sentinel> object.
+
+Either mechanism used consistently is fine. Verified against S7 1.0.0 and
+pkgload 1.5.3, reduced to a two-line package. So: adding a `print` method for
+a new payload class means adding it to `R/zzz_methods.R`, not writing
+`#' @export print.newclass`.
+
+The registrations live in `R/zzz_methods.R` because a top-level
+`S7::method()` call resolves its function at source time, and R collates
+alphabetically -- registering a function defined in `mesh_space.R` from an
+earlier file fails with "object not found".
+
+Registering the atlas methods against both the S7 class and
+`new_S3_class("ggseg_atlas")` is what lets a current atlas and a legacy list
+atlas find the same function, and means dispatch does not depend on the order
+of the class vector.
 
 ### Bump the schema version when stored atlases go stale
 

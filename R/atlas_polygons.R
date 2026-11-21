@@ -1,5 +1,5 @@
-#' @export
-print.brain_polygons <- function(x, n = 10, ...) {
+#' @noRd
+print_brain_polygons <- function(x, n = 10, ...) {
   cli::cli_h2("brain_polygons")
   cli::cli_text("{.strong Labels:} {nrow(x)}")
   if (nrow(x) > 0) {

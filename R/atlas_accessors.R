@@ -360,8 +360,8 @@ atlas_meshes <- function(atlas) {
 }
 
 
-#' @export
-print.ggseg_sf <- function(x, ...) {
+#' @noRd
+print_ggseg_sf <- function(x, ...) {
   dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
   views <- if ("view" %in% names(x)) {
     toString(unique(x$view))
@@ -374,8 +374,8 @@ print.ggseg_sf <- function(x, ...) {
   invisible(x)
 }
 
-#' @export
-print.ggseg_vertices <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_vertices <- function(x, n = 10, ...) {
   dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
   vert_lengths <- if ("vertices" %in% names(x)) {
     vapply(atlas_slot(x, "vertices"), length, integer(1))
@@ -391,8 +391,8 @@ print.ggseg_vertices <- function(x, n = 10, ...) {
   invisible(x)
 }
 
-#' @export
-print.ggseg_centerlines <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_centerlines <- function(x, n = 10, ...) {
   dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
   n_points <- if ("points" %in% names(x)) {
     vapply(x$points, NROW, integer(1))
@@ -408,8 +408,8 @@ print.ggseg_centerlines <- function(x, n = 10, ...) {
   invisible(x)
 }
 
-#' @export
-print.ggseg_meshes <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_meshes <- function(x, n = 10, ...) {
   dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
   cli::cli_rule("{.cls ggseg_meshes} data: {dims}")
   if ("mesh" %in% names(x)) {

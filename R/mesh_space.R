@@ -125,8 +125,8 @@ get_mesh_space <- function(mesh) {
 }
 
 
-#' @export
-print.mesh_space <- function(x, ...) {
+#' @noRd
+print_mesh_space <- function(x, ...) {
   cli::cli_text("{.cls mesh_space} (v{x$schema_version})")
   cli::cli_bullets(c(
     "*" = "vertex space: {.val {x$vertex_space}}",

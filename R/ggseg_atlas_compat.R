@@ -16,14 +16,6 @@ NULL
 #' atlas look untyped and sent `atlas_type()` down its guessing path, which
 #' silently answered "subcortical" for a cerebellar atlas.
 #' @noRd
-#' @rdname legacy_atlas_methods
-#' @export
-names.ggseg_atlas <- function(x) {
-  if (S7::S7_inherits(x, ggseg_atlas_class)) {
-    return(S7::prop_names(x))
-  }
-  NextMethod()
-}
 
 #' Replace several properties at once, validating only the result
 #'
@@ -44,42 +36,4 @@ atlas_set_props <- function(atlas, ...) {
   }
   S7::props(atlas) <- values
   atlas
-}
-
-
-#' The methods every atlas gets, whichever representation it is in
-#'
-#' Plain S3, deliberately: see `tag_legacy_atlas_classes()` for why an S7
-#' method on a base generic cannot coexist with an S3 method on the same
-#' generic in one package. The unqualified class tags lead the class vector
-#' so an S7 atlas reaches these before S7's own defaults, and a legacy list
-#' atlas -- which is what every atlas package ships today -- reaches them too.
-#'
-#' @param x an atlas
-#' @param n rows of `core` to print
-#' @param ... passed on
-#' @return `x`, invisibly, or the coerced object
-#' @name legacy_atlas_methods
-#' @keywords internal
-#' @export
-print.ggseg_atlas <- function(x, n = 10, ...) {
-  print_ggseg_atlas(x, n = n, ...)
-}
-
-#' @rdname legacy_atlas_methods
-#' @export
-plot.ggseg_atlas <- function(x, ...) {
-  plot_ggseg_atlas(x, ...)
-}
-
-#' @rdname legacy_atlas_methods
-#' @export
-as.list.ggseg_atlas <- function(x, ...) {
-  as_list_ggseg_atlas(x, ...)
-}
-
-#' @rdname legacy_atlas_methods
-#' @export
-as.data.frame.ggseg_atlas <- function(x, ...) {
-  as_data_frame_ggseg_atlas(x, ...)
 }

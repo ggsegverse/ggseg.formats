@@ -280,8 +280,8 @@ ggseg_data_tract <- function(
 }
 
 
-#' @export
-print.ggseg_data_cortical <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_data_cortical <- function(x, n = 10, ...) {
   cli::cli_h2("ggseg_data_cortical")
 
   twod_summary <- summarise_2d(x) # nolint: object_usage_linter
@@ -298,8 +298,8 @@ print.ggseg_data_cortical <- function(x, n = 10, ...) {
 }
 
 
-#' @export
-print.ggseg_data_subcortical <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_data_subcortical <- function(x, n = 10, ...) {
   cli::cli_h2("ggseg_data_subcortical")
 
   twod_summary <- summarise_2d(x) # nolint: object_usage_linter
@@ -316,8 +316,8 @@ print.ggseg_data_subcortical <- function(x, n = 10, ...) {
 }
 
 
-#' @export
-print.ggseg_data_cerebellar <- function(x, n = 10, ...) {
+#' @noRd
+print_ggseg_data_cerebellar <- function(x, n = 10, ...) {
   cli::cli_h2("ggseg_data_cerebellar")
 
   twod_summary <- summarise_2d(x) # nolint: object_usage_linter
@@ -334,8 +334,8 @@ print.ggseg_data_cerebellar <- function(x, n = 10, ...) {
 }
 
 
-#' @export
-print.ggseg_data_tract <- function(x, ...) {
+#' @noRd
+print_ggseg_data_tract <- function(x, ...) {
   cli::cli_h2("ggseg_data_tract")
 
   twod_summary <- summarise_2d(x) # nolint: object_usage_linter
