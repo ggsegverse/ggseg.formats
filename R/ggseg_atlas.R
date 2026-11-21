@@ -232,170 +232,6 @@ is_ggseg3d_atlas <- function(x) {
 }
 
 
-#' @importFrom stats na.omit
-#' @noRd
-print_ggseg_atlas <- function(x, n = 10, ...) {
-  data <- atlas_slot(x, "data")
-  geom <- geom_from_data(data)
-  has_sf <- !is.null(geom)
-  has_3d <- !is.null(atlas_slot(data, "vertices")) ||
-    !is.null(atlas_slot(data, "meshes")) ||
-    !is.null(atlas_slot(data, "centerlines"))
-
-  print_atlas_summary(x, has_sf)
-  print_atlas_rendering(x, data, has_sf, has_3d)
-
-  cli::cli_rule()
-
-  print_data_head(atlas_slot(x, "core"), n)
-
-  invisible(x)
-}
-
-
-#' @noRd
-as_list_ggseg_atlas <- function(x, ...) {
-  out <- list(
-    atlas = atlas_slot(x, "atlas"),
-    type = atlas_slot(x, "type"),
-    palette = atlas_slot(x, "palette"),
-    core = atlas_slot(x, "core"),
-    data = atlas_slot(x, "data")
-  )
-  # With `$`, `[[` and `unclass()` gone this is the only list view, and
-  # `structure(as.list(a), class = ...)` is the documented way to make a
-  # legacy copy -- so dropping the build record loses it for good. `schema`
-  # stays out: it describes the S7 object, and a list is not one.
-  provenance <- atlas_slot(x, "provenance")
-  if (!is.null(provenance)) {
-    out$provenance <- provenance
-  }
-  out
-}
-
-
-#' @noRd
-as_data_frame_ggseg_atlas <- function(x, ...) {
-  sf_data <- as_sf_for_data_frame(x)
-
-  # Geometry travels out of band. Base merge(), cbind() and `[` each strip a
-  # different part of the sf representation when sf is not loaded, so every
-  # operation below runs on attributes only, paired back by `.ggseg_row`.
-  sf_column <- attr(sf_data, "sf_column")
-  if (is.null(sf_column)) {
-    sf_column <- "geometry"
-  }
-  geometry <- sf_data[[sf_column]]
-
-  result <- sf_data
-  result[[sf_column]] <- NULL
-  class(result) <- "data.frame"
-  result$.ggseg_row <- seq_len(nrow(result))
-
-  result <- merge_core_into_sf(result, atlas_slot(x, "core"))
-
-  if (atlas_slot(x, "type") == "cortical") {
-    result <- infer_cortical_hemi(result)
-  }
-
-  # merge.sf moves the geometry column to the end of the merged frame, so with
-  # sf loaded it has always landed after the core columns and before the three
-  # added below. Insert it there, so the column order does not depend on
-  # whether sf happens to be installed.
-  geom_pos <- ncol(result) - 1L
-
-  result$atlas <- atlas_slot(x, "atlas")
-  result$type <- atlas_slot(x, "type")
-
-  if (!is.null(atlas_slot(x, "palette"))) {
-    result$colour <- unname(atlas_slot(x, "palette")[result$label])
-  }
-
-  result <- order_context_behind(result, atlas_slot(x, "core")$label)
-
-  geometry <- reorder_sfc(geometry, result$.ggseg_row)
-  result$.ggseg_row <- NULL
-  rownames(result) <- NULL
-  attach_sfc(result, geometry, sf_column, after = geom_pos)
-}
-
-#' @importFrom graphics mtext par plot.new plot.window polygon polypath
-#' @noRd
-plot_ggseg_atlas <- function(x, ...) {
-  flat <- polygons_unnest(atlas_polygons(x))
-  flat <- order_context_behind(flat, atlas_slot(x, "core")$label)
-  fill_colors <- resolve_fill_colors(
-    flat$label,
-    atlas_plot_palette(x),
-    atlas_slot(x, "core")$label
-  )
-  dots <- list(...)
-
-  # One panel per spatially separate piece, arranged in a near-square grid so
-  # each gets enough room to read. This is a quick overview of the atlas, not a
-  # publication figure.
-  cell <- plot_cells(flat, resolve_plot_hemi(flat$label, atlas_slot(x, "core")))
-  cells <- order_cells_spatially(cell, flat$x)
-  ncol <- ceiling(sqrt(length(cells)))
-  nrow <- ceiling(length(cells) / ncol)
-  cell_tables <- split(flat, cell)
-
-  old_par <- par(
-    mfrow = c(nrow, ncol),
-    mar = c(0.3, 0.3, 0.3, 0.3),
-    oma = c(0, 0, 2, 0)
-  )
-  on.exit(par(old_par), add = TRUE)
-
-  for (ci in cells) {
-    cf <- cell_tables[[as.character(ci)]]
-    plot.new()
-    plot.window(
-      xlim = range(cf$x, na.rm = TRUE),
-      ylim = range(cf$y, na.rm = TRUE),
-      asp = 1
-    )
-    # Factor levels follow first appearance (not the alphabetical order a bare
-    # character split would impose) so the context-behind ordering set above is
-    # honoured when the pieces are drawn.
-    piece_id <- piece_keys(cf)
-    pieces <- split(cf, factor(piece_id, levels = unique(piece_id)))
-    invisible(lapply(pieces, function(piece) {
-      draw_piece(piece, fill_colors[[piece$label[[1L]]]], dots)
-    }))
-  }
-
-  mtext(
-    paste(atlas_slot(x, "atlas"), atlas_slot(x, "type"), "atlas"),
-    outer = TRUE,
-    cex = 1,
-    line = 0.5
-  )
-
-  invisible(x)
-}
-
-#' Order plot panels by their left-to-right position
-#'
-#' Panel ids come from [plot_cells()], which numbers cells in the order views
-#' are encountered in the row table. For `brain_polygons` those rows are nested
-#' by `label`, so encounter order depends on which views the first label happens
-#' to carry -- it neither follows the atlas layout nor is stable. Ordering by
-#' each cell's leftmost x makes the panels read in the order the views are
-#' actually laid out, so [atlas_view_reorder()] is honoured.
-#' @noRd
-#' @keywords internal
-order_cells_spatially <- function(cell, x) {
-  cells <- unique(cell)
-  left <- vapply(
-    cells,
-    function(ci) min(x[cell == ci], na.rm = TRUE),
-    numeric(1)
-  )
-  cells[order(left, cells)]
-}
-
-
 #' Does this object claim to be an atlas?
 #'
 #' `TRUE` when `x` carries the `ggseg_atlas` or legacy `brain_atlas` class
@@ -1123,4 +959,170 @@ new_ggseg_atlas <- function(
   # that, for this subclass and any added later.
   out <- S7::validate(out)
   tag_legacy_atlas_classes(out)
+}
+
+
+#' @importFrom stats na.omit
+#' @noRd
+print_ggseg_atlas <- function(x, n = 10, ...) {
+  data <- atlas_slot(x, "data")
+  geom <- geom_from_data(data)
+  has_sf <- !is.null(geom)
+  has_3d <- !is.null(atlas_slot(data, "vertices")) ||
+    !is.null(atlas_slot(data, "meshes")) ||
+    !is.null(atlas_slot(data, "centerlines"))
+
+  print_atlas_summary(x, has_sf)
+  print_atlas_rendering(x, data, has_sf, has_3d)
+
+  cli::cli_rule()
+
+  print_data_head(atlas_slot(x, "core"), n)
+
+  invisible(x)
+}
+
+
+#' @noRd
+as_list_ggseg_atlas <- function(x, ...) {
+  out <- list(
+    atlas = atlas_slot(x, "atlas"),
+    type = atlas_slot(x, "type"),
+    palette = atlas_slot(x, "palette"),
+    core = atlas_slot(x, "core"),
+    data = atlas_slot(x, "data")
+  )
+  # With `$`, `[[` and `unclass()` gone this is the only list view, and
+  # `structure(as.list(a), class = ...)` is the documented way to make a
+  # legacy copy -- so dropping the build record loses it for good. `schema`
+  # stays out: it describes the S7 object, and a list is not one.
+  provenance <- atlas_slot(x, "provenance")
+  if (!is.null(provenance)) {
+    out$provenance <- provenance
+  }
+  out
+}
+
+
+#' @noRd
+as_data_frame_ggseg_atlas <- function(x, ...) {
+  sf_data <- as_sf_for_data_frame(x)
+
+  # Geometry travels out of band. Base merge(), cbind() and `[` each strip a
+  # different part of the sf representation when sf is not loaded, so every
+  # operation below runs on attributes only, paired back by `.ggseg_row`.
+  sf_column <- attr(sf_data, "sf_column")
+  if (is.null(sf_column)) {
+    sf_column <- "geometry"
+  }
+  geometry <- sf_data[[sf_column]]
+
+  result <- sf_data
+  result[[sf_column]] <- NULL
+  class(result) <- "data.frame"
+  result$.ggseg_row <- seq_len(nrow(result))
+
+  result <- merge_core_into_sf(result, atlas_slot(x, "core"))
+
+  if (atlas_slot(x, "type") == "cortical") {
+    result <- infer_cortical_hemi(result)
+  }
+
+  # merge.sf moves the geometry column to the end of the merged frame, so with
+  # sf loaded it has always landed after the core columns and before the three
+  # added below. Insert it there, so the column order does not depend on
+  # whether sf happens to be installed.
+  geom_pos <- ncol(result) - 1L
+
+  result$atlas <- atlas_slot(x, "atlas")
+  result$type <- atlas_slot(x, "type")
+
+  if (!is.null(atlas_slot(x, "palette"))) {
+    result$colour <- unname(atlas_slot(x, "palette")[result$label])
+  }
+
+  result <- order_context_behind(result, atlas_slot(x, "core")$label)
+
+  geometry <- reorder_sfc(geometry, result$.ggseg_row)
+  result$.ggseg_row <- NULL
+  rownames(result) <- NULL
+  attach_sfc(result, geometry, sf_column, after = geom_pos)
+}
+
+
+#' @importFrom graphics mtext par plot.new plot.window polygon polypath
+#' @noRd
+plot_ggseg_atlas <- function(x, ...) {
+  flat <- polygons_unnest(atlas_polygons(x))
+  flat <- order_context_behind(flat, atlas_slot(x, "core")$label)
+  fill_colors <- resolve_fill_colors(
+    flat$label,
+    atlas_plot_palette(x),
+    atlas_slot(x, "core")$label
+  )
+  dots <- list(...)
+
+  # One panel per spatially separate piece, arranged in a near-square grid so
+  # each gets enough room to read. This is a quick overview of the atlas, not a
+  # publication figure.
+  cell <- plot_cells(flat, resolve_plot_hemi(flat$label, atlas_slot(x, "core")))
+  cells <- order_cells_spatially(cell, flat$x)
+  ncol <- ceiling(sqrt(length(cells)))
+  nrow <- ceiling(length(cells) / ncol)
+  cell_tables <- split(flat, cell)
+
+  old_par <- par(
+    mfrow = c(nrow, ncol),
+    mar = c(0.3, 0.3, 0.3, 0.3),
+    oma = c(0, 0, 2, 0)
+  )
+  on.exit(par(old_par), add = TRUE)
+
+  for (ci in cells) {
+    cf <- cell_tables[[as.character(ci)]]
+    plot.new()
+    plot.window(
+      xlim = range(cf$x, na.rm = TRUE),
+      ylim = range(cf$y, na.rm = TRUE),
+      asp = 1
+    )
+    # Factor levels follow first appearance (not the alphabetical order a bare
+    # character split would impose) so the context-behind ordering set above is
+    # honoured when the pieces are drawn.
+    piece_id <- piece_keys(cf)
+    pieces <- split(cf, factor(piece_id, levels = unique(piece_id)))
+    invisible(lapply(pieces, function(piece) {
+      draw_piece(piece, fill_colors[[piece$label[[1L]]]], dots)
+    }))
+  }
+
+  mtext(
+    paste(atlas_slot(x, "atlas"), atlas_slot(x, "type"), "atlas"),
+    outer = TRUE,
+    cex = 1,
+    line = 0.5
+  )
+
+  invisible(x)
+}
+
+
+#' Order plot panels by their left-to-right position
+#'
+#' Panel ids come from [plot_cells()], which numbers cells in the order views
+#' are encountered in the row table. For `brain_polygons` those rows are nested
+#' by `label`, so encounter order depends on which views the first label happens
+#' to carry -- it neither follows the atlas layout nor is stable. Ordering by
+#' each cell's leftmost x makes the panels read in the order the views are
+#' actually laid out, so [atlas_view_reorder()] is honoured.
+#' @noRd
+#' @keywords internal
+order_cells_spatially <- function(cell, x) {
+  cells <- unique(cell)
+  left <- vapply(
+    cells,
+    function(ci) min(x[cell == ci], na.rm = TRUE),
+    numeric(1)
+  )
+  cells[order(left, cells)]
 }

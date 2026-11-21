@@ -279,11 +279,26 @@ describe("the published dispatch surface", {
       "ggseg_data_tract",
       "ggseg_data_wm"
     )
+    # Only generics a consumer can actually reach: the package's own exports
+    # plus the base generics. An internal dispatcher is visible to
+    # `methods()` under `load_all()` and not in an installed package, so
+    # enumerating everything makes the snapshot disagree with itself between
+    # `devtools::test()` and `R CMD check`.
+    published <- c(
+      getNamespaceExports("ggseg.formats"),
+      "print",
+      "plot",
+      "format",
+      "names",
+      "as.list",
+      "as.data.frame"
+    )
     surface <- vapply(
       classes,
       function(cls) {
         methods <- as.character(utils::methods(class = cls))
-        toString(sort(sub(paste0("[.]", cls, "$"), "", methods)))
+        generics <- sub(paste0("[.]", cls, "$"), "", methods)
+        toString(sort(generics[generics %in% published]))
       },
       character(1)
     )

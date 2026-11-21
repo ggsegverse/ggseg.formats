@@ -1,26 +1,97 @@
-#' Coerce to ggseg atlas
+#' Bring an atlas up to the current format
 #'
-#' @param x object to make into a ggseg_atlas
-#' @return an object of class 'ggseg_atlas'
+#' Answers for every representation an atlas arrives in -- the S7 object this
+#' release builds, the plain tagged list an atlas package built before 3.0.0,
+#' a pre-2.0 `brain_atlas`, a `ggseg3d_atlas`, and an S7 atlas stamped with an
+#' older schema -- and returns the current one. It is a no-op on an atlas that
+#' is already current, so the cost falls on the objects that need it.
+#'
+#' Package authors should call this on an atlas handed to them by a user, so
+#' that the rest of their code has a single kind of object to reason about.
+#' The two ways it can fail are separately catchable: `ggseg.formats_not_atlas`
+#' for "that is not an atlas", `ggseg.formats_invalid_atlas` for "that is an
+#' atlas and it is malformed". Both name the caller's own argument, which is
+#' what `arg` and `call` are for.
+#'
+#' Upgrading beats asserting at a boundary: [assert_ggseg_atlas()] returns its
+#' input unchanged, which leaves every later path to cope with whatever it was
+#' given. That is how a legacy list atlas reached `as.data.frame()` in
+#' `brain_join()` and `plot.default()` from `plot()`.
+#'
+#' @param x An atlas, in any representation.
+#' @param arg The argument name to blame in an error. Defaults to the
+#'   caller's.
+#' @param call The environment to attribute the error to.
+#' @return `x` as a current `ggseg_atlas`.
+#' @seealso [assert_ggseg_atlas()], which checks without upgrading.
 #' @export
 #' @examples
 #' atlas <- as_ggseg_atlas(dk())
 #' is_ggseg_atlas(atlas)
-as_ggseg_atlas <- function(x) {
-  UseMethod("as_ggseg_atlas")
+#'
+#' # A no-op on an atlas that is already current.
+#' identical(as_ggseg_atlas(dk()), dk())
+as_ggseg_atlas <- function(
+  x,
+  arg = rlang::caller_arg(x),
+  call = rlang::caller_env()
+) {
+  if (is_atlas_class(x) && atlas_is_current(x)) {
+    return(x)
+  }
+
+  rlang::try_fetch(
+    convert_atlas(x),
+    error = function(cnd) {
+      if (!is_atlas_class(x)) {
+        cli::cli_abort(
+          "{.arg {arg}} must be a {.cls ggseg_atlas}, not
+           {.cls {class(x)[1]}}.",
+          class = "ggseg.formats_not_atlas",
+          parent = cnd,
+          call = call
+        )
+      }
+      cli::cli_abort(
+        "{.arg {arg}} is a {.cls ggseg_atlas} with an invalid structure.",
+        class = "ggseg.formats_invalid_atlas",
+        parent = cnd,
+        call = call
+      )
+    }
+  )
 }
 
 
-#' @export
-as_ggseg_atlas.default <- function(x) {
+#' Is this atlas the current object, built against the current schema?
+#' @noRd
+atlas_is_current <- function(atlas) {
+  S7::S7_inherits(atlas, ggseg_atlas_class) && atlas_schema_is_current(atlas)
+}
+
+
+#' Dispatch the upgrade over the representations an atlas arrives in
+#'
+#' Internal: the public door is [as_ggseg_atlas()], which owns the boundary
+#' errors. Nothing outside this package registers a method, and the atlas
+#' types are a closed set, so the dispatch is bookkeeping rather than an
+#' extension point.
+#' @noRd
+convert_atlas <- function(x) {
+  UseMethod("convert_atlas")
+}
+
+
+#' @noRd
+convert_atlas.default <- function(x) {
   cli::cli_abort(
     "Cannot convert {.cls {class(x)[1]}} to {.cls ggseg_atlas}."
   )
 }
 
 
-#' @export
-as_ggseg_atlas.ggseg_atlas <- function(x) {
+#' @noRd
+convert_atlas.ggseg_atlas <- function(x) {
   if (
     !is.null(atlas_slot(x, "data")) &&
       inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
@@ -52,12 +123,12 @@ as_ggseg_atlas.ggseg_atlas <- function(x) {
 }
 
 
-#' @export
-as_ggseg_atlas.brain_atlas <- function(x) {
+#' @noRd
+convert_atlas.brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
     "0.1.0",
     I("Converting legacy `brain_atlas` objects"),
-    I("`ggseg_atlas()` (use `as_ggseg_atlas()`)"),
+    I("`ggseg_atlas()` (use `convert_atlas()`)"),
     always = TRUE
   )
 
@@ -91,20 +162,20 @@ as_ggseg_atlas.brain_atlas <- function(x) {
 }
 
 
-#' @export
-as_ggseg_atlas.ggseg3d_atlas <- function(x) {
+#' @noRd
+convert_atlas.ggseg3d_atlas <- function(x) {
   lifecycle::deprecate_warn(
     "0.1.0",
     I("Converting legacy `ggseg3d_atlas` objects"),
-    I("`ggseg_atlas()` (use `as_ggseg_atlas()`)"),
+    I("`ggseg_atlas()` (use `convert_atlas()`)"),
     always = TRUE
   )
   convert_legacy_brain_atlas(atlas_3d = x)
 }
 
 
-#' @export
-as_ggseg_atlas.list <- function(x) {
+#' @noRd
+convert_atlas.list <- function(x) {
   if (
     "data" %in% names(x) && inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
   ) {
@@ -132,9 +203,9 @@ as_brain_atlas <- function(x) {
   lifecycle::deprecate_warn(
     "0.1.0",
     "as_brain_atlas()",
-    "as_ggseg_atlas()"
+    "convert_atlas()"
   )
-  as_ggseg_atlas(x)
+  convert_atlas(x)
 }
 
 

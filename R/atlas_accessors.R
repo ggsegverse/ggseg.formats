@@ -360,64 +360,6 @@ atlas_meshes <- function(atlas) {
 }
 
 
-#' @noRd
-print_ggseg_sf <- function(x, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  views <- if ("view" %in% names(x)) {
-    toString(unique(x$view))
-  }
-  cli::cli_rule("{.cls ggseg_sf} data: {dims}")
-  if (!is.null(views)) {
-    cli::cli_text("Views: {views}")
-  }
-  NextMethod()
-  invisible(x)
-}
-
-#' @noRd
-print_ggseg_vertices <- function(x, n = 10, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  vert_lengths <- if ("vertices" %in% names(x)) {
-    vapply(atlas_slot(x, "vertices"), length, integer(1))
-  }
-  cli::cli_rule("{.cls ggseg_vertices} data: {dims}")
-  if (!is.null(vert_lengths) && length(vert_lengths) > 0) {
-    cli::cli_text(
-      "Vertices per region: {format(min(vert_lengths), big.mark = ',')}
-\u2013{format(max(vert_lengths), big.mark = ',')}"
-    )
-  }
-  print_data_head(x, n)
-  invisible(x)
-}
-
-#' @noRd
-print_ggseg_centerlines <- function(x, n = 10, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  n_points <- if ("points" %in% names(x)) {
-    vapply(x$points, NROW, integer(1))
-  }
-  cli::cli_rule("{.cls ggseg_centerlines} data: {dims}")
-  if (!is.null(n_points) && length(n_points) > 0) {
-    cli::cli_text(
-      "Points per tract: {format(min(n_points), big.mark = ',')}
-\u2013{format(max(n_points), big.mark = ',')}"
-    )
-  }
-  print_data_head(x, n)
-  invisible(x)
-}
-
-#' @noRd
-print_ggseg_meshes <- function(x, n = 10, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  cli::cli_rule("{.cls ggseg_meshes} data: {dims}")
-  if ("mesh" %in% names(x)) {
-    print_mesh_summary(x, n)
-  }
-  invisible(x)
-}
-
 #' How an atlas was built
 #'
 #' Returns the build record an atlas carries, or `NULL` for an atlas built
@@ -448,32 +390,6 @@ atlas_provenance <- function(atlas) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
   atlas_slot(atlas, "provenance")
-}
-
-
-#' @keywords internal
-#' @noRd
-geom_from_data <- function(data) {
-  if (!is.null(data$geom)) {
-    return(data$geom)
-  }
-  atlas_slot(data, "sf")
-}
-
-#' The sf-class geometry of an atlas data object, or NULL if it is polygon-only
-#' @keywords internal
-#' @noRd
-data_sf <- function(data) {
-  geom <- geom_from_data(data)
-  if (inherits(geom, "sf")) geom else NULL
-}
-
-#' The brain_polygons geometry of an atlas data object, or NULL if it is sf
-#' @keywords internal
-#' @noRd
-data_poly <- function(data) {
-  geom <- geom_from_data(data)
-  if (inherits(geom, "brain_polygons")) geom else NULL
 }
 
 
@@ -544,4 +460,94 @@ has_atlas_payload <- function(atlas, name) {
     return(TRUE)
   }
   !is.null(atlas_slot(atlas, "data")[[name]])
+}
+
+
+#' @noRd
+print_ggseg_sf <- function(x, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  views <- if ("view" %in% names(x)) {
+    toString(unique(x$view))
+  }
+  cli::cli_rule("{.cls ggseg_sf} data: {dims}")
+  if (!is.null(views)) {
+    cli::cli_text("Views: {views}")
+  }
+  NextMethod()
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_vertices <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  vert_lengths <- if ("vertices" %in% names(x)) {
+    vapply(atlas_slot(x, "vertices"), length, integer(1))
+  }
+  cli::cli_rule("{.cls ggseg_vertices} data: {dims}")
+  if (!is.null(vert_lengths) && length(vert_lengths) > 0) {
+    cli::cli_text(
+      "Vertices per region: {format(min(vert_lengths), big.mark = ',')}
+\u2013{format(max(vert_lengths), big.mark = ',')}"
+    )
+  }
+  print_data_head(x, n)
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_centerlines <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  n_points <- if ("points" %in% names(x)) {
+    vapply(x$points, NROW, integer(1))
+  }
+  cli::cli_rule("{.cls ggseg_centerlines} data: {dims}")
+  if (!is.null(n_points) && length(n_points) > 0) {
+    cli::cli_text(
+      "Points per tract: {format(min(n_points), big.mark = ',')}
+\u2013{format(max(n_points), big.mark = ',')}"
+    )
+  }
+  print_data_head(x, n)
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_meshes <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  cli::cli_rule("{.cls ggseg_meshes} data: {dims}")
+  if ("mesh" %in% names(x)) {
+    print_mesh_summary(x, n)
+  }
+  invisible(x)
+}
+
+
+#' @keywords internal
+#' @noRd
+geom_from_data <- function(data) {
+  if (!is.null(data$geom)) {
+    return(data$geom)
+  }
+  atlas_slot(data, "sf")
+}
+
+
+#' The sf-class geometry of an atlas data object, or NULL if it is polygon-only
+#' @keywords internal
+#' @noRd
+data_sf <- function(data) {
+  geom <- geom_from_data(data)
+  if (inherits(geom, "sf")) geom else NULL
+}
+
+
+#' The brain_polygons geometry of an atlas data object, or NULL if it is sf
+#' @keywords internal
+#' @noRd
+data_poly <- function(data) {
+  geom <- geom_from_data(data)
+  if (inherits(geom, "brain_polygons")) geom else NULL
 }

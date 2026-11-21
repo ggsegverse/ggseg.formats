@@ -206,7 +206,7 @@ describe("every setter works on a legacy list atlas", {
 
   it("leaves the atlas a list, not a half-converted object", {
     out <- set_atlas_name(legacy(), "renamed")
-    expect_true(is.list(out))
+    expect_type(out, "list")
     expect_false(S7::S7_inherits(out))
     expect_true(is_atlas_class(out))
   })

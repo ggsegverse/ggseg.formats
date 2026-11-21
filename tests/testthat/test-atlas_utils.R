@@ -2098,12 +2098,12 @@ describe("subclass preservation", {
 
   it("bundled atlases have correct subclasses", {
     expect_true(is_cortical_atlas(dk()))
-    expect_true(inherits(dk(), "cortical_atlas"))
-    expect_true(inherits(dk(), "ggseg_atlas"))
+    expect_s3_class(dk(), "cortical_atlas")
+    expect_s3_class(dk(), "ggseg_atlas")
     expect_true(is_subcortical_atlas(aseg()))
-    expect_true(inherits(aseg(), "subcortical_atlas"))
+    expect_s3_class(aseg(), "subcortical_atlas")
     expect_true(is_tract_atlas(tracula()))
-    expect_true(inherits(tracula(), "tract_atlas"))
+    expect_s3_class(tracula(), "tract_atlas")
   })
 })
 

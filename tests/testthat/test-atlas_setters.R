@@ -39,13 +39,13 @@ describe("set_atlas_type", {
     b <- set_atlas_type(a, "tract")
     expect_identical(atlas_type(b), "tract")
     expect_true(is_tract_atlas(b))
-    expect_true(inherits(b, "tract_atlas"))
+    expect_s3_class(b, "tract_atlas")
   })
 
   it("keeps the ggseg_atlas class and ordering intact", {
     b <- set_atlas_type(tracula(), "tract")
-    expect_true(inherits(b, "tract_atlas"))
-    expect_true(inherits(b, "ggseg_atlas"))
+    expect_s3_class(b, "tract_atlas")
+    expect_s3_class(b, "ggseg_atlas")
     expect_true(is_tract_atlas(b))
   })
 
@@ -72,7 +72,7 @@ describe("set_atlas_type", {
     expect_identical(as.data.frame(atlas_core(b)), as.data.frame(atlas_core(a)))
     expect_identical(atlas_palette(b), atlas_palette(a))
     expect_identical(atlas_data(b), atlas_data(a))
-    expect_identical(class(b), class(a))
+    expect_s3_class(b, class(a), exact = TRUE)
   })
 
   it("errors when the payload does not match the requested type", {

@@ -70,11 +70,16 @@
   class rather than copying it into every object, which makes a serialized
   atlas dramatically smaller -- a toy object that took ~152 KB under 0.2.2
   takes about 1 KB.
-- `atlas_input()` is the one call a function should make on an atlas it was
-  handed: it answers for every representation an atlas arrives in and returns
-  the current one, so downstream code has a single kind of object to reason
-  about. `assert_ggseg_atlas()` checks and hands back whatever it was given,
-  which is how a legacy list reached `as.data.frame()` in `brain_join()`.
+- `as_ggseg_atlas()` is what a package should call on an atlas it was handed:
+  it answers for every representation an atlas arrives in and returns the
+  current one, so downstream code has a single kind of object to reason about.
+  It now takes `arg` and `call`, names the caller's own argument in an error,
+  and raises `ggseg.formats_not_atlas` or `ggseg.formats_invalid_atlas` so the
+  two failures can be told apart. `assert_ggseg_atlas()` checks and hands back
+  whatever it was given, which is how a legacy list reached `as.data.frame()`
+  in `brain_join()`. The S3 dispatch behind the conversion is now internal:
+  nothing outside this package ever registered a method, and the atlas types
+  are a closed set.
 - `print()`, `plot()`, `as.data.frame()`, `as.list()` and `names()` reach a
   legacy list atlas again. A package cannot register an S7 method on a base
   generic *and* an S3 method on the same generic: with the S7 method present,

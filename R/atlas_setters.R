@@ -189,7 +189,7 @@ set_atlas_geom <- function(atlas, value) {
   # and may have no payload at all. Writing `geom` into that shape leaves the
   # old `sf` in place to shadow it, and the write is lost at the next
   # coercion, so upgrade first and write to the one place geometry lives.
-  atlas <- atlas_input(atlas)
+  atlas <- as_ggseg_atlas(atlas)
   data <- atlas_slot(atlas, "data")
   data$geom <- value
   atlas_slot(atlas, "data") <- data
@@ -236,7 +236,7 @@ set_atlas_core <- function(atlas, value, palette = "keep") {
   # accepted a duplicated label or a `hemi` outside the vocabulary in silence
   # and handed back an atlas every later check refuses. Upgrade first and the
   # invariants hold for both representations.
-  atlas <- atlas_input(atlas)
+  atlas <- as_ggseg_atlas(atlas)
 
   if (identical(palette, "keep")) {
     palette <- atlas_slot(atlas, "palette")

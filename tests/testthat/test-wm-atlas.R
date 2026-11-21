@@ -11,29 +11,6 @@ describe("atlas_types()", {
 })
 
 
-describe("atlas_class()", {
-  it("gives a type with no parent the class it always had", {
-    # paste0() does not drop a NULL -- paste0(NULL, "_atlas") is "_atlas" --
-    # so a parent appended unconditionally would put a bogus class on every
-    # other type.
-    for (type in setdiff(atlas_types(), "wm")) {
-      expect_identical(
-        atlas_class(type),
-        c(paste0(type, "_atlas"), "ggseg_atlas", "list"),
-        info = type
-      )
-    }
-  })
-
-  it("makes a white-matter atlas a subcortical atlas as well", {
-    expect_identical(
-      atlas_class("wm"),
-      c("wm_atlas", "subcortical_atlas", "ggseg_atlas", "list")
-    )
-  })
-})
-
-
 describe("a white-matter atlas", {
   wm_atlas <- function() {
     meshes <- data.frame(
@@ -143,6 +120,7 @@ describe("a wm atlas cannot be built invalid", {
     # while the two-level subclass is still stamped with its parent -- so the
     # `type` the validator computed was "subcortical" and a wm atlas carrying
     # a subcortical payload was constructed, invalid the moment it existed.
+    # nolint start: undesirable_operator_linter.
     expect_error(
       ggseg.formats:::new_ggseg_atlas(
         "x",
@@ -153,6 +131,7 @@ describe("a wm atlas cannot be built invalid", {
         NULL
       )
     )
+    # nolint end
   })
 
   it("keeps the wm payload through a geometry verb", {
