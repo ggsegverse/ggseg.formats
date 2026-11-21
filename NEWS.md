@@ -52,6 +52,11 @@
   two are keyed on the same labels and the validator spans properties. It also
   keeps S7 an implementation detail: an atlas-editing package no longer needs
   `Imports: S7` to make a paired edit.
+- `atlas_input()` is the one call a function should make on an atlas it was
+  handed: it answers for every representation an atlas arrives in and returns
+  the current one, so downstream code has a single kind of object to reason
+  about. `assert_ggseg_atlas()` checks and hands back whatever it was given,
+  which is how a legacy list reached `as.data.frame()` in `brain_join()`.
 - `print()`, `plot()`, `as.data.frame()`, `as.list()` and `names()` reach a
   legacy list atlas again. A package cannot register an S7 method on a base
   generic *and* an S3 method on the same generic: with the S7 method present,
