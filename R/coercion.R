@@ -108,14 +108,7 @@ as_ggseg_atlas.list <- function(x) {
   if (
     "data" %in% names(x) && inherits(atlas_slot(x, "data"), "ggseg_atlas_data")
   ) {
-    return(ggseg_atlas(
-      atlas = atlas_slot(x, "atlas"),
-      type = atlas_slot(x, "type"),
-      palette = atlas_slot(x, "palette"),
-      core = atlas_slot(x, "core"),
-      data = atlas_slot(x, "data"),
-      provenance = atlas_slot(x, "provenance")
-    ))
+    return(restamp_class(x))
   }
 
   if (
@@ -209,8 +202,7 @@ convert_legacy_structure <- function(x) {
   ) {
     core$display <- core$region
   }
-  core <- normalise_legacy_hemi(core)
-  core <- dedupe_legacy_core_labels(core, atlas_slot(x, "atlas"))
+  core <- repair_legacy_core(core, atlas_slot(x, "atlas"))
 
   data <- switch(
     type,
@@ -240,6 +232,20 @@ convert_legacy_structure <- function(x) {
 }
 
 
+#' Bring a legacy core table up to the invariants the class enforces
+#'
+#' The closed `hemi` vocabulary and unique `label`s are invariants of the S7
+#' class, but `vermis`, `middle`, `lh` and `rh` are spellings published atlases
+#' shipped and are still accepted *as input*. Every upgrade path has to repair
+#' them before construction, or an atlas that loaded on 2.x stops loading.
+#'
+#' @keywords internal
+#' @noRd
+repair_legacy_core <- function(core, atlas = NA_character_) {
+  core <- normalise_legacy_hemi(core)
+  dedupe_legacy_core_labels(core, atlas)
+}
+
 #' @keywords internal
 #' @noRd
 restamp_class <- function(x) {
@@ -248,7 +254,7 @@ restamp_class <- function(x) {
     atlas_slot(x, "atlas"),
     type,
     atlas_slot(x, "palette"),
-    atlas_slot(x, "core"),
+    repair_legacy_core(atlas_slot(x, "core"), atlas_slot(x, "atlas")),
     as_atlas_data(atlas_slot(x, "data"), type),
     atlas_slot(x, "provenance")
   )
@@ -316,7 +322,9 @@ legacy_core_from_sf <- function(sf_data, atlas = NA_character_) {
   # `names` holds in the current schema, so the converted atlas is complete
   # rather than missing a required column.
   core$display <- core$region
-  dedupe_legacy_core_labels(core, atlas)
+  # A legacy `sf` carries the published `hemi` spellings, so this path needs
+  # the same repair as the others.
+  repair_legacy_core(core, atlas)
 }
 
 

@@ -255,13 +255,22 @@ print_ggseg_atlas <- function(x, n = 10, ...) {
 
 #' @noRd
 as_list_ggseg_atlas <- function(x, ...) {
-  list(
+  out <- list(
     atlas = atlas_slot(x, "atlas"),
     type = atlas_slot(x, "type"),
     palette = atlas_slot(x, "palette"),
     core = atlas_slot(x, "core"),
     data = atlas_slot(x, "data")
   )
+  # With `$`, `[[` and `unclass()` gone this is the only list view, and
+  # `structure(as.list(a), class = ...)` is the documented way to make a
+  # legacy copy -- so dropping the build record loses it for good. `schema`
+  # stays out: it describes the S7 object, and a list is not one.
+  provenance <- atlas_slot(x, "provenance")
+  if (!is.null(provenance)) {
+    out$provenance <- provenance
+  }
+  out
 }
 
 
@@ -1099,14 +1108,19 @@ new_ggseg_atlas <- function(
   data,
   provenance = NULL
 ) {
-  tag_legacy_atlas_classes(
-    atlas_class_for_type(type)(
-      atlas = atlas,
-      core = core,
-      data = data,
-      palette = palette,
-      provenance = provenance,
-      schema = atlas_schema_version()
-    )
+  out <- atlas_class_for_type(type)(
+    atlas = atlas,
+    core = core,
+    data = data,
+    palette = palette,
+    provenance = provenance,
+    schema = atlas_schema_version()
   )
+  # The validator computes `type` from the class, and S7 runs it while a
+  # two-level subclass -- `wm_atlas` under `subcortical_atlas` -- still carries
+  # its parent, so the type it checks against is the parent's and a wm atlas
+  # with a subcortical payload passes. Revalidating the finished object closes
+  # that, for this subclass and any added later.
+  out <- S7::validate(out)
+  tag_legacy_atlas_classes(out)
 }

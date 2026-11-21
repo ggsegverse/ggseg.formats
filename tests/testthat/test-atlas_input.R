@@ -53,8 +53,21 @@ describe("atlas_input()", {
   })
 
   it("is silent on the way through", {
-    # A boundary that chatters is a boundary people route around.
+    # A boundary that chatters is a boundary people route around, and this one
+    # is now called on every plot and every verb.
     expect_silent(atlas_input(legacy_atlas()))
+  })
+
+  it("still deprecation-warns for a pre-2.0 brain_atlas", {
+    # The one thing the door does not swallow. `brain_atlas` predates the
+    # current class, so the warning is worth hearing -- and lifecycle emits it
+    # once per session, not once per call, which is what makes it bearable
+    # from a boundary this hot.
+    old <- structure(
+      as.list(dk()),
+      class = c("cortical_atlas", "brain_atlas", "list")
+    )
+    expect_warning(atlas_input(old), class = "lifecycle_warning_deprecated")
   })
 
   it("works for every bundled atlas, in both representations", {

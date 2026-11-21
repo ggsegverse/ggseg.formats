@@ -259,6 +259,36 @@ describe("the published dispatch surface", {
     )
     expect_snapshot(print(surface))
   })
+
+  it("includes the base generics, which the generic-keyed view cannot see", {
+    # Keying on generic names only covers the generics named here, so it is
+    # blind to `print()`, `plot()`, `as.list()` and `as.data.frame()` --
+    # exactly the 14 registrations the S7 migration moved out of
+    # `S3method()`. Dropping `plot` for the legacy class would have left
+    # every published atlas falling through to `plot.default()` with this
+    # snapshot unchanged. Keying on our own classes closes that.
+    classes <- c(
+      "ggseg_atlas",
+      "brain_atlas",
+      "brain_polygons",
+      "ggseg_sf",
+      "mesh_space",
+      "ggseg_data_cortical",
+      "ggseg_data_subcortical",
+      "ggseg_data_cerebellar",
+      "ggseg_data_tract",
+      "ggseg_data_wm"
+    )
+    surface <- vapply(
+      classes,
+      function(cls) {
+        methods <- as.character(utils::methods(class = cls))
+        toString(sort(sub(paste0("[.]", cls, "$"), "", methods)))
+      },
+      character(1)
+    )
+    expect_snapshot(print(surface))
+  })
 })
 
 describe("atlas_views_empty", {

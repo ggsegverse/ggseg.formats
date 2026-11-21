@@ -30,6 +30,10 @@ GDAL
 GEOS
 ggplot
 ggseg
+ggsegAal
+ggsegCraddock
+ggsegDemoatlas
+ggsegMcalt
 ggsegSUIT
 ggsegverse
 globus

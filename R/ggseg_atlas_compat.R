@@ -16,6 +16,8 @@ NULL
 #' atlas look untyped and sent `atlas_type()` down its guessing path, which
 #' silently answered "subcortical" for a cerebellar atlas.
 #' @noRd
+NULL
+
 
 #' Replace several properties at once, validating only the result
 #'

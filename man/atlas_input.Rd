@@ -39,6 +39,11 @@ the boundary rather than three calls deep on a property that is not there.
 
 It is a no-op on an atlas that is already current, so the cost falls on the
 objects that need it.
+
+It is quiet about the upgrade itself. Two things still get through, both
+worth hearing: converting a pre-2.0 \code{brain_atlas} deprecation-warns once
+per session, and repairing a published atlas -- collapsing duplicated
+labels -- warns about what it changed.
 }
 
 \examples{

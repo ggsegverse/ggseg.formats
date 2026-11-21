@@ -136,7 +136,9 @@ atlas_context <- function(atlas) {
 #' @return `atlas`, with `display` in `core`.
 #' @examples
 #' atlas <- dk()
-#' atlas@core$display <- NULL
+#' core <- atlas_core(atlas)
+#' core$display <- NULL
+#' atlas <- set_atlas_core(atlas, core)
 #' atlas_display(migrate_atlas_display(atlas))[1:3]
 #' @export
 migrate_atlas_display <- function(atlas, overwrite = FALSE) {

@@ -107,10 +107,11 @@ subclass — and it stays a discussion to raise with the maintainers first.
 
 The class vector carries both the qualified S7 names and the unqualified tags
 (`cortical_atlas`, `ggseg_atlas`) that `inherits()` and the `is_*_atlas()`
-predicates ask for. The unqualified tags are **appended**, never prepended: S7
-resolves methods for base generics through `class(x)[1]`, so a leading
-unqualified tag makes that lookup miss and `print()` falls back to dumping
-every property.
+predicates ask for. The unqualified tags **lead**, because `class(x)[1]` reads
+better unqualified in an error message. They do not decide which method runs:
+the base generics are registered against both the S7 class and the S3 class,
+so either representation finds the same function whatever the class vector
+looks like.
 
 ### One mechanism per base generic
 

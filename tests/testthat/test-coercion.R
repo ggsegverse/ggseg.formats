@@ -33,6 +33,59 @@ describe("as_ggseg_atlas", {
 })
 
 
+describe("as_ggseg_atlas() repairs a published 2.x atlas", {
+  # Six atlas objects published in the 2.x series -- ggsegCraddock's three
+  # cerebellar atlases, ggsegMcalt's, ggsegAal's `aal3_cerebellum` and
+  # ggsegDemoatlas -- ship a legacy `hemi` spelling. They are tagged lists
+  # carrying a modern payload, so they take the `restamp_class()` path, which
+  # upgraded without repairing anything. The spellings are accepted as input;
+  # only the constructed object has to conform.
+  it("normalises a legacy hemi spelling on the way in", {
+    for (spelling in c("vermis", "middle", "lh", "rh")) {
+      atlas <- legacy_list_atlas(dk())
+      atlas$core$hemi[1] <- spelling
+
+      result <- as_ggseg_atlas(atlas)
+
+      expect_true(is_ggseg_atlas(result))
+      expect_true(all(
+        atlas_core(result)$hemi %in% c("left", "right", "midline", NA)
+      ))
+    }
+  })
+
+  it("normalises a legacy hemi spelling through atlas_input() too", {
+    atlas <- legacy_list_atlas(dk())
+    atlas$core$hemi[1] <- "vermis"
+
+    expect_true(is_ggseg_atlas(atlas_input(atlas)))
+  })
+
+  it("collapses duplicated core labels on the way in", {
+    atlas <- legacy_list_atlas(dk())
+    atlas$core$label[2] <- atlas$core$label[1]
+
+    expect_warning(
+      result <- as_ggseg_atlas(atlas),
+      class = "ggseg.formats_collapsed_duplicate_labels"
+    )
+    expect_false(any(duplicated(atlas_core(result)$label)))
+  })
+  it("normalises a legacy hemi spelling in an untagged list", {
+    # An untagged list built through the public constructor skipped the
+    # repair, because the constructor must refuse a bad `hemi` from an atlas
+    # author rather than quietly fix it.
+    atlas <- unclass(legacy_list_atlas(dk()))
+    atlas$core$hemi[1] <- "vermis"
+
+    result <- as_ggseg_atlas(atlas)
+
+    expect_true(is_ggseg_atlas(result))
+    expect_false("vermis" %in% atlas_core(result)$hemi)
+  })
+})
+
+
 describe("as_ggseg_atlas.ggseg_atlas", {
   it("converts legacy structure with separate sf/vertices fields", {
     skip_if_not_installed("sf")

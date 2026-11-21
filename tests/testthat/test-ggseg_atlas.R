@@ -825,3 +825,23 @@ describe("as.data.frame with legacy data structure", {
     expect_true("lh_frontal" %in% df$label)
   })
 })
+
+describe("as.list() keeps the build record", {
+  it("round-trips provenance through the legacy list recipe", {
+    # `structure(as.list(a), class = ...)` is the documented way to make a
+    # legacy copy, so a dropped `provenance` is lost for good.
+    record <- list(pipeline = "mine", created = "2026-01-01")
+    atlas <- set_atlas_provenance(dk(), record)
+
+    legacy <- legacy_list_atlas(atlas)
+
+    expect_identical(atlas_provenance(as_ggseg_atlas(legacy)), record)
+  })
+
+  it("stays five slots for an atlas with no provenance", {
+    expect_named(
+      as.list(dk()),
+      c("atlas", "type", "palette", "core", "data")
+    )
+  })
+})

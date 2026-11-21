@@ -1530,10 +1530,17 @@ rebuild_data_with_geom <- function(data, geom, keep_row = NULL) {
       )
     }
   } else if (!is.null(atlas_slot(data, "meshes"))) {
-    ggseg_data_subcortical(
-      geom = geom,
-      meshes = filt(atlas_slot(data, "meshes"))
-    )
+    if (inherits(data, "ggseg_data_wm")) {
+      ggseg_data_wm(
+        geom = geom,
+        meshes = filt(atlas_slot(data, "meshes"))
+      )
+    } else {
+      ggseg_data_subcortical(
+        geom = geom,
+        meshes = filt(atlas_slot(data, "meshes"))
+      )
+    }
   } else if (!is.null(atlas_slot(data, "centerlines"))) {
     ggseg_data_tract(
       geom = geom,
@@ -1693,7 +1700,7 @@ view_reorder_poly <- function(atlas, order, gap) {
     return(atlas)
   }
   current_views <- unique(
-    polygons_unnest(data_poly(atlas_slot(atlas, "data")))$view
+    polygons_unnest(data_poly(atlas_slot(atlas, "data")))[["view"]]
   )
 
   # As in the sf path: views the request omits are appended, so an empty
@@ -1748,7 +1755,7 @@ views_from_data <- function(data) {
     return(unique(data_sf(data)$view))
   }
   if (!is.null(data_poly(data))) {
-    return(unique(polygons_unnest(data_poly(data))$view))
+    return(unique(polygons_unnest(data_poly(data))[["view"]]))
   }
   NULL
 }

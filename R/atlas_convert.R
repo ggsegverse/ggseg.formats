@@ -476,8 +476,7 @@ assemble_legacy_atlas <- function(setup, result, original_palette) {
   core <- fill_legacy_core_display(
     atlas_slot(result, "core") %||% atlas_slot(setup, "core")
   )
-  core <- normalise_legacy_hemi(core)
-  core <- dedupe_legacy_core_labels(core, setup$atlas_name)
+  core <- repair_legacy_core(core, setup$atlas_name)
   palette <- resolve_legacy_palette(
     atlas_slot(result, "palette") %||% atlas_slot(setup, "palette"),
     original_palette,

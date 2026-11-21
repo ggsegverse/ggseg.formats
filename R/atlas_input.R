@@ -22,6 +22,11 @@
 #' It is a no-op on an atlas that is already current, so the cost falls on the
 #' objects that need it.
 #'
+#' It is quiet about the upgrade itself. Two things still get through, both
+#' worth hearing: converting a pre-2.0 `brain_atlas` deprecation-warns once
+#' per session, and repairing a published atlas -- collapsing duplicated
+#' labels -- warns about what it changed.
+#'
 #' @param atlas An atlas, in any representation.
 #' @param arg The argument name to blame in an error. Defaults to the caller's.
 #' @param call The environment to attribute the error to.

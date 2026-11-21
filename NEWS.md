@@ -11,6 +11,20 @@
 
 ## Breaking changes
 
+- A published 2.x atlas that ships a legacy `hemi` spelling upgrades again.
+  `as_ggseg_atlas()` repaired `core` on one of its two paths only, so six
+  atlas objects in four packages -- three cerebellar atlases in ggsegCraddock,
+  one in ggsegMcalt, `aal3_cerebellum` in ggsegAal, and ggsegDemoatlas --
+  stopped converting at all.
+- `set_atlas_geom()` on a pre-2.0 atlas no longer discards the write. The
+  geometry it wrote was shadowed by the atlas's own top-level `sf`, which won
+  back at the next coercion.
+- A `wm` atlas can no longer be built with a subcortical payload. S7 runs the
+  validator while a two-level subclass still carries its parent's class, so
+  the type it checked against was the parent's.
+- `as.list()` keeps `provenance`, which the documented legacy-copy recipe
+  `structure(as.list(a), class = ...)` was dropping.
+- Requires R >= 4.2, which is S7 1.0.0's own floor.
 - Every atlas records the schema version it was built against.
   `atlas_schema()` reads it, `atlas_schema_version()` is what the installed
   package builds, and `as_ggseg_atlas()` upgrades a stale one by rebuilding it
@@ -38,9 +52,9 @@
   converted without rebuilding it.
 - The closed `hemi` vocabulary is now an invariant of the class, not only a
   check in the constructor: an atlas cannot be assigned a `hemi` outside
-  `left`/`right`/`midline`/`NA` at any point. The bundled MCALT cerebellar
-  atlas once shipped with `hemi == "vermis"` and was refused by both renderers
-  at draw time; that is now unreachable.
+  `left`/`right`/`midline`/`NA` at any point. The legacy spellings -- `vermis`,
+  `middle`, `lh`, `rh` -- are still accepted as *input* and normalised on the
+  way in, which is what keeps the published atlases that ship them loading.
 - `set_atlas_name()`, `set_atlas_geom()` and `set_atlas_core()` are new, and
   `has_atlas_geom()`, `has_atlas_vertices()`, `has_atlas_meshes()`,
   `has_atlas_centerlines()` and `has_atlas_3d()` answer which geometry an
@@ -67,9 +81,12 @@
   the `S3method()` directive lands in the package's own method table and never
   reaches base's, where dispatch looks. `plot()` on a published atlas fell
   through to `plot.default()` and failed; `print()` dumped 520 lines of raw
-  list where it had shown a 22-line summary. The base generics are now served
-  by plain S3 methods alone, with the unqualified class tags leading, so one
-  set of methods serves the S7 object and the legacy list identically.
+  list where it had shown a 22-line summary. Every base-generic method is now
+  registered with `S7::method()` in `R/zzz_methods.R`, against both the S7
+  class and the S3 class, so one set of methods serves the S7 object and the
+  legacy list identically. S3 and S7 registrations must not be mixed on one
+  generic: with an S7 method present, an `S3method()` directive for the same
+  generic lands in the package's own method table and `load_all()` aborts.
 - Every setter works on a legacy list atlas again. They reached their slot
   with `@`, which on a tagged list makes R try S4 semantics and fail with
   `"cortical_atlas" is not a defined class`, so five of the six were broken

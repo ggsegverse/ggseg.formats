@@ -185,12 +185,13 @@ set_atlas_geom <- function(atlas, value) {
       "{.arg value} must be an {.cls sf} or {.cls brain_polygons} data frame."
     )
   }
+  # An atlas built before the unified slot keeps geometry in a top-level `sf`
+  # and may have no payload at all. Writing `geom` into that shape leaves the
+  # old `sf` in place to shadow it, and the write is lost at the next
+  # coercion, so upgrade first and write to the one place geometry lives.
+  atlas <- atlas_input(atlas)
   data <- atlas_slot(atlas, "data")
   data$geom <- value
-  # An atlas built before the unified slot keeps geometry in `sf`; leaving it
-  # in place would shadow what was just written, because `atlas_geom()` falls
-  # back to it only when `geom` is absent.
-  data$sf <- NULL
   atlas_slot(atlas, "data") <- data
   atlas
 }

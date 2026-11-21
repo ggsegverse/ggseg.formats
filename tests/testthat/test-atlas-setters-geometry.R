@@ -211,3 +211,31 @@ describe("every setter works on a legacy list atlas", {
     expect_true(is_atlas_class(out))
   })
 })
+
+describe("set_atlas_geom() on a legacy atlas", {
+  it("writes geometry that survives the next coercion", {
+    # A pre-2.0 atlas keeps geometry in a top-level `sf` with no payload at
+    # all. Writing `geom` beside it left the old `sf` to shadow the write,
+    # which then won at the next coercion -- a ggseg.extra pipeline that
+    # smoothed a legacy atlas saved the unsmoothed geometry, silently.
+    a <- dk()
+    geom <- atlas_geom(a)
+    legacy <- structure(
+      list(
+        atlas = "dk",
+        type = "cortical",
+        palette = atlas_palette(a),
+        core = atlas_core(a),
+        sf = geom,
+        vertices = atlas_data(a)$vertices
+      ),
+      class = c("cortical_atlas", "ggseg_atlas", "list")
+    )
+
+    result <- set_atlas_geom(legacy, geom[1:10, ])
+
+    expect_true(is_ggseg_atlas(result))
+    expect_identical(nrow(atlas_geom(result)), 10L)
+    expect_identical(nrow(atlas_geom(as_ggseg_atlas(result))), 10L)
+  })
+})

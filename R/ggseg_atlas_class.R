@@ -170,17 +170,11 @@ atlas_invariant_defect <- function(self) {
 #' `ggseg.formats::cortical_atlas` -- and nothing else, so
 #' `inherits(x, "cortical_atlas")` is false for a perfectly good atlas. Every
 #' renderer, every atlas package's tests and every `is_*_atlas()` predicate
-#' asks exactly that question, so the unqualified tags are prepended to the
-#' class vector. ggplot2 carries `gg` alongside `ggplot2::ggplot` for the same
+#' asks exactly that question, so the unqualified tags lead the class
+#' vector. ggplot2 carries `gg` alongside `ggplot2::ggplot` for the same
 #' reason.
 #'
 #' The tags exist for `inherits()`, and for nothing else.
-#'
-#' An S7 class defined in a package is tagged only with its qualified name --
-#' `ggseg.formats::cortical_atlas` -- so `inherits(x, "cortical_atlas")` is
-#' false for a perfectly good atlas. Every renderer, every atlas package's
-#' tests and every `is_*_atlas()` predicate asks exactly that, so the
-#' unqualified tags are carried too.
 #'
 #' They no longer decide which method runs. The base generics are registered
 #' against both the S7 class and the S3 class, so each representation finds
@@ -214,11 +208,11 @@ atlas_has_slots <- function(x) {
 #' Methods on base generics have to be S7 methods, not S3 methods
 #'
 #' S7 registers its own S3 methods on `print()`, `format()` and friends for
-#' `S7_object`, and `S7_object` sits ahead of the appended unqualified tags in
-#' the class vector. An S3 `print.ggseg_atlas()` is therefore never reached:
-#' S7's generic default wins and dumps every property of a 60 MB atlas to the
-#' console. Registering the same functions as S7 methods puts them back in
-#' charge, and is where they belong once the class is S7 anyway.
+#' `S7_object`, which sits ahead of the unqualified tags in the class vector,
+#' so S7's default wins and dumps every property of a 60 MB atlas. Registering
+#' them as S7 methods puts them back in charge -- and it has to be all of
+#' them: a package that registers an S7 method and an `S3method()` on the same
+#' generic breaks `load_all()`. See `R/zzz_methods.R`.
 #' @noRd
 NULL
 

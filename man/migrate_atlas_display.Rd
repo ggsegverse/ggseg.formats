@@ -29,6 +29,8 @@ safe to run over a whole library.
 }
 \examples{
 atlas <- dk()
-atlas@core$display <- NULL
+core <- atlas_core(atlas)
+core$display <- NULL
+atlas <- set_atlas_core(atlas, core)
 atlas_display(migrate_atlas_display(atlas))[1:3]
 }
