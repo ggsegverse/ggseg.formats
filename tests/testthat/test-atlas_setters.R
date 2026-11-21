@@ -58,8 +58,21 @@ describe("set_atlas_type", {
   })
 
   it("is idempotent when the type is unchanged", {
+    # Compared slot by slot rather than whole. From S7 1.0.0 an object carries
+    # a shared *reference* to its class, so two atlases built separately from
+    # the same class are never `identical()` however equal their contents --
+    # the reference is an environment. Whole-object identity is not a claim
+    # S7 supports, and asserting it tests the object system rather than the
+    # setter.
     a <- aseg()
-    expect_identical(set_atlas_type(a, atlas_type(a)), a)
+    b <- set_atlas_type(a, atlas_type(a))
+
+    expect_identical(atlas_name(b), atlas_name(a))
+    expect_identical(atlas_type(b), atlas_type(a))
+    expect_identical(as.data.frame(atlas_core(b)), as.data.frame(atlas_core(a)))
+    expect_identical(atlas_palette(b), atlas_palette(a))
+    expect_identical(atlas_data(b), atlas_data(a))
+    expect_identical(class(b), class(a))
   })
 
   it("errors when the payload does not match the requested type", {

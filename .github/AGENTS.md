@@ -112,6 +112,29 @@ resolves methods for base generics through `class(x)[1]`, so a leading
 unqualified tag makes that lookup miss and `print()` falls back to dumping
 every property.
 
+### Base generics are S3 methods, and that is on purpose
+
+The base generics an atlas answers -- `print()`, `plot()`, `as.list()`,
+`as.data.frame()`, `names()` -- are plain S3 methods, with the unqualified
+class tags leading the class vector so an S7 atlas reaches them before S7's
+own defaults. A legacy list atlas carries the same tags and reaches the same
+method.
+
+They are *not* S7 methods, and the reason is a tooling one rather than a
+design one. S7 1.0.0 does allow `method(print, new_S3_class("ggseg_atlas"))`,
+which would let one mechanism serve both representations -- but registering
+an S7 method on a base generic leaves an `<S7_generic_sentinel>` in the
+namespace, and `pkgload`'s unregister path calls `rlang::fn_env()` on every
+generic it finds. `devtools::load_all()` and `testthat::test_local()` then
+abort with "`fn` must be a function, not a <S7_generic_sentinel> object".
+Verified against S7 1.0.0 and pkgload 1.5.3, which is the current release.
+The installed package is unaffected; it is the dev workflow that breaks.
+
+Revisit when pkgload handles the sentinel. Until then, do not register an S7
+method on a base generic in this package, and do not mix the two mechanisms
+on one generic -- with an S7 method present, an `S3method()` directive lands
+in this package's own table and never reaches base's, which fails silently.
+
 ### Bump the schema version when stored atlases go stale
 
 A serialized S7 atlas carries a frozen copy of its class. Add a property and

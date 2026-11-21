@@ -52,6 +52,10 @@
   two are keyed on the same labels and the validator spans properties. It also
   keeps S7 an implementation detail: an atlas-editing package no longer needs
   `Imports: S7` to make a paired edit.
+- Requires S7 >= 1.0.0. The 1.0.0 release stores a shared reference to a
+  class rather than copying it into every object, which makes a serialized
+  atlas dramatically smaller -- a toy object that took ~152 KB under 0.2.2
+  takes about 1 KB.
 - `atlas_input()` is the one call a function should make on an atlas it was
   handed: it answers for every representation an atlas arrives in and returns
   the current one, so downstream code has a single kind of object to reason
