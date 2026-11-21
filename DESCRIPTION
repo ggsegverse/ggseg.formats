@@ -1,6 +1,6 @@
 Package: ggseg.formats
 Title: Brain Atlas Data Structures for the 'ggsegverse' Ecosystem
-Version: 0.0.4.9029
+Version: 0.0.4.9032
 Authors@R:
     c(person("Athanasia Mo", "Mowinckel", , "a.m.mowinckel@psykologi.uio.no",
              role = c("aut", "cre"),
@@ -14,11 +14,12 @@ Description: Provides the 'ggseg_atlas' S3 class used across the 'ggsegverse'
     includes readers for 'FreeSurfer' statistics files.
 License: MIT + file LICENSE
 Depends: 
-    R (>= 4.1.0)
+    R (>= 4.2.0)
 Imports:
     cli,
     lifecycle,
     rlang,
+    S7 (>= 1.0.0),
     sfheaders
 Suggests:
     covr,

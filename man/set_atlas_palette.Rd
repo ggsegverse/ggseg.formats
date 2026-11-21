@@ -9,7 +9,8 @@ set_atlas_palette(atlas, value)
 \arguments{
 \item{atlas}{a \code{ggseg_atlas} object}
 
-\item{value}{Named character vector of colours keyed by atlas \code{label}.}
+\item{value}{Named character vector of colours keyed by atlas \code{label},
+or \code{NULL} to clear the palette.}
 }
 \value{
 The \code{ggseg_atlas} with its palette replaced.
@@ -29,6 +30,9 @@ a <- set_atlas_palette(a, setNames(grDevices::rainbow(length(labs)), labs))
 \code{\link[=atlas_palette]{atlas_palette()}} to read the palette.
 
 Other atlas setters:
+\code{\link[=set_atlas_core]{set_atlas_core()}},
+\code{\link[=set_atlas_geom]{set_atlas_geom()}},
+\code{\link[=set_atlas_name]{set_atlas_name()}},
 \code{\link[=set_atlas_type]{set_atlas_type()}}
 }
 \concept{atlas setters}

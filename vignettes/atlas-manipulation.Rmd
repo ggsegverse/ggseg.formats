@@ -235,7 +235,8 @@ network_info <- data.frame(
   network = "default mode"
 )
 enriched <- atlas_core_add(dk(), network_info)
-enriched$core[!is.na(enriched$core$network), c("region", "network")]
+core <- atlas_core(enriched)
+core[!is.na(core$network), c("region", "network")]
 ```
 
 The `by` argument defaults to `"region"` but you can join on any shared column.

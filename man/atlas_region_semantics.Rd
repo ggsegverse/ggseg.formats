@@ -38,23 +38,28 @@ atlas_region_semantics(aseg())
 Other atlas accessors:
 \code{\link[=atlas_centerlines]{atlas_centerlines()}},
 \code{\link[=atlas_context]{atlas_context()}},
+\code{\link[=atlas_core]{atlas_core()}},
+\code{\link[=atlas_data]{atlas_data()}},
 \code{\link[=atlas_display]{atlas_display()}},
 \code{\link[=atlas_geom]{atlas_geom()}},
 \code{\link[=atlas_geometry_type]{atlas_geometry_type()}},
 \code{\link[=atlas_hemi]{atlas_hemi()}},
 \code{\link[=atlas_labels]{atlas_labels()}},
 \code{\link[=atlas_meshes]{atlas_meshes()}},
+\code{\link[=atlas_name]{atlas_name()}},
 \code{\link[=atlas_palette]{atlas_palette()}},
 \code{\link[=atlas_plot_palette]{atlas_plot_palette()}},
 \code{\link[=atlas_polygons]{atlas_polygons()}},
 \code{\link[=atlas_provenance]{atlas_provenance()}},
 \code{\link[=atlas_regions]{atlas_regions()}},
+\code{\link[=atlas_schema_version]{atlas_schema_version()}},
 \code{\link[=atlas_sf]{atlas_sf()}},
 \code{\link[=atlas_type]{atlas_type()}},
 \code{\link[=atlas_undrawn]{atlas_undrawn()}},
 \code{\link[=atlas_vertices]{atlas_vertices()}},
 \code{\link[=atlas_views]{atlas_views()}},
 \code{\link[=atlas_views_empty]{atlas_views_empty()}},
+\code{\link{has_atlas_geometry}},
 \code{\link[=legacy_region_map]{legacy_region_map()}}
 }
 \concept{atlas accessors}

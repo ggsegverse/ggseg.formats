@@ -3,7 +3,7 @@ describe("as_polygon_atlas()", {
     poly <- as_polygon_atlas(dk())
     expect_true(is_atlas_polygon(poly))
     expect_s3_class(atlas_geom(poly), "brain_polygons")
-    expect_null(poly$data$sf)
+    expect_null(atlas_data(poly)$sf)
   })
 
   it("leaves a polygon atlas unchanged", {

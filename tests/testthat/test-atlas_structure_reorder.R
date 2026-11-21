@@ -48,7 +48,7 @@ describe("atlas_structure_reorder()", {
     region <- unique(atlas_regions(a))[1]
     out <- atlas_structure_reorder(a, region, match_on = "region")
 
-    moved <- a$core$label[a$core$region == region]
+    moved <- atlas_core(a)$label[atlas_core(a)$region == region]
     expect_setequal(utils::head(drawn(out), length(moved)), moved)
   })
 
@@ -56,7 +56,7 @@ describe("atlas_structure_reorder()", {
     a <- aseg()
     out <- atlas_structure_reorder(a, drawn(a)[2], .after = drawn(a)[4])
 
-    expect_identical(out$core, a$core)
+    expect_identical(atlas_core(out), atlas_core(a))
     expect_identical(atlas_palette(out), atlas_palette(a))
     expect_identical(atlas_type(out), atlas_type(a))
     expect_setequal(drawn(out), drawn(a))
@@ -100,10 +100,10 @@ describe("atlas_structure_reorder()", {
 
   it("errors when a structure has no geometry", {
     a <- aseg()
-    ghost <- a$core[1, ]
+    ghost <- atlas_core(a)[1, ]
     ghost$label <- "ghost"
     ghost$region <- "ghost"
-    a$core <- rbind(a$core, ghost)
+    a@core <- rbind(atlas_core(a), ghost)
     expect_snapshot(atlas_structure_reorder(a, "ghost"), error = TRUE)
   })
 

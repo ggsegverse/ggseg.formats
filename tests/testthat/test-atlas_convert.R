@@ -56,7 +56,7 @@ describe("convert_legacy_brain_atlas", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_identical(result$atlas, "test")
+    expect_identical(atlas_name(result), "test")
   })
 
   it("runs successfully with valid 3D atlas containing vertices", {
@@ -91,8 +91,8 @@ describe("convert_legacy_brain_atlas", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_identical(result$atlas, "test")
-    expect_true("vertices" %in% names(result$data$vertices))
+    expect_identical(atlas_name(result), "test")
+    expect_true("vertices" %in% names(atlas_data(result)$vertices))
   })
 
   it("uses custom atlas_name when provided", {
@@ -126,7 +126,7 @@ describe("convert_legacy_brain_atlas", {
       "Using existing vertex data"
     )
 
-    expect_identical(result$atlas, "custom_name")
+    expect_identical(atlas_name(result), "custom_name")
   })
 
   it("handles subcortical type with mesh data", {
@@ -168,7 +168,7 @@ describe("convert_legacy_brain_atlas", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_identical(result$type, "subcortical")
+    expect_identical(atlas_type(result), "subcortical")
   })
 
   it("converts legacy 2D atlas without core", {
@@ -209,7 +209,7 @@ describe("convert_legacy_brain_atlas", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_identical(result$atlas, "old_atlas")
+    expect_identical(atlas_name(result), "old_atlas")
   })
 
   it("extracts 2D geometry from the data slot when available", {
@@ -321,8 +321,8 @@ describe("convert_legacy_brain_atlas", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_false(is.null(result$data$meshes))
-    mesh <- result$data$meshes$mesh[[1]]
+    expect_false(is.null(atlas_data(result)$meshes))
+    mesh <- atlas_data(result)$meshes$mesh[[1]]
     expect_identical(mesh$vertices$x, c(1, 4, 7))
   })
 })
@@ -442,7 +442,7 @@ describe("convert_legacy_brain_atlas 2D-only path", {
       "Created atlas from 2D only"
     )
     expect_s3_class(result, "ggseg_atlas")
-    expect_null(result$data$vertices)
+    expect_null(atlas_data(result)$vertices)
   })
 
   it("extracts meshes with non-rgl format", {
@@ -474,7 +474,7 @@ describe("convert_legacy_brain_atlas 2D-only path", {
       ),
       "Extracted meshes"
     )
-    mesh <- result$data$meshes$mesh[[1]]
+    mesh <- atlas_data(result)$meshes$mesh[[1]]
     expect_identical(mesh$vertices$x, 1:5)
     expect_identical(mesh$faces$i, 1:2)
   })
@@ -820,8 +820,8 @@ describe("convert_legacy_brain_atlas palette remap", {
       result <- convert_legacy_brain_atlas(atlas_2d = old_atlas),
       "Using existing vertex data from 2D atlas"
     )
-    expect_true("lh_frontal" %in% names(result$palette))
-    expect_true("lh_parietal" %in% names(result$palette))
+    expect_true("lh_frontal" %in% names(atlas_palette(result)))
+    expect_true("lh_parietal" %in% names(atlas_palette(result)))
   })
 })
 

@@ -136,3 +136,44 @@ describe("ggseg_data_wm()", {
     expect_error(ggseg_data_wm(), "At least one of")
   })
 })
+
+describe("a wm atlas cannot be built invalid", {
+  it("refuses a subcortical payload at construction", {
+    # `wm_atlas` sits under `subcortical_atlas`, and S7 runs the validator
+    # while the two-level subclass is still stamped with its parent -- so the
+    # `type` the validator computed was "subcortical" and a wm atlas carrying
+    # a subcortical payload was constructed, invalid the moment it existed.
+    expect_error(
+      ggseg.formats:::new_ggseg_atlas(
+        "x",
+        "wm",
+        NULL,
+        atlas_core(aseg()),
+        atlas_data(aseg()),
+        NULL
+      )
+    )
+  })
+
+  it("keeps the wm payload through a geometry verb", {
+    # `rebuild_data_with_geom()` sniffs which slots are filled, so a wm
+    # payload came back as `ggseg_data_subcortical` and the atlas no longer
+    # validated -- with the validator now running, that would be a hard error
+    # out of every view and region verb.
+    atlas <- ggseg_atlas(
+      atlas = "wmtest",
+      type = "wm",
+      core = atlas_core(aseg()),
+      palette = atlas_palette(aseg()),
+      data = ggseg_data_wm(
+        geom = atlas_data(aseg())$geom,
+        meshes = atlas_data(aseg())$meshes
+      )
+    )
+
+    result <- atlas_view_gather(atlas)
+
+    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+    expect_true(is_ggseg_atlas(result))
+  })
+})

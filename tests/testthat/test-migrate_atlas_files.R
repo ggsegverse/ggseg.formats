@@ -23,7 +23,7 @@ describe("migrate_atlas_files()", {
     env <- new.env()
     load(file.path(dir, "atlas.rda"), envir = env)
     expect_s3_class(atlas_geom(env$atlas), "brain_polygons")
-    expect_null(env$atlas$data$sf)
+    expect_null(atlas_data(env$atlas)$sf)
   })
 
   it("stores geometry as sf when keep_sf = TRUE", {
@@ -108,7 +108,7 @@ describe("migrate_atlas_files() column-loss guard", {
   # Built with sfheaders, so the guard itself is testable without sf.
   sf_atlas_with_reserved_column <- function() {
     atlas <- as_sf_atlas(dk())
-    atlas$data$geom$group <- 1L
+    atlas@data$geom$group <- 1L
     atlas
   }
 
@@ -156,7 +156,7 @@ describe("migrate_atlas_files() column-loss guard", {
     atlas <- as_polygon_atlas(dk())
     geom <- atlas_geom(atlas)
     geom$geometry[[1]]$myannot <- c("a", rep("b", nrow(geom$geometry[[1]]) - 1))
-    atlas$data$geom <- geom
+    atlas@data$geom <- geom
     save(atlas, file = file.path(dir, "atlas.rda"))
 
     expect_error(
@@ -173,7 +173,7 @@ describe("migrate_atlas_files() column-loss guard", {
       g$myannot <- "a"
       g
     })
-    atlas$data$geom <- geom
+    atlas@data$geom <- geom
     save(atlas, file = file.path(dir, "atlas.rda"))
 
     expect_no_warning(

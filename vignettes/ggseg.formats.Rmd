@@ -48,43 +48,50 @@ you see the core table, the single source of truth for region identity.
 
 ## Anatomy of an atlas
 
-This section reaches into the five slots with `$` on purpose: its subject is
-the object layout, and `$` is the only way to show it. Everywhere else, use the
-accessors in [Querying an atlas](#querying-an-atlas) — they are the supported
-interface and keep working when the layout changes.
+An atlas is an S7 object with five parts, and every one of them has an
+accessor.
+Reach for the accessor rather than the part: it answers the question you
+actually have, it works on atlases built by older releases as well as this
+one, and it keeps working if the object is ever laid out differently.
+`$` is not part of the interface — `dk()$core` is an error, not a slot read.
 
 ```{r}
 #| label: atlas-slots
-dk()$atlas
-dk()$type
+atlas_name(dk())
+atlas_type(dk())
 ```
 
-`$atlas` is a short name (used to look up atlases by string) and `$type` is one
-of the values `atlas_types()` returns: `"cortical"`, `"subcortical"`,
-`"tract"`, or `"cerebellar"`.
+`atlas_name()` is the short name an atlas is published and looked up under, and
+`atlas_type()` is one of the values `atlas_types()` returns: `"cortical"`,
+`"subcortical"`, `"tract"`, `"cerebellar"` or `"wm"`.
+The type is not stored separately from the class — it is read off it, so the
+two cannot disagree.
 
-The `$palette` is a named character vector mapping labels to hex colours:
+`atlas_palette()` is a named character vector mapping labels to hex colours:
 
 ```{r}
 #| label: palette
-head(dk()$palette)
+head(atlas_palette(dk()))
 ```
 
-`$core` is a data frame with one row per region. It always has `region` and
-`label` columns, and will often include `hemi` and additional metadata like
-`lobe` or `structure`:
+`atlas_core()` is a data frame with one row per region.
+It always has `region` and `label` columns, and will often include `hemi` and
+additional metadata like `lobe` or `structure`:
 
 ```{r}
 #| label: core
-head(dk()$core)
+head(atlas_core(dk()))
 ```
 
-Finally, `$data` is a `ggseg_atlas_data` object that holds the actual geometry.
-Its contents depend on the atlas type.
+Finally `atlas_data()` returns the `ggseg_atlas_data` object holding the
+geometry.
+Its contents depend on the atlas type, and in practice you want one of the
+geometry accessors — `atlas_geom()`, `atlas_vertices()`, `atlas_meshes()` —
+rather than the payload itself.
 
 ```{r}
 #| label: data-class
-class(dk()$data)
+class(atlas_data(dk()))
 ```
 
 ## Three atlas types
@@ -97,8 +104,8 @@ for 3D:
 
 ```{r}
 #| label: cortical-type
-dk()$type
-names(dk()$data)
+atlas_type(dk())
+names(atlas_data(dk()))
 ```
 
 **Subcortical** atlases like `aseg` represent deep brain structures. Their data
@@ -106,8 +113,8 @@ is a `ggseg_data_subcortical` with sf polygons and individual 3D meshes:
 
 ```{r}
 #| label: subcortical-type
-aseg()$type
-names(aseg()$data)
+atlas_type(aseg())
+names(atlas_data(aseg()))
 ```
 
 **Tract** atlases like `tracula` represent white matter bundles. Their data is a
@@ -115,8 +122,8 @@ names(aseg()$data)
 
 ```{r}
 #| label: tract-type
-tracula()$type
-names(tracula()$data)
+atlas_type(tracula())
+names(atlas_data(tracula()))
 ```
 
 In every case the sf component drives 2D plotting and the type-specific component
@@ -124,7 +131,7 @@ In every case the sf component drives 2D plotting and the type-specific componen
 
 ## Core: the region table
 
-The `$core` data frame is the single source of truth for what regions an atlas
+The core table is the single source of truth for what regions an atlas
 contains. Every manipulation function updates core first and then propagates
 changes to geometry and palette.
 
@@ -134,7 +141,7 @@ curated long-form display name). Most atlases also carry `hemi`:
 
 ```{r}
 #| label: core-structure
-str(dk()$core)
+str(atlas_core(dk()))
 ```
 
 Some atlases include additional metadata columns. The `dk` atlas, for instance,
@@ -142,7 +149,7 @@ has `lobe`:
 
 ```{r}
 #| label: core-lobe
-unique(dk()$core$lobe)
+unique(atlas_core(dk())$lobe)
 ```
 
 You can add your own metadata with `atlas_core_add()` (covered in the
@@ -281,5 +288,5 @@ is_ggseg_atlas(recovered)
 ```
 
 If you have an atlas object from an older version of ggseg that stored sf data
-directly in `$data` instead of using the new `ggseg_atlas_data` wrapper,
+directly in the data slot instead of using the `ggseg_atlas_data` wrapper,
 `convert_legacy_brain_atlas()` will migrate it to the unified format.

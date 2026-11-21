@@ -106,20 +106,20 @@ migrate_atlas_object <- function(obj, keep_sf) {
   if (!is_atlas_for_migration(obj)) {
     return(NULL)
   }
-  geom <- geom_from_data(obj$data)
+  geom <- geom_from_data(atlas_slot(obj, "data"))
   if (is.null(geom)) {
     return(NULL)
   }
   target <- migration_target_geom(geom, keep_sf)
-  already_migrated <- identical(obj$data$geom, target) &&
-    is.null(obj$data$sf) &&
-    is.null(obj$data$polygons)
+  already_migrated <- identical(atlas_slot(obj, "data")$geom, target) &&
+    is.null(atlas_slot(obj, "data")$sf) &&
+    is.null(atlas_slot(obj, "data")$polygons)
   if (already_migrated) {
     return(NULL)
   }
-  obj$data$geom <- target
-  obj$data$sf <- NULL
-  obj$data$polygons <- NULL
+  atlas_slot(obj, "data")$geom <- target
+  atlas_slot(obj, "data")$sf <- NULL
+  atlas_slot(obj, "data")$polygons <- NULL
   obj
 }
 
@@ -161,9 +161,9 @@ migrate_rda_file <- function(f, keep_sf, force = FALSE) {
 #' @keywords internal
 is_atlas_for_migration <- function(x) {
   is_atlas_class(x) &&
-    is.list(x) &&
-    !is.null(x$data) &&
-    is.list(x$data)
+    atlas_has_slots(x) &&
+    !is.null(atlas_slot(x, "data")) &&
+    is.list(atlas_slot(x, "data"))
 }
 
 
@@ -176,7 +176,7 @@ migration_lost_columns <- function(obj, keep_sf) {
   if (!is_atlas_for_migration(obj)) {
     return(character())
   }
-  geom <- geom_from_data(obj$data)
+  geom <- geom_from_data(atlas_slot(obj, "data"))
   if (is.null(geom)) {
     return(character())
   }

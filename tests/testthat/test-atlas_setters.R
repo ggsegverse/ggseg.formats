@@ -39,25 +39,40 @@ describe("set_atlas_type", {
     b <- set_atlas_type(a, "tract")
     expect_identical(atlas_type(b), "tract")
     expect_true(is_tract_atlas(b))
-    expect_identical(class(b)[1], "tract_atlas")
+    expect_true(inherits(b, "tract_atlas"))
   })
 
   it("keeps the ggseg_atlas class and ordering intact", {
     b <- set_atlas_type(tracula(), "tract")
-    expect_s3_class(b, c("tract_atlas", "ggseg_atlas", "list"), exact = TRUE)
+    expect_true(inherits(b, "tract_atlas"))
+    expect_true(inherits(b, "ggseg_atlas"))
+    expect_true(is_tract_atlas(b))
   })
 
   it("leaves every other atlas component untouched", {
     a <- tracula()
     b <- set_atlas_type(a, "tract")
-    expect_identical(b$core, a$core)
+    expect_identical(atlas_core(b), atlas_core(a))
     expect_identical(atlas_palette(b), atlas_palette(a))
-    expect_identical(b$data, a$data)
+    expect_identical(atlas_data(b), atlas_data(a))
   })
 
   it("is idempotent when the type is unchanged", {
+    # Compared slot by slot rather than whole. From S7 1.0.0 an object carries
+    # a shared *reference* to its class, so two atlases built separately from
+    # the same class are never `identical()` however equal their contents --
+    # the reference is an environment. Whole-object identity is not a claim
+    # S7 supports, and asserting it tests the object system rather than the
+    # setter.
     a <- aseg()
-    expect_identical(set_atlas_type(a, atlas_type(a)), a)
+    b <- set_atlas_type(a, atlas_type(a))
+
+    expect_identical(atlas_name(b), atlas_name(a))
+    expect_identical(atlas_type(b), atlas_type(a))
+    expect_identical(as.data.frame(atlas_core(b)), as.data.frame(atlas_core(a)))
+    expect_identical(atlas_palette(b), atlas_palette(a))
+    expect_identical(atlas_data(b), atlas_data(a))
+    expect_identical(class(b), class(a))
   })
 
   it("errors when the payload does not match the requested type", {
@@ -102,11 +117,11 @@ describe("atlas provenance", {
   it("is accepted by the constructor and leaves the atlas valid", {
     atlas <- dk()
     rebuilt <- ggseg_atlas(
-      atlas = atlas$atlas,
-      type = atlas$type,
-      core = atlas$core,
-      data = atlas$data,
-      palette = atlas$palette,
+      atlas = atlas_name(atlas),
+      type = atlas_type(atlas),
+      core = atlas_core(atlas),
+      data = atlas_data(atlas),
+      palette = atlas_palette(atlas),
       provenance = record
     )
     expect_true(is_ggseg_atlas(rebuilt))

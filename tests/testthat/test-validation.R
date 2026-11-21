@@ -494,8 +494,8 @@ describe("single-view atlases", {
       expect_true(is_ggseg_atlas(sub), info = view)
       expect_true(is_subcortical_atlas(sub), info = view)
       expect_identical(
-        sort(unique(sub$core$label)),
-        sort(unique(full$core$label)),
+        sort(unique(atlas_core(sub)$label)),
+        sort(unique(atlas_core(full)$label)),
         info = view
       )
       expect_silent(plot(sub))

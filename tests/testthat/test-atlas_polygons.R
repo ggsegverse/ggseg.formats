@@ -304,8 +304,8 @@ describe("as_polygon_atlas() / as_sf_atlas()", {
     poly <- as_polygon_atlas(dk())
     expect_true(is_atlas_polygon(poly))
     expect_s3_class(atlas_geom(poly), "brain_polygons")
-    expect_null(poly$data$sf)
-    expect_null(poly$data$polygons)
+    expect_null(atlas_data(poly)$sf)
+    expect_null(atlas_data(poly)$polygons)
     expect_true(is_ggseg_atlas(poly))
   })
 
@@ -336,9 +336,9 @@ describe("migrate_atlas_files()", {
 
     env <- new.env()
     load(file.path(tmp, "atlas.rda"), envir = env)
-    expect_null(env$atlas$data$sf)
-    expect_null(env$atlas$data$polygons)
-    expect_s3_class(env$atlas$data$geom, "brain_polygons")
+    expect_null(atlas_data(env$atlas)$sf)
+    expect_null(atlas_data(env$atlas)$polygons)
+    expect_s3_class(atlas_data(env$atlas)$geom, "brain_polygons")
   })
 
   it("keep_sf = TRUE stores the geom as sf", {
@@ -350,9 +350,9 @@ describe("migrate_atlas_files()", {
 
     env <- new.env()
     load(file.path(tmp, "atlas.rda"), envir = env)
-    expect_s3_class(env$atlas$data$geom, "sf")
-    expect_null(env$atlas$data$sf)
-    expect_null(env$atlas$data$polygons)
+    expect_s3_class(atlas_data(env$atlas)$geom, "sf")
+    expect_null(atlas_data(env$atlas)$sf)
+    expect_null(atlas_data(env$atlas)$polygons)
   })
 
   it("skips .rda files with no atlas to migrate", {

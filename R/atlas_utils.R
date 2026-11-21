@@ -18,12 +18,12 @@ atlas_regions <- function(x) {
 
 #' @export
 atlas_regions.ggseg_atlas <- function(x) {
-  get_col(x$core, "region")
+  get_col(atlas_slot(x, "core"), "region")
 }
 
 #' @export
 atlas_regions.brain_atlas <- function(x) {
-  get_col(x$core, "region")
+  get_col(atlas_slot(x, "core"), "region")
 }
 
 #' @export
@@ -51,12 +51,12 @@ atlas_labels <- function(x) {
 
 #' @export
 atlas_labels.ggseg_atlas <- function(x) {
-  get_col(x$core, "label")
+  get_col(atlas_slot(x, "core"), "label")
 }
 
 #' @export
 atlas_labels.brain_atlas <- function(x) {
-  get_col(x$core, "label")
+  get_col(atlas_slot(x, "core"), "label")
 }
 
 #' @export
@@ -89,12 +89,12 @@ atlas_hemi <- function(x) {
 
 #' @export
 atlas_hemi.ggseg_atlas <- function(x) {
-  get_col(x$core, "hemi")
+  get_col(atlas_slot(x, "core"), "hemi")
 }
 
 #' @export
 atlas_hemi.brain_atlas <- function(x) {
-  get_col(x$core, "hemi")
+  get_col(atlas_slot(x, "core"), "hemi")
 }
 
 #' @export
@@ -130,12 +130,12 @@ atlas_display <- function(x) {
 
 #' @export
 atlas_display.ggseg_atlas <- function(x) {
-  get_col(x$core, "display")
+  get_col(atlas_slot(x, "core"), "display")
 }
 
 #' @export
 atlas_display.brain_atlas <- function(x) {
-  get_col(x$core, "display")
+  get_col(atlas_slot(x, "core"), "display")
 }
 
 #' @export
@@ -264,38 +264,40 @@ atlas_region_remove <- function(
 ) {
   match_on <- match.arg(match_on)
 
-  match_col <- atlas$core[[match_on]]
+  match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = TRUE)
   keep_mask[is.na(match_col)] <- TRUE
 
   # The pattern is matched against the geometry too, and geometry carries
   # labels that core does not -- context outlines like `cortex_`. Only a
   # pattern that hits neither has done nothing.
-  geom <- geom_from_data(atlas$data)
+  geom <- geom_from_data(atlas_slot(atlas, "data"))
   if (all(keep_mask) && !any(geom_matches_pattern(geom, pattern))) {
     warn_no_region_match(pattern, "Nothing was removed.", atlas)
     return(atlas)
   }
 
-  labels_to_remove <- atlas$core$label[!keep_mask]
+  labels_to_remove <- atlas_slot(atlas, "core")$label[!keep_mask]
 
-  new_core <- atlas$core[keep_mask, , drop = FALSE]
-  new_palette <- atlas$palette[!names(atlas$palette) %in% labels_to_remove]
+  new_core <- atlas_slot(atlas, "core")[keep_mask, , drop = FALSE]
+  new_palette <- atlas_slot(atlas, "palette")[
+    !names(atlas_slot(atlas, "palette")) %in% labels_to_remove
+  ]
 
   new_geom <- geom_drop_pattern(geom, pattern)
   new_data <- rebuild_data_with_geom(
-    atlas$data,
+    atlas_slot(atlas, "data"),
     new_geom,
     keep_row = function(label) !label %in% labels_to_remove
   )
 
   ggseg_atlas(
-    atlas = atlas$atlas,
-    type = atlas$type,
+    atlas = atlas_slot(atlas, "atlas"),
+    type = atlas_slot(atlas, "type"),
     palette = new_palette,
     core = new_core,
     data = new_data,
-    provenance = atlas$provenance
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -316,7 +318,7 @@ atlas_region_contextual <- function(
 ) {
   match_on <- match.arg(match_on)
 
-  match_col <- atlas$core[[match_on]]
+  match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = ignore.case)
   keep_mask[is.na(match_col)] <- TRUE
 
@@ -325,10 +327,12 @@ atlas_region_contextual <- function(
     return(atlas)
   }
 
-  labels_to_remove <- atlas$core$label[!keep_mask]
+  labels_to_remove <- atlas_slot(atlas, "core")$label[!keep_mask]
 
-  new_core <- atlas$core[keep_mask, , drop = FALSE]
-  new_palette <- atlas$palette[!names(atlas$palette) %in% labels_to_remove]
+  new_core <- atlas_slot(atlas, "core")[keep_mask, , drop = FALSE]
+  new_palette <- atlas_slot(atlas, "palette")[
+    !names(atlas_slot(atlas, "palette")) %in% labels_to_remove
+  ]
 
   # Draw contextual regions behind core regions: 2D geometry renders in row
   # order, so move every row whose label is no longer in core (the regions
@@ -336,9 +340,12 @@ atlas_region_contextual <- function(
   # ahead of the core rows. This keeps focus regions on top where context
   # structures spatially overlap them in projection. `order_context_behind()`
   # works on either geometry representation without invoking sf.
-  new_geom <- order_context_behind(geom_from_data(atlas$data), new_core$label)
+  new_geom <- order_context_behind(
+    geom_from_data(atlas_slot(atlas, "data")),
+    new_core$label
+  )
   new_data <- rebuild_data_with_geom(
-    atlas$data,
+    atlas_slot(atlas, "data"),
     new_geom,
     keep_row = function(label) !label %in% labels_to_remove
   )
@@ -346,12 +353,12 @@ atlas_region_contextual <- function(
   validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
 
   new_ggseg_atlas(
-    atlas$atlas,
-    atlas$type,
+    atlas_slot(atlas, "atlas"),
+    atlas_slot(atlas, "type"),
     new_palette,
     new_core,
     new_data,
-    atlas$provenance
+    atlas_slot(atlas, "provenance")
   )
 }
 
@@ -392,19 +399,19 @@ atlas_region_op <- function(
     cli::cli_abort("{.arg into} must be a single label for the result region.")
   }
 
-  resolved <- region_op_sf_data(atlas$data)
+  resolved <- region_op_sf_data(atlas_slot(atlas, "data"))
   sf_data <- resolved$sf_data
   was_polygon_only <- resolved$was_polygon_only
 
   x_labels <- region_op_labels(
     resolve_label_pattern(x, atlas),
-    atlas$core,
+    atlas_slot(atlas, "core"),
     sf_data,
     match_on
   )
   y_labels <- region_op_labels(
     resolve_label_pattern(y, atlas),
-    atlas$core,
+    atlas_slot(atlas, "core"),
     sf_data,
     match_on
   )
@@ -423,9 +430,14 @@ atlas_region_op <- function(
 
   new_sf <- rbind(sf_data[sf_data$label != into, , drop = FALSE], result)
 
-  meta <- add_op_region_meta(atlas$core, atlas$palette, into, colour)
-  new_core <- meta$core
-  new_palette <- meta$palette
+  meta <- add_op_region_meta(
+    atlas_slot(atlas, "core"),
+    atlas_slot(atlas, "palette"),
+    into,
+    colour
+  )
+  new_core <- atlas_slot(meta, "core")
+  new_palette <- atlas_slot(meta, "palette")
 
   # Context regions (not in core) draw behind core regions; keep that order.
   new_sf <- order_context_behind(new_sf, new_core$label)
@@ -433,15 +445,15 @@ atlas_region_op <- function(
   # Convert the sf result back to polygons so a polygon-only atlas keeps its
   # original representation (the op rehydrates to sf only for the GEOS engine).
   new_geom <- if (was_polygon_only) sf_to_polygons(new_sf) else new_sf
-  new_data <- rebuild_data_with_geom(atlas$data, new_geom)
+  new_data <- rebuild_data_with_geom(atlas_slot(atlas, "data"), new_geom)
   validate_data_labels(new_data, new_core, report_2d_coverage = FALSE)
   new_ggseg_atlas(
-    atlas$atlas,
-    atlas$type,
+    atlas_slot(atlas, "atlas"),
+    atlas_slot(atlas, "type"),
     new_palette,
     new_core,
     new_data,
-    atlas$provenance
+    atlas_slot(atlas, "provenance")
   )
 }
 
@@ -455,17 +467,21 @@ atlas_region_op <- function(
 #' @export
 #' @family atlas manipulations
 atlas_context_remove <- function(atlas) {
-  if (is.null(data_sf(atlas$data))) {
-    if (is.null(data_poly(atlas$data))) {
+  if (is.null(data_sf(atlas_slot(atlas, "data")))) {
+    if (is.null(data_poly(atlas_slot(atlas, "data")))) {
       return(atlas)
     }
-    new_poly <- polygons_keep_labels(data_poly(atlas$data), atlas$core$label)
+    new_poly <- polygons_keep_labels(
+      data_poly(atlas_slot(atlas, "data")),
+      atlas_slot(atlas, "core")$label
+    )
     return(atlas_view_gather(set_atlas_polygons(atlas, new_poly)))
   }
 
   require_sf("atlas_context_remove()")
-  keep_mask <- data_sf(atlas$data)$label %in% atlas$core$label
-  new_sf <- data_sf(atlas$data)[keep_mask, , drop = FALSE]
+  keep_mask <- data_sf(atlas_slot(atlas, "data"))$label %in%
+    atlas_slot(atlas, "core")$label
+  new_sf <- data_sf(atlas_slot(atlas, "data"))[keep_mask, , drop = FALSE]
 
   new_data <- rebuild_atlas_data(atlas, new_sf)
   atlas_view_gather(rebuild_atlas(atlas, new_data))
@@ -494,7 +510,7 @@ atlas_region_rename <- function(
 ) {
   match_on <- match.arg(match_on)
 
-  new_core <- atlas$core
+  new_core <- atlas_slot(atlas, "core")
   match_values <- new_core[[match_on]]
   match_mask <- grepl(pattern, match_values, ignore.case = TRUE)
   match_mask[is.na(match_values)] <- FALSE
@@ -509,12 +525,12 @@ atlas_region_rename <- function(
   }
 
   ggseg_atlas(
-    atlas = atlas$atlas,
-    type = atlas$type,
-    palette = atlas$palette,
+    atlas = atlas_slot(atlas, "atlas"),
+    type = atlas_slot(atlas, "type"),
+    palette = atlas_slot(atlas, "palette"),
     core = new_core,
-    data = atlas$data,
-    provenance = atlas$provenance
+    data = atlas_slot(atlas, "data"),
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -527,7 +543,7 @@ atlas_region_rename <- function(
 atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
   match_on <- match.arg(match_on)
 
-  match_col <- atlas$core[[match_on]]
+  match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- grepl(pattern, match_col, ignore.case = TRUE)
   keep_mask[is.na(match_col)] <- FALSE
 
@@ -541,24 +557,26 @@ atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
     )
   }
 
-  labels_to_keep <- atlas$core$label[keep_mask]
+  labels_to_keep <- atlas_slot(atlas, "core")$label[keep_mask]
 
-  new_core <- atlas$core[keep_mask, , drop = FALSE]
-  new_palette <- atlas$palette[names(atlas$palette) %in% labels_to_keep]
+  new_core <- atlas_slot(atlas, "core")[keep_mask, , drop = FALSE]
+  new_palette <- atlas_slot(atlas, "palette")[
+    names(atlas_slot(atlas, "palette")) %in% labels_to_keep
+  ]
 
   new_data <- rebuild_data_with_geom(
-    atlas$data,
-    geom_from_data(atlas$data),
+    atlas_slot(atlas, "data"),
+    geom_from_data(atlas_slot(atlas, "data")),
     keep_row = function(label) label %in% labels_to_keep
   )
 
   ggseg_atlas(
-    atlas = atlas$atlas,
-    type = atlas$type,
+    atlas = atlas_slot(atlas, "atlas"),
+    type = atlas_slot(atlas, "type"),
     palette = new_palette,
     core = new_core,
     data = new_data,
-    provenance = atlas$provenance
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -590,15 +608,15 @@ atlas_core_add <- function(atlas, data, by = "region") {
     ))
   }
 
-  new_core <- df_left_join(atlas$core, data, by = by)
+  new_core <- df_left_join(atlas_slot(atlas, "core"), data, by = by)
 
   ggseg_atlas(
-    atlas = atlas$atlas,
-    type = atlas$type,
-    palette = atlas$palette,
+    atlas = atlas_slot(atlas, "atlas"),
+    type = atlas_slot(atlas, "type"),
+    palette = atlas_slot(atlas, "palette"),
     core = new_core,
-    data = atlas$data,
-    provenance = atlas$provenance
+    data = atlas_slot(atlas, "data"),
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -619,7 +637,7 @@ atlas_views <- function(atlas) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
-  views_from_data(atlas$data)
+  views_from_data(atlas_slot(atlas, "data"))
 }
 
 
@@ -677,17 +695,17 @@ brain_views <- function(atlas) {
 #' @family atlas manipulations
 atlas_view_remove <- function(atlas, views, match = c("exact", "pattern")) {
   match <- match.arg(match)
-  available <- views_from_data(atlas$data)
+  available <- views_from_data(atlas_slot(atlas, "data"))
   warn_unmatched_views(views, available, match = match)
   matched <- match_views(views, available, match)
 
-  if (is.null(data_sf(atlas$data))) {
-    if (is.null(data_poly(atlas$data))) {
+  if (is.null(data_sf(atlas_slot(atlas, "data")))) {
+    if (is.null(data_poly(atlas_slot(atlas, "data")))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
       return(atlas)
     }
     new_poly <- polygons_filter_view(
-      data_poly(atlas$data),
+      data_poly(atlas_slot(atlas, "data")),
       matched,
       keep = FALSE
     )
@@ -698,8 +716,8 @@ atlas_view_remove <- function(atlas, views, match = c("exact", "pattern")) {
   }
 
   require_sf("atlas_view_remove()")
-  keep_mask <- !data_sf(atlas$data)$view %in% matched
-  new_sf <- data_sf(atlas$data)[keep_mask, , drop = FALSE]
+  keep_mask <- !data_sf(atlas_slot(atlas, "data"))$view %in% matched
+  new_sf <- data_sf(atlas_slot(atlas, "data"))[keep_mask, , drop = FALSE]
 
   if (nrow(new_sf) == 0) {
     cli::cli_warn("All views removed, sf data will be NULL")
@@ -718,17 +736,17 @@ atlas_view_remove <- function(atlas, views, match = c("exact", "pattern")) {
 #' @family atlas manipulations
 atlas_view_keep <- function(atlas, views, match = c("exact", "pattern")) {
   match <- match.arg(match)
-  available <- views_from_data(atlas$data)
+  available <- views_from_data(atlas_slot(atlas, "data"))
   warn_unmatched_views(views, available, match = match)
   matched <- match_views(views, available, match)
 
-  if (is.null(data_sf(atlas$data))) {
-    if (is.null(data_poly(atlas$data))) {
+  if (is.null(data_sf(atlas_slot(atlas, "data")))) {
+    if (is.null(data_poly(atlas_slot(atlas, "data")))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to keep")
       return(atlas)
     }
     new_poly <- polygons_filter_view(
-      data_poly(atlas$data),
+      data_poly(atlas_slot(atlas, "data")),
       matched,
       keep = TRUE
     )
@@ -739,8 +757,8 @@ atlas_view_keep <- function(atlas, views, match = c("exact", "pattern")) {
     return(atlas_view_gather(set_atlas_polygons(atlas, new_poly)))
   }
 
-  keep_mask <- data_sf(atlas$data)$view %in% matched
-  new_sf <- data_sf(atlas$data)[keep_mask, , drop = FALSE]
+  keep_mask <- data_sf(atlas_slot(atlas, "data"))$view %in% matched
+  new_sf <- data_sf(atlas_slot(atlas, "data"))[keep_mask, , drop = FALSE]
 
   if (nrow(new_sf) == 0) {
     cli::cli_warn("No views matched, sf data will be NULL")
@@ -811,27 +829,31 @@ atlas_prune_region <- function(
   match <- match.arg(match)
   views <- resolve_view_scope(views, atlas, match)
 
-  if (is.null(data_sf(atlas$data))) {
+  if (is.null(data_sf(atlas_slot(atlas, "data")))) {
     return(prune_region_poly(atlas, pattern, match_on, views))
   }
 
   require_sf("atlas_prune_region()")
 
   if (match_on == "region") {
-    match_col <- atlas$core$region
+    match_col <- atlas_slot(atlas, "core")$region
     hit <- grepl(pattern, match_col, ignore.case = TRUE) & !is.na(match_col)
-    labels_to_remove <- atlas$core$label[hit]
-    is_match <- data_sf(atlas$data)$label %in% labels_to_remove
+    labels_to_remove <- atlas_slot(atlas, "core")$label[hit]
+    is_match <- data_sf(atlas_slot(atlas, "data"))$label %in% labels_to_remove
   } else {
-    is_match <- grepl(pattern, data_sf(atlas$data)$label, ignore.case = TRUE)
+    is_match <- grepl(
+      pattern,
+      data_sf(atlas_slot(atlas, "data"))$label,
+      ignore.case = TRUE
+    )
   }
 
   if (!is.null(views)) {
-    is_match <- is_match & data_sf(atlas$data)$view %in% views
+    is_match <- is_match & data_sf(atlas_slot(atlas, "data"))$view %in% views
   }
 
-  is_match[is.na(data_sf(atlas$data)$label)] <- FALSE
-  new_sf <- data_sf(atlas$data)[!is_match, , drop = FALSE]
+  is_match[is.na(data_sf(atlas_slot(atlas, "data"))$label)] <- FALSE
+  new_sf <- data_sf(atlas_slot(atlas, "data"))[!is_match, , drop = FALSE]
 
   if (nrow(new_sf) == 0) {
     cli::cli_warn("All region geometries removed, sf data will be NULL")
@@ -889,15 +911,15 @@ atlas_prune_small <- function(
     return(remove_small_pieces(atlas, min_area, views, labels, exclude))
   }
 
-  if (is.null(data_sf(atlas$data))) {
-    if (is.null(data_poly(atlas$data))) {
+  if (is.null(data_sf(atlas_slot(atlas, "data")))) {
+    if (is.null(data_poly(atlas_slot(atlas, "data")))) {
       cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
       return(atlas)
     }
     res <- polygons_remove_small(
-      data_poly(atlas$data),
+      data_poly(atlas_slot(atlas, "data")),
       min_area,
-      core_labels = atlas$core$label,
+      core_labels = atlas_slot(atlas, "core")$label,
       views = views
     )
     if (res$n_removed > 0) {
@@ -909,13 +931,14 @@ atlas_prune_small <- function(
   }
 
   require_sf("atlas_prune_small()")
-  areas <- as.numeric(sf::st_area(data_sf(atlas$data)$geometry))
-  is_context <- is.na(data_sf(atlas$data)$label) |
-    !data_sf(atlas$data)$label %in% atlas$core$label
+  areas <- as.numeric(sf::st_area(data_sf(atlas_slot(atlas, "data"))$geometry))
+  is_context <- is.na(data_sf(atlas_slot(atlas, "data"))$label) |
+    !data_sf(atlas_slot(atlas, "data"))$label %in%
+      atlas_slot(atlas, "core")$label
   is_small <- areas < min_area & !is_context
 
   if (!is.null(views)) {
-    is_small <- is_small & data_sf(atlas$data)$view %in% views
+    is_small <- is_small & data_sf(atlas_slot(atlas, "data"))$view %in% views
   }
 
   n_removed <- sum(is_small)
@@ -925,7 +948,7 @@ atlas_prune_small <- function(
     )
   }
 
-  new_sf <- data_sf(atlas$data)[!is_small, , drop = FALSE]
+  new_sf <- data_sf(atlas_slot(atlas, "data"))[!is_small, , drop = FALSE]
   new_data <- rebuild_atlas_data(atlas, new_sf)
   atlas_view_gather(rebuild_atlas(atlas, new_data))
 }
@@ -973,14 +996,14 @@ atlas_prune_weak <- function(
 ) {
   check_prune_threshold(threshold)
 
-  if (is.null(geom_from_data(atlas$data))) {
+  if (is.null(geom_from_data(atlas_slot(atlas, "data")))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to select")
     return(atlas)
   }
   polygons <- atlas_polygons(atlas)
 
   flat <- polygons_unnest(polygons)
-  flat <- flat[flat$label %in% atlas$core$label, , drop = FALSE]
+  flat <- flat[flat$label %in% atlas_slot(atlas, "core")$label, , drop = FALSE]
   if (!nrow(flat)) {
     cli::cli_warn("Atlas has no core geometry, nothing to select")
     return(atlas)
@@ -1081,7 +1104,7 @@ atlas_view_remove_small <- function(
 #' @export
 #' @family atlas manipulations
 atlas_view_gather <- function(atlas, gap = 0.15) {
-  sf_data <- data_sf(atlas$data)
+  sf_data <- data_sf(atlas_slot(atlas, "data"))
   if (is.null(sf_data)) {
     return(gather_without_sf(atlas, gap))
   }
@@ -1089,7 +1112,11 @@ atlas_view_gather <- function(atlas, gap = 0.15) {
     return(atlas)
   }
 
-  new_sf <- reposition_views(sf_data, type = atlas$type, gap = gap)
+  new_sf <- reposition_views(
+    sf_data,
+    type = atlas_slot(atlas, "type"),
+    gap = gap
+  )
   # nocov start: reposition_views always returns sf for non-empty sf input;
   # this guards a broken contract and cannot be reached in normal use.
   if (is.null(new_sf) || !inherits(new_sf, "sf")) {
@@ -1106,7 +1133,7 @@ atlas_view_gather <- function(atlas, gap = 0.15) {
 #' @export
 #' @family atlas manipulations
 atlas_view_reorder <- function(atlas, order, gap = 0.15) {
-  available <- views_from_data(atlas$data)
+  available <- views_from_data(atlas_slot(atlas, "data"))
   unmatched <- setdiff(order, available)
   if (length(unmatched) > 0 && length(available) > 0) {
     cli::cli_warn(c(
@@ -1114,11 +1141,11 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
       "i" = "Available views: {.val {available}}."
     ))
   }
-  if (is.null(data_sf(atlas$data))) {
+  if (is.null(data_sf(atlas_slot(atlas, "data")))) {
     return(view_reorder_poly(atlas, order, gap))
   }
 
-  sf_data <- data_sf(atlas$data)
+  sf_data <- data_sf(atlas_slot(atlas, "data"))
   current_views <- unique(sf_data$view)
 
   missing_from_order <- setdiff(current_views, order)
@@ -1133,11 +1160,15 @@ atlas_view_reorder <- function(atlas, order, gap = 0.15) {
     return(atlas)
   }
 
-  group_order <- view_reorder_group_order(sf_data, order, atlas$type)
+  group_order <- view_reorder_group_order(
+    sf_data,
+    order,
+    atlas_slot(atlas, "type")
+  )
 
   new_sf <- reposition_views(
     sf_data,
-    type = atlas$type,
+    type = atlas_slot(atlas, "type"),
     gap = gap,
     group_order = group_order
   )
@@ -1198,10 +1229,15 @@ warn_no_region_match <- function(
 #' resemble what 0.0.4 shipped.
 #' @noRd
 legacy_region_hint <- function(atlas, pattern) {
-  if (is.null(atlas) || length(atlas$atlas) != 1 || is.na(atlas$atlas)) {
+  if (
+    is.null(atlas) ||
+      length(atlas_slot(atlas, "atlas")) != 1 ||
+      is.na(atlas_slot(atlas, "atlas"))
+  ) {
     return(character(0))
   }
-  legacy <- .legacy_regions[[atlas$atlas]] # nolint: object_usage_linter.
+  # nolint next: object_usage_linter.
+  legacy <- .legacy_regions[[atlas_slot(atlas, "atlas")]]
   if (is.null(legacy)) {
     return(character(0))
   }
@@ -1213,7 +1249,10 @@ legacy_region_hint <- function(atlas, pattern) {
   matched <- utils::head(unique(legacy$legacy_region[hit]), 3)
   current <- utils::head(
     stats::na.omit(unique(
-      atlas$core$region[match(legacy$label[hit], atlas$core$label)]
+      atlas_slot(atlas, "core")$region[match(
+        legacy$label[hit],
+        atlas_slot(atlas, "core")$label
+      )]
     )),
     3
   )
@@ -1243,8 +1282,8 @@ get_col <- function(x, type) {
 #' @noRd
 #' @keywords internal
 guess_type <- function(x) {
-  if ("type" %in% names(x) && !is.na(x$type[1])) {
-    return(unique(x$type))
+  if ("type" %in% names(x) && !is.na(atlas_slot(x, "type")[1])) {
+    return(unique(atlas_slot(x, "type")))
   }
 
   cli::cli_warn("Atlas type not set, attempting to guess type.")
@@ -1252,10 +1291,10 @@ guess_type <- function(x) {
   # Modern atlases keep 2D geometry in `$data` (sf or polygons); `atlas_views()`
   # reads either. Fall back to the legacy bare `$sf` slot, then to a plain
   # data.frame's own `view` column.
-  views <- if (inherits(x$data, "ggseg_atlas_data")) {
-    views_from_data(x$data)
-  } else if (!is.null(x$sf)) {
-    x$sf$view
+  views <- if (inherits(atlas_slot(x, "data"), "ggseg_atlas_data")) {
+    views_from_data(atlas_slot(x, "data"))
+  } else if (!is.null(atlas_slot(x, "sf"))) {
+    atlas_slot(x, "sf")$view
   } else if ("view" %in% names(x)) {
     x$view
   } else {
@@ -1389,9 +1428,13 @@ add_op_region_meta <- function(core, palette, into, colour) {
 #' @noRd
 #' @keywords internal
 gather_without_sf <- function(atlas, gap) {
-  poly <- data_poly(atlas$data)
+  poly <- data_poly(atlas_slot(atlas, "data"))
   if (!is.null(poly)) {
-    new_poly <- reposition_polygons(poly, type = atlas$type, gap = gap)
+    new_poly <- reposition_polygons(
+      poly,
+      type = atlas_slot(atlas, "type"),
+      gap = gap
+    )
     return(set_atlas_polygons(atlas, new_poly))
   }
   cli::cli_warn("Atlas has no 2D geometry")
@@ -1465,22 +1508,44 @@ rebuild_data_with_geom <- function(data, geom, keep_row = NULL) {
     }
     df[keep_row(df$label), , drop = FALSE]
   }
-  if (!is.null(data$vertices) && !is.null(data$meshes)) {
+  if (
+    !is.null(atlas_slot(data, "vertices")) &&
+      !is.null(atlas_slot(data, "meshes"))
+  ) {
     ggseg_data_cerebellar(
       geom = geom,
-      vertices = filt(data$vertices),
-      meshes = filt(data$meshes)
+      vertices = filt(atlas_slot(data, "vertices")),
+      meshes = filt(atlas_slot(data, "meshes"))
     )
-  } else if (!is.null(data$vertices)) {
+  } else if (!is.null(atlas_slot(data, "vertices"))) {
     if (inherits(data, "ggseg_data_cerebellar")) {
-      ggseg_data_cerebellar(geom = geom, vertices = filt(data$vertices))
+      ggseg_data_cerebellar(
+        geom = geom,
+        vertices = filt(atlas_slot(data, "vertices"))
+      )
     } else {
-      ggseg_data_cortical(geom = geom, vertices = filt(data$vertices))
+      ggseg_data_cortical(
+        geom = geom,
+        vertices = filt(atlas_slot(data, "vertices"))
+      )
     }
-  } else if (!is.null(data$meshes)) {
-    ggseg_data_subcortical(geom = geom, meshes = filt(data$meshes))
-  } else if (!is.null(data$centerlines)) {
-    ggseg_data_tract(geom = geom, centerlines = filt(data$centerlines))
+  } else if (!is.null(atlas_slot(data, "meshes"))) {
+    if (inherits(data, "ggseg_data_wm")) {
+      ggseg_data_wm(
+        geom = geom,
+        meshes = filt(atlas_slot(data, "meshes"))
+      )
+    } else {
+      ggseg_data_subcortical(
+        geom = geom,
+        meshes = filt(atlas_slot(data, "meshes"))
+      )
+    }
+  } else if (!is.null(atlas_slot(data, "centerlines"))) {
+    ggseg_data_tract(
+      geom = geom,
+      centerlines = filt(atlas_slot(data, "centerlines"))
+    )
   } else {
     new_data <- data
     new_data$geom <- geom
@@ -1493,7 +1558,7 @@ rebuild_data_with_geom <- function(data, geom, keep_row = NULL) {
 #' @keywords internal
 #' @noRd
 rebuild_atlas_data <- function(atlas, new_sf) {
-  rebuild_data_with_geom(atlas$data, new_sf)
+  rebuild_data_with_geom(atlas_slot(atlas, "data"), new_sf)
 }
 
 #' Swap in new polygon geometry on a polygon-only atlas
@@ -1504,21 +1569,28 @@ rebuild_atlas_data <- function(atlas, new_sf) {
 #' @noRd
 #' @keywords internal
 set_atlas_polygons <- function(atlas, new_polygons) {
-  rebuild_atlas(atlas, rebuild_data_with_geom(atlas$data, new_polygons))
+  rebuild_atlas(
+    atlas,
+    rebuild_data_with_geom(atlas_slot(atlas, "data"), new_polygons)
+  )
 }
 
 #' @noRd
 #' @keywords internal
 rebuild_atlas <- function(atlas, new_data) {
-  validate_data_labels(new_data, atlas$core, report_2d_coverage = FALSE)
+  validate_data_labels(
+    new_data,
+    atlas_slot(atlas, "core"),
+    report_2d_coverage = FALSE
+  )
 
   new_ggseg_atlas(
-    atlas$atlas,
-    atlas$type,
-    atlas$palette,
-    atlas$core,
+    atlas_slot(atlas, "atlas"),
+    atlas_slot(atlas, "type"),
+    atlas_slot(atlas, "palette"),
+    atlas_slot(atlas, "core"),
     new_data,
-    atlas$provenance
+    atlas_slot(atlas, "provenance")
   )
 }
 
@@ -1588,20 +1660,24 @@ region_op_result <- function(sf_data, x_labels, y_labels, action, into) {
 #' @noRd
 #' @keywords internal
 prune_region_poly <- function(atlas, pattern, match_on, views) {
-  if (is.null(data_poly(atlas$data))) {
+  if (is.null(data_poly(atlas_slot(atlas, "data")))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
     return(atlas)
   }
-  poly_labels <- data_poly(atlas$data)$label
+  poly_labels <- data_poly(atlas_slot(atlas, "data"))$label
   if (match_on == "region") {
-    hit <- grepl(pattern, atlas$core$region, ignore.case = TRUE) &
-      !is.na(atlas$core$region)
-    drop_labels <- atlas$core$label[hit]
+    hit <- grepl(
+      pattern,
+      atlas_slot(atlas, "core")$region,
+      ignore.case = TRUE
+    ) &
+      !is.na(atlas_slot(atlas, "core")$region)
+    drop_labels <- atlas_slot(atlas, "core")$label[hit]
   } else {
     drop_labels <- poly_labels[grepl(pattern, poly_labels, ignore.case = TRUE)]
   }
   new_poly <- polygons_remove_region(
-    data_poly(atlas$data),
+    data_poly(atlas_slot(atlas, "data")),
     drop_labels,
     views = views
   )
@@ -1619,11 +1695,13 @@ prune_region_poly <- function(atlas, pattern, match_on, views) {
 #' @noRd
 #' @keywords internal
 view_reorder_poly <- function(atlas, order, gap) {
-  if (is.null(data_poly(atlas$data))) {
+  if (is.null(data_poly(atlas_slot(atlas, "data")))) {
     cli::cli_warn("Atlas has no 2D geometry")
     return(atlas)
   }
-  current_views <- unique(polygons_unnest(data_poly(atlas$data))$view)
+  current_views <- unique(
+    polygons_unnest(data_poly(atlas_slot(atlas, "data")))[["view"]]
+  )
 
   # As in the sf path: views the request omits are appended, so an empty
   # result means the atlas has no views rather than that the request missed.
@@ -1635,9 +1713,9 @@ view_reorder_poly <- function(atlas, order, gap) {
   }
 
   new_poly <- reorder_polygons(
-    data_poly(atlas$data),
+    data_poly(atlas_slot(atlas, "data")),
     order,
-    type = atlas$type,
+    type = atlas_slot(atlas, "type"),
     gap = gap
   )
   set_atlas_polygons(atlas, new_poly)
@@ -1677,7 +1755,7 @@ views_from_data <- function(data) {
     return(unique(data_sf(data)$view))
   }
   if (!is.null(data_poly(data))) {
-    return(unique(polygons_unnest(data_poly(data))$view))
+    return(unique(polygons_unnest(data_poly(data))[["view"]]))
   }
   NULL
 }
@@ -1739,7 +1817,7 @@ resolve_view_scope <- function(views, atlas, match = "exact") {
   if (is.null(views)) {
     return(NULL)
   }
-  available <- views_from_data(atlas$data)
+  available <- views_from_data(atlas_slot(atlas, "data"))
   warn_unmatched_views(views, available, match = match)
   match_views(views, available, match)
 }
@@ -1870,7 +1948,10 @@ atlas_class <- function(type) {
 #' itself rather than assumed from the view's name.
 #' @noRd
 view_hemisphere_weights <- function(atlas, flat, view_names, weights) {
-  hemi <- atlas$core$hemi[match(flat$label, atlas$core$label)]
+  hemi <- atlas_slot(atlas, "core")$hemi[match(
+    flat$label,
+    atlas_slot(atlas, "core")$label
+  )]
   lateral <- hemi %in% c("left", "right")
   n_hemi <- vapply(
     view_names,
@@ -1911,16 +1992,19 @@ remove_small_pieces <- function(
   labels = NULL,
   exclude = NULL
 ) {
-  if (is.null(data_poly(atlas$data)) && is.null(data_sf(atlas$data))) {
+  if (
+    is.null(data_poly(atlas_slot(atlas, "data"))) &&
+      is.null(data_sf(atlas_slot(atlas, "data")))
+  ) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
     return(atlas)
   }
 
-  was_sf <- is.null(data_poly(atlas$data))
+  was_sf <- is.null(data_poly(atlas_slot(atlas, "data")))
   work <- if (was_sf) as_polygon_atlas(atlas) else atlas
 
   res <- polygons_remove_small_pieces(
-    data_poly(work$data),
+    data_poly(atlas_slot(work, "data")),
     min_area,
     views = views,
     labels = labels,
@@ -1988,7 +2072,10 @@ prune_weak_matrix <- function(atlas, flat, view_names, threshold, weights) {
 
   weights <- view_hemisphere_weights(atlas, flat, view_names, weights)
 
-  region <- atlas$core$region[match(rownames(area_by_view), atlas$core$label)]
+  region <- atlas_slot(atlas, "core")$region[match(
+    rownames(area_by_view),
+    atlas_slot(atlas, "core")$label
+  )]
   region[is.na(region)] <- rownames(area_by_view)[is.na(region)]
 
   region_area <- rowsum(area_by_view, region)

@@ -18,3 +18,4 @@ data-raw/dk/
 Rplots.pdf
 .impeccable/
 tests/testthat/_problems/
+.claude/

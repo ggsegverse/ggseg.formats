@@ -7,10 +7,10 @@ describe("atlas_region_semantics()", {
     # The source named its parcels per hemisphere, so no name is shared and
     # grouping by region aggregates nothing. Not a defect to strip away.
     atlas <- dk()
-    atlas$core$region <- paste0(
-      substr(atlas$core$hemi, 1, 1),
+    atlas@core$region <- paste0(
+      substr(atlas_core(atlas)$hemi, 1, 1),
       "_",
-      atlas$core$region
+      atlas_core(atlas)$region
     )
     expect_identical(atlas_region_semantics(atlas), "per-hemisphere")
   })
@@ -19,14 +19,14 @@ describe("atlas_region_semantics()", {
     # With one side there are no two hemispheres for a name to be shared
     # between, so neither convention applies.
     atlas <- dk()
-    atlas$core$hemi <- "left"
+    atlas@core$hemi <- "left"
     expect_identical(atlas_region_semantics(atlas), "unilateral")
   })
 
   it("is computed from core, so it cannot disagree with it", {
     atlas <- dk()
     expect_identical(atlas_region_semantics(atlas), "shared")
-    atlas$core$region <- atlas$core$label
+    atlas@core$region <- atlas_core(atlas)$label
     expect_identical(atlas_region_semantics(atlas), "per-hemisphere")
   })
 })
@@ -52,7 +52,7 @@ describe("atlas_undrawn()", {
     one <- atlas_view_keep(atlas, sparsest)
     undrawn <- atlas_undrawn(one)
     expect_gt(length(undrawn), 0)
-    expect_true(all(undrawn %in% atlas$core$label))
+    expect_true(all(undrawn %in% atlas_core(atlas)$label))
     expect_false(any(undrawn %in% atlas_undrawn(atlas)))
   })
 
@@ -65,7 +65,7 @@ describe("atlas_context()", {
   it("returns the labels drawn but not held as regions", {
     ctx <- atlas_context(aseg())
     expect_gt(length(ctx), 0)
-    expect_false(any(ctx %in% aseg()$core$label))
+    expect_false(any(ctx %in% atlas_core(aseg())$label))
   })
 
   it("finds a cortical atlas's medial wall", {
@@ -110,11 +110,11 @@ describe("migrate_atlas_display()", {
     # Verified against every atlas in the library that already carries the
     # column: 1996 rows, no disagreement.
     atlas <- dk()
-    atlas$core$display <- NULL
+    atlas@core$display <- NULL
 
     expect_identical(
       atlas_display(migrate_atlas_display(atlas)),
-      strip_hemi_affix(as.character(atlas$core$label))
+      strip_hemi_affix(as.character(atlas_core(atlas)$label))
     )
   })
 
@@ -130,7 +130,7 @@ describe("migrate_atlas_display()", {
 
   it("leaves an atlas that already carries display alone", {
     atlas <- dk()
-    atlas$core$display[1] <- "something the source said"
+    atlas@core$display[1] <- "something the source said"
     expect_identical(
       atlas_display(migrate_atlas_display(atlas))[1],
       "something the source said"
@@ -139,7 +139,7 @@ describe("migrate_atlas_display()", {
 
   it("replaces it when asked", {
     atlas <- dk()
-    atlas$core$display[1] <- "wrong"
+    atlas@core$display[1] <- "wrong"
     expect_false(
       atlas_display(migrate_atlas_display(atlas, overwrite = TRUE))[1] ==
         "wrong"
@@ -149,8 +149,12 @@ describe("migrate_atlas_display()", {
 
 
 describe("migrate_atlas_hemi()", {
+  # The hemi vocabulary is an invariant of the class, checked on construction
+  # and on every assignment, so a `ggseg_atlas` cannot carry a legacy spelling
+  # and there is nothing for the migration to repair. What it repairs is a
+  # legacy list atlas, which is what these fixtures are.
   it("maps the legacy spellings onto the vocabulary", {
-    atlas <- dk()
+    atlas <- legacy_list_atlas(dk())
     atlas$core$hemi[1] <- "middle"
     atlas$core$hemi[2] <- "vermis"
 
@@ -162,14 +166,17 @@ describe("migrate_atlas_hemi()", {
 
   it("leaves a conforming atlas alone", {
     atlas <- dk()
-    expect_identical(migrate_atlas_hemi(atlas)$core$hemi, atlas$core$hemi)
+    expect_identical(
+      atlas_core(migrate_atlas_hemi(atlas))$hemi,
+      atlas_core(atlas)$hemi
+    )
   })
 
   it("repairs an atlas that can no longer be constructed", {
     # `ggsegAal`'s `.aal3_cerebellum` carries "middle", so every verb that
     # validates refuses it -- including the display migration. Repairing
     # `core` directly is the only way in.
-    atlas <- dk()
+    atlas <- legacy_list_atlas(dk())
     atlas$core$hemi[1] <- "middle"
     expect_error(
       assert_ggseg_atlas(atlas),
@@ -180,8 +187,8 @@ describe("migrate_atlas_hemi()", {
 
   it("keeps NA, which means no side applies", {
     atlas <- dk()
-    atlas$core$hemi[1] <- NA_character_
-    expect_true(is.na(migrate_atlas_hemi(atlas)$core$hemi[1]))
+    atlas@core$hemi[1] <- NA_character_
+    expect_true(is.na(atlas_core(migrate_atlas_hemi(atlas))$hemi[1]))
   })
 })
 
@@ -193,8 +200,8 @@ describe("context() and regions()", {
     reg <- regions()(atlas)
 
     expect_true(all(grepl(ctx, atlas_context(atlas))))
-    expect_false(any(grepl(ctx, atlas$core$label)))
-    expect_true(all(grepl(reg, atlas$core$label)))
+    expect_false(any(grepl(ctx, atlas_core(atlas)$label)))
+    expect_true(all(grepl(reg, atlas_core(atlas)$label)))
     expect_false(any(grepl(reg, atlas_context(atlas))))
   })
 
@@ -202,7 +209,7 @@ describe("context() and regions()", {
     # An empty alternation would match everything, which would quietly
     # polish the parcels with the backdrop's settings.
     atlas <- atlas_context_remove(dk())
-    expect_false(any(grepl(context()(atlas), atlas$core$label)))
+    expect_false(any(grepl(context()(atlas), atlas_core(atlas)$label)))
   })
 
   it("escapes a label that holds regex metacharacters", {
@@ -247,6 +254,36 @@ describe("the published dispatch surface", {
       function(generic) {
         methods <- as.character(utils::methods(generic))
         toString(sort(substring(methods, nchar(generic) + 2L)))
+      },
+      character(1)
+    )
+    expect_snapshot(print(surface))
+  })
+
+  it("includes the base generics, which the generic-keyed view cannot see", {
+    # Keying on generic names only covers the generics named here, so it is
+    # blind to `print()`, `plot()`, `as.list()` and `as.data.frame()` --
+    # exactly the 14 registrations the S7 migration moved out of
+    # `S3method()`. Dropping `plot` for the legacy class would have left
+    # every published atlas falling through to `plot.default()` with this
+    # snapshot unchanged. Keying on our own classes closes that.
+    classes <- c(
+      "ggseg_atlas",
+      "brain_atlas",
+      "brain_polygons",
+      "ggseg_sf",
+      "mesh_space",
+      "ggseg_data_cortical",
+      "ggseg_data_subcortical",
+      "ggseg_data_cerebellar",
+      "ggseg_data_tract",
+      "ggseg_data_wm"
+    )
+    surface <- vapply(
+      classes,
+      function(cls) {
+        methods <- as.character(utils::methods(class = cls))
+        toString(sort(sub(paste0("[.]", cls, "$"), "", methods)))
       },
       character(1)
     )
@@ -308,8 +345,8 @@ describe("atlas_views_empty", {
 
   it("returns nothing without 2D geometry, and rejects non-atlases", {
     bare <- aseg()
-    bare$data$geom <- NULL
-    bare$data$sf <- NULL
+    bare@data$geom <- NULL
+    bare@data$sf <- NULL
 
     expect_identical(atlas_views_empty(bare), character(0))
     expect_error(atlas_views_empty(mtcars), "ggseg_atlas")
