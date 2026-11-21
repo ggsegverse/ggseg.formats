@@ -24,18 +24,10 @@ NULL
 #' A validator that spans properties makes stepwise assignment impossible:
 #' `atlas@core <- new_core` fails on its own when the palette it is about to
 #' be paired with has not been assigned yet. Every multi-slot edit therefore
-#' has to land in one step.
+#' has to land in one step. Callers upgrade a legacy atlas before they get
+#' here, so the one step is always an S7 assignment.
 #' @noRd
 atlas_set_props <- function(atlas, ...) {
-  values <- list(...)
-  if (!S7::S7_inherits(atlas, ggseg_atlas_class)) {
-    # A legacy list has no validator spanning its slots, so there is nothing
-    # to land in one step; assigning them one at a time is the same thing.
-    for (name in names(values)) {
-      atlas[[name]] <- values[[name]]
-    }
-    return(atlas)
-  }
-  S7::props(atlas) <- values
+  S7::props(atlas) <- list(...)
   atlas
 }

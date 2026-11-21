@@ -232,6 +232,12 @@ set_atlas_core <- function(atlas, value, palette = "keep") {
     cli::cli_abort("{.arg value} must be a data.frame.")
   }
 
+  # A legacy list has no validator spanning its slots, so assigning into one
+  # accepted a duplicated label or a `hemi` outside the vocabulary in silence
+  # and handed back an atlas every later check refuses. Upgrade first and the
+  # invariants hold for both representations.
+  atlas <- atlas_input(atlas)
+
   if (identical(palette, "keep")) {
     palette <- atlas_slot(atlas, "palette")
     if (!is.null(palette)) {

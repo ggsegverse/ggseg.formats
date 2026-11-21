@@ -845,3 +845,53 @@ describe("as.list() keeps the build record", {
     )
   })
 })
+
+describe("the atlas interface is accessors only", {
+  # The headline of this release: `$` is removed, not deprecated, and `type`
+  # is computed from the class. Both are stated in prose in AGENTS.md and the
+  # vignette; this is what holds them.
+  it("refuses every way into the slots but the accessors", {
+    atlas <- dk()
+
+    expect_error(atlas$core)
+    expect_error(atlas[["core"]])
+    expect_error(unclass(atlas)$core)
+  })
+
+  it("keeps type read-only", {
+    atlas <- dk()
+
+    expect_error(S7::prop(atlas, "type") <- "tract")
+    # `set_atlas_type()` is the retype route, and it cannot be used to make
+    # the type disagree with the payload either.
+    expect_error(set_atlas_type(atlas, "tract"), "ggseg_data_tract")
+  })
+})
+
+
+describe("set_atlas_core() holds the invariants on a legacy atlas", {
+  it("refuses a duplicated label it used to accept in silence", {
+    legacy <- legacy_list_atlas(dk())
+    dupe <- atlas_core(legacy)[c(1, 1), , drop = FALSE]
+
+    expect_error(set_atlas_core(legacy, dupe))
+  })
+
+  it("refuses a hemi outside the vocabulary", {
+    legacy <- legacy_list_atlas(dk())
+    core <- atlas_core(legacy)
+    core$hemi[1] <- "vermis"
+
+    expect_error(set_atlas_core(legacy, core))
+  })
+
+  it("upgrades a legacy atlas it accepts", {
+    legacy <- legacy_list_atlas(dk())
+    core <- atlas_core(legacy)[1:10, , drop = FALSE]
+
+    result <- set_atlas_core(legacy, core)
+
+    expect_true(is_ggseg_atlas(result))
+    expect_identical(nrow(atlas_core(result)), 10L)
+  })
+})
