@@ -20,7 +20,8 @@ set_atlas_palette(atlas, value)
 
 - value:
 
-  Named character vector of colours keyed by atlas `label`.
+  Named character vector of colours keyed by atlas `label`, or `NULL` to
+  clear the palette.
 
 ## Value
 
@@ -32,6 +33,9 @@ The `ggseg_atlas` with its palette replaced.
 to read the palette.
 
 Other atlas setters:
+[`set_atlas_core()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_core.md),
+[`set_atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_geom.md),
+[`set_atlas_name()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_name.md),
 [`set_atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.md)
 
 ## Examples

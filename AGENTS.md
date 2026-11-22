@@ -67,14 +67,14 @@ Built and validated by the
 constructor in
 [ggseg_atlas.R](https://ggsegverse.github.io/R/ggseg_atlas.R) — treat
 that constructor as the authoritative signature, not any argument list
-copied here. Conceptually an atlas is a classed list with:
+copied here. An atlas is an **S7 object** with these properties:
 
 - `atlas` — short name string (e.g. `"dk"`).
-- `type` — the atlas kind, drawn from a fixed set (currently
-  `"cortical"`, `"subcortical"`, `"tract"`, `"cerebellar"`) enforced by
-  [`match.arg()`](https://rdrr.io/r/base/match.arg.html) in the
-  constructor; extend there if a new type is ever added. It drives the
-  subclass tag (`paste0(type, "_atlas")`).
+- `type` — the atlas kind. **Read-only, and computed from the class**,
+  so the type and the class cannot disagree. Retyping means constructing
+  a new atlas;
+  [`set_atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.md)
+  does that for you.
 - `palette` — named character vector of hex colours, keyed by `label`.
 - `core` — data.frame, **one row per region**, required columns `hemi`,
   `region`, `label`; may carry extra metadata columns (lobe, network,
@@ -82,13 +82,126 @@ copied here. Conceptually an atlas is a classed list with:
 - `data` — a `ggseg_atlas_data` object matching `type`, built by the
   per-type constructors in
   [ggseg_atlas_data.R](https://ggsegverse.github.io/R/ggseg_atlas_data.R).
+- `provenance` — optional record of how the atlas was built.
 
-The class vector is `c("<type>_atlas", "ggseg_atlas", "list")`.
-**Preserve this ordering** — the per-type `is_*_atlas()` predicates rely
-on the subclass tag, and the `ggseg_atlas` validity check revalidates
-structure through the constructor (a wrong-but-classed object is
-rejected). These are the contract; extend behaviour by adding accessors
-rather than reshaping the object.
+### Use accessors. Read slots as little as possible.
+
+**`$` is not part of the interface.** `atlas$core` is an error. Every
+property has an accessor, and the accessor is what you call — not
+because `@` does not work, but because the accessor answers the question
+you actually have and keeps working across representations.
+
+Reach for the accessor that fits the question, not the one that fits the
+storage: `atlas_labels(atlas)`, not `atlas_core(atlas)$label`;
+`atlas_meshes(atlas)`, not `atlas_data(atlas)$meshes`. If no accessor
+fits, that is a gap to fill in
+[atlas_accessors.R](https://ggsegverse.github.io/R/atlas_accessors.R),
+not a reason to reach past them.
+
+Inside this package, code that may be handed either an S7 atlas or a
+legacy tagged list reads through `atlas_slot()`, which is the single
+place that difference is handled. It is internal — downstream packages
+have the accessors and nothing else.
+
+### The type vocabulary is the class hierarchy
+
+    ggseg_atlas (abstract)
+    ├── cortical_atlas
+    ├── subcortical_atlas
+    │   └── wm_atlas
+    ├── tract_atlas
+    └── cerebellar_atlas
+
+The abstract parent cannot be instantiated, so an atlas of an unknown
+type is unrepresentable rather than merely rejected. Adding a type means
+adding a subclass — and it stays a discussion to raise with the
+maintainers first.
+
+The class vector carries both the qualified S7 names and the unqualified
+tags (`cortical_atlas`, `ggseg_atlas`) that
+[`inherits()`](https://rdrr.io/r/base/class.html) and the `is_*_atlas()`
+predicates ask for. The unqualified tags **lead**, because `class(x)[1]`
+reads better unqualified in an error message. They do not decide which
+method runs: the base generics are registered against both the S7 class
+and the S3 class, so either representation finds the same function
+whatever the class vector looks like.
+
+### One mechanism per base generic
+
+Every method this package puts on a base generic –
+[`print()`](https://rdrr.io/r/base/print.html),
+[`plot()`](https://rdrr.io/r/graphics/plot.default.html),
+[`as.list()`](https://rdrr.io/r/base/list.html),
+[`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html),
+[`names()`](https://rdrr.io/r/base/names.html) – is registered with
+[`S7::method()`](https://rconsortium.github.io/S7/reference/method.html),
+in `R/zzz_methods.R`. That includes the methods for plain S3 classes
+like `brain_polygons`, which are registered with
+[`S7::new_S3_class()`](https://rconsortium.github.io/S7/reference/new_S3_class.html).
+
+This is not a style preference. A package must not mix S7 and S3 methods
+on the *same* base generic. S7 leaves a sentinel named after the generic
+in the package namespace when it registers a method there, and
+`pkgload`’s unregister path resolves the generic for every `S3method()`
+entry it finds, hits the sentinel, and aborts
+[`devtools::load_all()`](https://devtools.r-lib.org/reference/load_all.html)
+with:
+
+``` R
+Error in `fn_env()`: `fn` must be a function,
+not a <S7_generic_sentinel> object.
+```
+
+Either mechanism used consistently is fine. Verified against S7 1.0.0
+and pkgload 1.5.3, reduced to a two-line package. So: adding a `print`
+method for a new payload class means adding it to `R/zzz_methods.R`, not
+writing `#' @export print.newclass`.
+
+The registrations live in `R/zzz_methods.R` because a top-level
+[`S7::method()`](https://rconsortium.github.io/S7/reference/method.html)
+call resolves its function at source time, and R collates alphabetically
+– registering a function defined in `mesh_space.R` from an earlier file
+fails with “object not found”.
+
+Registering the atlas methods against both the S7 class and
+`new_S3_class("ggseg_atlas")` is what lets a current atlas and a legacy
+list atlas find the same function, and means dispatch does not depend on
+the order of the class vector.
+
+### Bump the schema version when stored atlases go stale
+
+A serialized S7 atlas carries a frozen copy of its class. Add a property
+and every atlas built before it fails on read of that property while
+[`S7::validate()`](https://rconsortium.github.io/S7/reference/validate.html)
+still passes, because the validator it runs is the frozen one. Roughly
+150 atlases live in `R/sysdata.rda` files across the atlas packages,
+each built by whichever `ggseg.formats` was current that day.
+
+So: bump
+[`atlas_schema_version()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_schema_version.md)
+whenever an atlas built by the previous version would be wrong or
+incomplete under the current one – a property added or removed, an
+invariant tightened, a slot’s meaning changed – and rebuild
+`R/sysdata.rda` in the same change, or the package’s own atlases are
+stale. Do not bump for a new accessor, a new verb, or a fix that leaves
+stored data alone; a bump costs every published atlas an upgrade.
+
+### Validation is in two places, and they must be kept in step
+
+The constructor carries the full diagnosis: cli bullets, a condition
+class per defect, and warning-level nudges about schema gaps that are
+not yet errors. The S7 validator can only return a string, and it runs
+on **every property assignment**, so it carries the cheap invariants
+that must never be false. A check added to one is not enforced by the
+other until it is added there too.
+
+A consequence worth knowing: an S7 atlas cannot be constructed invalid,
+so a test that needs a malformed atlas builds a legacy tagged list
+instead — see `legacy_list_atlas()` in the test helpers.
+[`assert_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.md),
+`validate_ggseg_atlas()` and
+[`is_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.md)
+now serve that legacy path.
 
 ### The 2D `geom` slot (sf-optional)
 

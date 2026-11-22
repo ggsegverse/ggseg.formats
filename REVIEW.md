@@ -5,7 +5,7 @@ what counts as a failure here — findings outside it are noise.
 
 ## What this package is
 
-`ggseg.formats` defines the `ggseg_atlas` S3 class and the contract that
+`ggseg.formats` defines the `ggseg_atlas` S7 class and the contract that
 the whole ggsegverse ecosystem is built on: `ggseg`, `ggseg3d`,
 `ggseg.extra`, and every atlas package consume it. A change that breaks
 the contract breaks dozens of packages at once, and you find out from

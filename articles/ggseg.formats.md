@@ -68,30 +68,35 @@ region identity.
 
 ## Anatomy of an atlas
 
-This section reaches into the five slots with `$` on purpose: its
-subject is the object layout, and `$` is the only way to show it.
-Everywhere else, use the accessors in [Querying an
-atlas](#querying-an-atlas) — they are the supported interface and keep
-working when the layout changes.
+An atlas is an S7 object with five parts, and every one of them has an
+accessor. Reach for the accessor rather than the part: it answers the
+question you actually have, it works on atlases built by older releases
+as well as this one, and it keeps working if the object is ever laid out
+differently. `$` is not part of the interface — `dk()$core` is an error,
+not a slot read.
 
 ``` r
 
-dk()$atlas
+atlas_name(dk())
 #> [1] "dk"
-dk()$type
+atlas_type(dk())
 #> [1] "cortical"
 ```
 
-`$atlas` is a short name (used to look up atlases by string) and `$type`
+[`atlas_name()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_name.md)
+is the short name an atlas is published and looked up under, and
+[`atlas_type()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_type.md)
 is one of the values `atlas_types()` returns: `"cortical"`,
-`"subcortical"`, `"tract"`, or `"cerebellar"`.
+`"subcortical"`, `"tract"`, `"cerebellar"` or `"wm"`. The type is not
+stored separately from the class — it is read off it, so the two cannot
+disagree.
 
-The `$palette` is a named character vector mapping labels to hex
-colours:
+[`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md)
+is a named character vector mapping labels to hex colours:
 
 ``` r
 
-head(dk()$palette)
+head(atlas_palette(dk()))
 #>                lh_bankssts lh_caudalanteriorcingulate 
 #>                  "#196428"                  "#7D64A0" 
 #>     lh_caudalmiddlefrontal          lh_corpuscallosum 
@@ -100,13 +105,14 @@ head(dk()$palette)
 #>                  "#DC1464"                  "#DC140A"
 ```
 
-`$core` is a data frame with one row per region. It always has `region`
-and `label` columns, and will often include `hemi` and additional
-metadata like `lobe` or `structure`:
+[`atlas_core()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core.md)
+is a data frame with one row per region. It always has `region` and
+`label` columns, and will often include `hemi` and additional metadata
+like `lobe` or `structure`:
 
 ``` r
 
-head(dk()$core)
+head(atlas_core(dk()))
 #>   hemi                  region                      label
 #> 1 left                bankssts                lh_bankssts
 #> 2 left caudalanteriorcingulate lh_caudalanteriorcingulate
@@ -123,12 +129,19 @@ head(dk()$core)
 #> 6                        entorhinal     temporal
 ```
 
-Finally, `$data` is a `ggseg_atlas_data` object that holds the actual
-geometry. Its contents depend on the atlas type.
+Finally
+[`atlas_data()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_data.md)
+returns the `ggseg_atlas_data` object holding the geometry. Its contents
+depend on the atlas type, and in practice you want one of the geometry
+accessors —
+[`atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.md),
+[`atlas_vertices()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_vertices.md),
+[`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md)
+— rather than the payload itself.
 
 ``` r
 
-class(dk()$data)
+class(atlas_data(dk()))
 #> [1] "ggseg_data_cortical" "ggseg_atlas_data"
 ```
 
@@ -142,9 +155,9 @@ rendering and vertex indices for 3D:
 
 ``` r
 
-dk()$type
+atlas_type(dk())
 #> [1] "cortical"
-names(dk()$data)
+names(atlas_data(dk()))
 #> [1] "geom"     "vertices"
 ```
 
@@ -154,9 +167,9 @@ Their data is a `ggseg_data_subcortical` with sf polygons and individual
 
 ``` r
 
-aseg()$type
+atlas_type(aseg())
 #> [1] "subcortical"
-names(aseg()$data)
+names(atlas_data(aseg()))
 #> [1] "geom"   "meshes"
 ```
 
@@ -166,9 +179,9 @@ generate tube meshes for 3D:
 
 ``` r
 
-tracula()$type
+atlas_type(tracula())
 #> [1] "tract"
-names(tracula()$data)
+names(atlas_data(tracula()))
 #> [1] "geom"        "centerlines"
 ```
 
@@ -177,8 +190,8 @@ component (vertices, meshes, or centerlines) drives 3D.
 
 ## Core: the region table
 
-The `$core` data frame is the single source of truth for what regions an
-atlas contains. Every manipulation function updates core first and then
+The core table is the single source of truth for what regions an atlas
+contains. Every manipulation function updates core first and then
 propagates changes to geometry and palette.
 
 The required columns are `region` (a short, hemisphere-free key),
@@ -188,7 +201,7 @@ carry `hemi`:
 
 ``` r
 
-str(dk()$core)
+str(atlas_core(dk()))
 #> Classes 'tbl_df', 'tbl' and 'data.frame':    70 obs. of  5 variables:
 #>  $ hemi   : chr  "left" "left" "left" "left" ...
 #>  $ region : chr  "bankssts" "caudalanteriorcingulate" "caudalmiddlefrontal" "corpuscallosum" ...
@@ -202,7 +215,7 @@ instance, has `lobe`:
 
 ``` r
 
-unique(dk()$core$lobe)
+unique(atlas_core(dk())$lobe)
 #> [1] "temporal"     "cingulate"    "frontal"      "white matter" "occipital"   
 #> [6] "parietal"     "insula"
 ```
@@ -472,7 +485,7 @@ is_ggseg_atlas(recovered)
 ```
 
 If you have an atlas object from an older version of ggseg that stored
-sf data directly in `$data` instead of using the new `ggseg_atlas_data`
-wrapper,
+sf data directly in the data slot instead of using the
+`ggseg_atlas_data` wrapper,
 [`convert_legacy_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/convert_legacy_brain_atlas.md)
 will migrate it to the unified format.

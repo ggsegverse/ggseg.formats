@@ -51,7 +51,9 @@ for control flow, where signalling is wrong.
 ``` r
 atlas <- assert_ggseg_atlas(dk())
 
-broken <- dk()
+# An S7 atlas cannot be constructed invalid, so the invalid case is a
+# legacy list atlas -- the shape an older release built.
+broken <- structure(as.list(dk()), class = c("ggseg_atlas", "list"))
 broken$core$label <- NULL
 try(assert_ggseg_atlas(broken))
 #> Error in eval(expr, envir) : 

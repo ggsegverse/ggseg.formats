@@ -12,9 +12,9 @@
 <link rel="manifest" href="../site.webmanifest">
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/Montserrat-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Inter-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/Montserrat-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="The ggseg_atlas object">
@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9029</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9032</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -144,36 +144,40 @@ of truth for region identity.</p>
 <div class="section level2">
 <h2 id="anatomy-of-an-atlas">Anatomy of an atlas<a class="anchor" aria-label="anchor" href="#anatomy-of-an-atlas"></a>
 </h2>
-<p>This section reaches into the five slots with <code>$</code> on
-purpose: its subject is the object layout, and <code>$</code> is the
-only way to show it. Everywhere else, use the accessors in <a href="#querying-an-atlas">Querying an atlas</a> — they are the supported
-interface and keep working when the layout changes.</p>
+<p>An atlas is an S7 object with five parts, and every one of them has
+an accessor. Reach for the accessor rather than the part: it answers the
+question you actually have, it works on atlases built by older releases
+as well as this one, and it keeps working if the object is ever laid out
+differently. <code>$</code> is not part of the interface —
+<code>dk()$core</code> is an error, not a slot read.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">atlas</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_name.html">atlas_name</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "dk"</span></span>
-<span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">type</span></span>
+<span><span class="fu"><a href="../reference/atlas_type.html">atlas_type</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "cortical"</span></span></code></pre></div>
-<p><code>$atlas</code> is a short name (used to look up atlases by
-string) and <code>$type</code> is one of the values
+<p><code><a href="../reference/atlas_name.html">atlas_name()</a></code> is the short name an atlas is published and
+looked up under, and <code><a href="../reference/atlas_type.html">atlas_type()</a></code> is one of the values
 <code>atlas_types()</code> returns: <code>"cortical"</code>,
-<code>"subcortical"</code>, <code>"tract"</code>, or
-<code>"cerebellar"</code>.</p>
-<p>The <code>$palette</code> is a named character vector mapping labels
-to hex colours:</p>
+<code>"subcortical"</code>, <code>"tract"</code>,
+<code>"cerebellar"</code> or <code>"wm"</code>. The type is not stored
+separately from the class — it is read off it, so the two cannot
+disagree.</p>
+<p><code><a href="../reference/atlas_palette.html">atlas_palette()</a></code> is a named character vector mapping
+labels to hex colours:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">palette</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_palette.html">atlas_palette</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                lh_bankssts lh_caudalanteriorcingulate </span></span>
 <span><span class="co">#&gt;                  "#196428"                  "#7D64A0" </span></span>
 <span><span class="co">#&gt;     lh_caudalmiddlefrontal          lh_corpuscallosum </span></span>
 <span><span class="co">#&gt;                  "#641900"                  "#784632" </span></span>
 <span><span class="co">#&gt;                  lh_cuneus              lh_entorhinal </span></span>
 <span><span class="co">#&gt;                  "#DC1464"                  "#DC140A"</span></span></code></pre></div>
-<p><code>$core</code> is a data frame with one row per region. It always
-has <code>region</code> and <code>label</code> columns, and will often
-include <code>hemi</code> and additional metadata like <code>lobe</code>
-or <code>structure</code>:</p>
+<p><code><a href="../reference/atlas_core.html">atlas_core()</a></code> is a data frame with one row per region. It
+always has <code>region</code> and <code>label</code> columns, and will
+often include <code>hemi</code> and additional metadata like
+<code>lobe</code> or <code>structure</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">core</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_core.html">atlas_core</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   hemi                  region                      label</span></span>
 <span><span class="co">#&gt; 1 left                bankssts                lh_bankssts</span></span>
 <span><span class="co">#&gt; 2 left caudalanteriorcingulate lh_caudalanteriorcingulate</span></span>
@@ -188,11 +192,13 @@ or <code>structure</code>:</p>
 <span><span class="co">#&gt; 4                   corpus callosum white matter</span></span>
 <span><span class="co">#&gt; 5                            cuneus    occipital</span></span>
 <span><span class="co">#&gt; 6                        entorhinal     temporal</span></span></code></pre></div>
-<p>Finally, <code>$data</code> is a <code>ggseg_atlas_data</code> object
-that holds the actual geometry. Its contents depend on the atlas
-type.</p>
+<p>Finally <code><a href="../reference/atlas_data.html">atlas_data()</a></code> returns the
+<code>ggseg_atlas_data</code> object holding the geometry. Its contents
+depend on the atlas type, and in practice you want one of the geometry
+accessors — <code><a href="../reference/atlas_geom.html">atlas_geom()</a></code>, <code><a href="../reference/atlas_vertices.html">atlas_vertices()</a></code>,
+<code><a href="../reference/atlas_meshes.html">atlas_meshes()</a></code> — rather than the payload itself.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_data.html">atlas_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "ggseg_data_cortical" "ggseg_atlas_data"</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -205,26 +211,26 @@ cortical surface. Their data object is a
 <code>ggseg_data_cortical</code> containing sf polygons for 2D rendering
 and vertex indices for 3D:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">type</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_type.html">atlas_type</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "cortical"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_data.html">atlas_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "geom"     "vertices"</span></span></code></pre></div>
 <p><strong>Subcortical</strong> atlases like <code>aseg</code> represent
 deep brain structures. Their data is a
 <code>ggseg_data_subcortical</code> with sf polygons and individual 3D
 meshes:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">type</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_type.html">atlas_type</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "subcortical"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_data.html">atlas_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/aseg.html">aseg</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "geom"   "meshes"</span></span></code></pre></div>
 <p><strong>Tract</strong> atlases like <code>tracula</code> represent
 white matter bundles. Their data is a <code>ggseg_data_tract</code> with
 sf polygons and centerlines that generate tube meshes for 3D:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/tracula.html">tracula</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">type</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/atlas_type.html">atlas_type</a></span><span class="op">(</span><span class="fu"><a href="../reference/tracula.html">tracula</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "tract"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/tracula.html">tracula</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_data.html">atlas_data</a></span><span class="op">(</span><span class="fu"><a href="../reference/tracula.html">tracula</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "geom"        "centerlines"</span></span></code></pre></div>
 <p>In every case the sf component drives 2D plotting and the
 type-specific component (vertices, meshes, or centerlines) drives
@@ -233,15 +239,15 @@ type-specific component (vertices, meshes, or centerlines) drives
 <div class="section level2">
 <h2 id="core-the-region-table">Core: the region table<a class="anchor" aria-label="anchor" href="#core-the-region-table"></a>
 </h2>
-<p>The <code>$core</code> data frame is the single source of truth for
-what regions an atlas contains. Every manipulation function updates core
-first and then propagates changes to geometry and palette.</p>
+<p>The core table is the single source of truth for what regions an
+atlas contains. Every manipulation function updates core first and then
+propagates changes to geometry and palette.</p>
 <p>The required columns are <code>region</code> (a short,
 hemisphere-free key), <code>label</code> (a unique identifier that links
 core to geometry and palette) and <code>display</code> (the curated
 long-form display name). Most atlases also carry <code>hemi</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">core</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_core.html">atlas_core</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Classes 'tbl_df', 'tbl' and 'data.frame':    70 obs. of  5 variables:</span></span>
 <span><span class="co">#&gt;  $ hemi   : chr  "left" "left" "left" "left" ...</span></span>
 <span><span class="co">#&gt;  $ region : chr  "bankssts" "caudalanteriorcingulate" "caudalmiddlefrontal" "corpuscallosum" ...</span></span>
@@ -251,7 +257,7 @@ long-form display name). Most atlases also carry <code>hemi</code>:</p>
 <p>Some atlases include additional metadata columns. The <code>dk</code>
 atlas, for instance, has <code>lobe</code>:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">core</span><span class="op">$</span><span class="va">lobe</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="../reference/atlas_core.html">atlas_core</a></span><span class="op">(</span><span class="fu"><a href="../reference/dk.html">dk</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="va">lobe</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "temporal"     "cingulate"    "frontal"      "white matter" "occipital"   </span></span>
 <span><span class="co">#&gt; [6] "parietal"     "insula"</span></span></code></pre></div>
 <p>You can add your own metadata with <code><a href="../reference/atlas_core_add.html">atlas_core_add()</a></code>
@@ -464,7 +470,7 @@ into a proper <code>ggseg_atlas</code>:</p>
 <span><span class="fu"><a href="../reference/is_ggseg_atlas.html">is_ggseg_atlas</a></span><span class="op">(</span><span class="va">recovered</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
 <p>If you have an atlas object from an older version of ggseg that
-stored sf data directly in <code>$data</code> instead of using the new
+stored sf data directly in the data slot instead of using the
 <code>ggseg_atlas_data</code> wrapper,
 <code><a href="../reference/convert_legacy_brain_atlas.html">convert_legacy_brain_atlas()</a></code> will migrate it to the unified
 format.</p>

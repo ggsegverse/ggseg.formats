@@ -264,7 +264,8 @@ network_info <- data.frame(
   network = "default mode"
 )
 enriched <- atlas_core_add(dk(), network_info)
-enriched$core[!is.na(enriched$core$network), c("region", "network")]
+core <- atlas_core(enriched)
+core[!is.na(core$network), c("region", "network")]
 #>                region      network
 #> 8    inferiorparietal default mode
 #> 23 posteriorcingulate default mode

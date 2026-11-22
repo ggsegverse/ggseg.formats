@@ -34,7 +34,7 @@ Create and inspect ggseg atlas objects.
   : Check ggseg atlas class
 - [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   [`as_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
-  : Coerce to ggseg atlas
+  : Bring an atlas up to the current format
 - [`assert_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.md)
   : Require a valid ggseg atlas, reporting why it is not
 
@@ -49,7 +49,7 @@ Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
 
 - [`as_ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
   [`as_brain_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.md)
-  : Coerce to ggseg atlas
+  : Bring an atlas up to the current format
 
 - [`atlas_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
   [`brain_labels()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.md)
@@ -114,6 +114,12 @@ Query atlas contents without reaching into slots directly.
 - [`atlas_context()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_context.md)
   : The labels an atlas draws but does not treat as regions
 
+- [`atlas_core()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_core.md)
+  : Get the core table of an atlas
+
+- [`atlas_data()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_data.md)
+  : Get the geometry payload of an atlas
+
 - [`atlas_display()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.md)
   : Extract the display-name column of an atlas
 
@@ -134,6 +140,9 @@ Query atlas contents without reaching into slots directly.
 
 - [`atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.md)
   : Get atlas meshes for 3D rendering
+
+- [`atlas_name()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_name.md)
+  : Get the short name of an atlas
 
 - [`atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.md)
   : Get the palette of an atlas
@@ -156,6 +165,11 @@ Query atlas contents without reaching into slots directly.
   [`brain_regions()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.md)
   : Extract the region column of an atlas
 
+- [`atlas_schema_version()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_schema_version.md)
+  [`atlas_schema()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_schema_version.md)
+  [`atlas_schema_is_current()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_schema_version.md)
+  : The schema version an atlas was built against
+
 - [`atlas_sf()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.md)
   : Get atlas data for 2D rendering
 
@@ -175,8 +189,18 @@ Query atlas contents without reaching into slots directly.
 - [`atlas_views_empty()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views_empty.md)
   : The views an atlas has that draw no region
 
+- [`has_atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/has_atlas_geometry.md)
+  [`has_atlas_vertices()`](https://ggsegverse.github.io/ggseg.formats/reference/has_atlas_geometry.md)
+  [`has_atlas_meshes()`](https://ggsegverse.github.io/ggseg.formats/reference/has_atlas_geometry.md)
+  [`has_atlas_centerlines()`](https://ggsegverse.github.io/ggseg.formats/reference/has_atlas_geometry.md)
+  [`has_atlas_3d()`](https://ggsegverse.github.io/ggseg.formats/reference/has_atlas_geometry.md)
+  : Does an atlas carry this geometry?
+
 - [`legacy_region_map()`](https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.md)
   : Map pre-0.1.0 region names to current region keys
+
+- [`is_atlas_class()`](https://ggsegverse.github.io/ggseg.formats/reference/is_atlas_class.md)
+  : Does this object claim to be an atlas?
 
 - [`get_cerebellar_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/get_cerebellar_mesh.md)
   : Get SUIT cerebellar surface mesh
@@ -185,6 +209,12 @@ Query atlas contents without reaching into slots directly.
 
 Replace atlas properties, returning a modified `ggseg_atlas`.
 
+- [`set_atlas_core()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_core.md)
+  : Set the core table of an atlas, and the palette that is keyed on it
+- [`set_atlas_geom()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_geom.md)
+  : Set the 2D geometry of an atlas
+- [`set_atlas_name()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_name.md)
+  : Set the short name of an atlas
 - [`set_atlas_palette()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_palette.md)
   : Set the palette of an atlas
 - [`set_atlas_provenance()`](https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_provenance.md)

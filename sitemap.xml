@@ -18,7 +18,9 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/assert_ggseg_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_centerlines.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_context.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_core.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_core_add.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_data.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_display.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_geom.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_geometry_type.html</loc></url>
@@ -26,6 +28,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_labels.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_meshes.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_name.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_plot_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_polygons.html</loc></url>
@@ -33,6 +36,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_region_semantics.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_regions.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_schema_version.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_sf.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_structure_reorder.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/atlas_type.html</loc></url>
@@ -55,7 +59,9 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_subcortical.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_tract.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/ggseg_data_wm.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/has_atlas_geometry.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/index.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/is_atlas_class.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg3d_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/is_ggseg_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/legacy_region_map.html</loc></url>
@@ -70,6 +76,9 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/reorder_sfc.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/selectors.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_core.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_geom.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_name.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_palette.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_provenance.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/set_atlas_type.html</loc></url>
