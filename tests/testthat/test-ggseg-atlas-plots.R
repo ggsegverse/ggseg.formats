@@ -23,8 +23,8 @@ describe("plot.ggseg_atlas", {
 
   it("errors when atlas has no geometry", {
     k <- dk()
-    k$data$geom <- NULL
-    k$data$sf <- NULL
+    k@data$geom <- NULL
+    k@data$sf <- NULL
     expect_error(plot(k), "2D geometry")
   })
 
@@ -258,7 +258,7 @@ describe("plot_cells", {
 
   it("keeps a bridged view whole even with hemispheres supplied", {
     flat <- polygons_unnest(atlas_polygons(aseg()))
-    hemi <- resolve_plot_hemi(flat$label, aseg()$core)
+    hemi <- resolve_plot_hemi(flat$label, atlas_core(aseg()))
     expect_identical(plot_cells(flat, hemi), plot_cells(flat))
   })
 })

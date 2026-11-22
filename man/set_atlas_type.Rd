@@ -40,6 +40,9 @@ atlas_type(a)
 \code{\link[=atlas_type]{atlas_type()}} to read the type.
 
 Other atlas setters:
+\code{\link[=set_atlas_core]{set_atlas_core()}},
+\code{\link[=set_atlas_geom]{set_atlas_geom()}},
+\code{\link[=set_atlas_name]{set_atlas_name()}},
 \code{\link[=set_atlas_palette]{set_atlas_palette()}}
 }
 \concept{atlas setters}

@@ -56,9 +56,9 @@ convert_legacy_brain_atlas <- function(
 
   validate_legacy_inputs(has_2d, has_3d, atlas_2d, atlas_3d)
 
-  original_palette <- if (has_2d) atlas_2d$palette else NULL
+  original_palette <- if (has_2d) atlas_slot(atlas_2d, "palette") else NULL
 
-  if (has_2d && is.null(atlas_2d$core)) {
+  if (has_2d && is.null(atlas_slot(atlas_2d, "core"))) {
     atlas_2d <- convert_legacy_brain_data(atlas_2d) # nolint: object_usage_linter
   }
 
@@ -68,11 +68,11 @@ convert_legacy_brain_atlas <- function(
     has_3d,
     atlas_2d,
     atlas_3d,
-    setup$type,
+    atlas_slot(setup, "type"),
     surface,
     brain_meshes,
-    core = setup$core,
-    palette = setup$palette,
+    core = atlas_slot(setup, "core"),
+    palette = atlas_slot(setup, "palette"),
     sf_data = setup$sf_data
   )
 
@@ -135,12 +135,12 @@ extract_2d_sf <- function(has_2d, atlas_2d) {
   if (!has_2d) {
     return(NULL)
   }
-  geom <- if (inherits(atlas_2d$data, "ggseg_atlas_data")) {
-    geom_from_data(atlas_2d$data)
+  geom <- if (inherits(atlas_slot(atlas_2d, "data"), "ggseg_atlas_data")) {
+    geom_from_data(atlas_slot(atlas_2d, "data"))
   } else {
     NULL
   }
-  if (!is.null(geom)) geom else atlas_2d$sf
+  if (!is.null(geom)) geom else atlas_slot(atlas_2d, "sf")
 }
 
 
@@ -176,7 +176,7 @@ extract_3d_data <- function(
     cli::cli_inform(c("i" = "Extracted meshes from 3D atlas."))
   } else if (has_vertex_data(dt)) {
     vertices <- data.frame(label = dt$label)
-    vertices$vertices <- dt$vertices
+    vertices$vertices <- atlas_slot(dt, "vertices")
     cli::cli_inform(
       c("i" = "Using existing vertex indices from 3D atlas.")
     )
@@ -208,9 +208,9 @@ extract_meshes_from_rgl <- function(dt) {
 convert_rgl_mesh <- function(m) {
   list(
     vertices = data.frame(
-      x = if ("vb" %in% names(m)) m$vb[1, ] else m$vertices$x,
-      y = if ("vb" %in% names(m)) m$vb[2, ] else m$vertices$y,
-      z = if ("vb" %in% names(m)) m$vb[3, ] else m$vertices$z
+      x = if ("vb" %in% names(m)) m$vb[1, ] else atlas_slot(m, "vertices")$x,
+      y = if ("vb" %in% names(m)) m$vb[2, ] else atlas_slot(m, "vertices")$y,
+      z = if ("vb" %in% names(m)) m$vb[3, ] else atlas_slot(m, "vertices")$z
     ),
     faces = data.frame(
       i = if ("it" %in% names(m)) m$it[1, ] else m$faces$i,
@@ -259,10 +259,10 @@ try_infer_vertices <- function(atlas_3d, surface, brain_meshes, sf_data) {
 extract_2d_data <- function(atlas_2d) {
   vertices <- NULL
   if (
-    !is.null(atlas_2d$data$vertices) &&
-      "vertices" %in% names(atlas_2d$data$vertices)
+    !is.null(atlas_slot(atlas_2d, "data")$vertices) &&
+      "vertices" %in% names(atlas_slot(atlas_2d, "data")$vertices)
   ) {
-    vertices <- atlas_2d$data$vertices
+    vertices <- atlas_slot(atlas_2d, "data")$vertices
     cli::cli_inform(
       c("i" = "Using existing vertex data from 2D atlas.")
     )
@@ -298,7 +298,7 @@ build_atlas_data <- function(type, sf_data, vertices_df, meshes_df) {
 #' @keywords internal
 infer_atlas_type <- function(has_2d, atlas_2d, atlas_3d) {
   if (has_2d) {
-    return(atlas_2d$type)
+    return(atlas_slot(atlas_2d, "type"))
   }
   if (any(atlas_3d$hemi == "subcort")) {
     return("subcortical")
@@ -313,7 +313,7 @@ has_vertex_data <- function(dt) {
   if (!("vertices" %in% names(dt))) {
     return(FALSE)
   }
-  !all(vapply(dt$vertices, length, integer(1)) == 0)
+  !all(vapply(atlas_slot(dt, "vertices"), length, integer(1)) == 0)
 }
 
 
@@ -386,7 +386,7 @@ infer_vertices_from_meshes <- function(
 #' @noRd
 #' @keywords internal
 mesh_vertex_index <- function(brain_mesh) {
-  coords <- as.matrix(brain_mesh$vertices)
+  coords <- as.matrix(atlas_slot(brain_mesh, "vertices"))
   keys <- coord_keys(coords)
   stats::setNames(seq_len(nrow(coords)) - 1L, keys)
 }
@@ -412,8 +412,8 @@ coord_keys <- function(coords) {
 region_coords_from_mesh <- function(m) {
   if ("vb" %in% names(m)) {
     cbind(m$vb[1, ], m$vb[2, ], m$vb[3, ])
-  } else if ("vertices" %in% names(m) && !is.null(m$vertices)) {
-    as.matrix(m$vertices)
+  } else if ("vertices" %in% names(m) && !is.null(atlas_slot(m, "vertices"))) {
+    as.matrix(atlas_slot(m, "vertices"))
   } else {
     NULL
   }
@@ -453,14 +453,18 @@ legacy_atlas_setup <- function(
   type
 ) {
   atlas_name <- atlas_name %||%
-    (if (has_2d) atlas_2d$atlas else gsub("_3d$", "", atlas_3d$atlas[1]))
+    (if (has_2d) {
+      atlas_slot(atlas_2d, "atlas")
+    } else {
+      gsub("_3d$", "", atlas_slot(atlas_3d, "atlas")[1])
+    })
   type <- type %||% infer_atlas_type(has_2d, atlas_2d, atlas_3d)
   list(
     atlas_name = atlas_name,
     type = type,
     sf_data = extract_2d_sf(has_2d, atlas_2d),
-    core = if (has_2d) atlas_2d$core else NULL,
-    palette = if (has_2d) atlas_2d$palette else NULL
+    core = if (has_2d) atlas_slot(atlas_2d, "core") else NULL,
+    palette = if (has_2d) atlas_slot(atlas_2d, "palette") else NULL
   )
 }
 
@@ -469,23 +473,24 @@ legacy_atlas_setup <- function(
 #' @noRd
 #' @keywords internal
 assemble_legacy_atlas <- function(setup, result, original_palette) {
-  core <- fill_legacy_core_display(result$core %||% setup$core)
-  core <- normalise_legacy_hemi(core)
-  core <- dedupe_legacy_core_labels(core, setup$atlas_name)
+  core <- fill_legacy_core_display(
+    atlas_slot(result, "core") %||% atlas_slot(setup, "core")
+  )
+  core <- repair_legacy_core(core, setup$atlas_name)
   palette <- resolve_legacy_palette(
-    result$palette %||% setup$palette,
+    atlas_slot(result, "palette") %||% atlas_slot(setup, "palette"),
     original_palette,
     core
   )
   data <- build_atlas_data(
-    setup$type,
+    atlas_slot(setup, "type"),
     setup$sf_data,
-    result$vertices,
-    result$meshes
+    atlas_slot(result, "vertices"),
+    atlas_slot(result, "meshes")
   )
   ggseg_atlas(
     atlas = setup$atlas_name,
-    type = setup$type,
+    type = atlas_slot(setup, "type"),
     palette = palette,
     core = core,
     data = data

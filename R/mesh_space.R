@@ -125,29 +125,6 @@ get_mesh_space <- function(mesh) {
 }
 
 
-#' @export
-print.mesh_space <- function(x, ...) {
-  cli::cli_text("{.cls mesh_space} (v{x$schema_version})")
-  cli::cli_bullets(c(
-    "*" = "vertex space: {.val {x$vertex_space}}",
-    "*" = "hemisphere: {.val {x$hemi}}",
-    "*" = if (x$anatomical) {
-      "anatomical, mapped to MNI305"
-    } else {
-      "not anatomical, no MNI305 mapping"
-    },
-    "*" = "units: {.val {x$units}}"
-  ))
-  if (!is.null(x$surface)) {
-    cli::cli_bullets(c("*" = "surface: {.val {x$surface}}"))
-  }
-  if (!is.null(x$source)) {
-    cli::cli_bullets(c("*" = "source: {x$source}"))
-  }
-  invisible(x)
-}
-
-
 #' Build a mesh that describes itself
 #'
 #' Assembles vertices, faces and a [mesh_space()] into one object, checking
@@ -430,4 +407,27 @@ check_faces_match_base <- function(
     )
   }
   invisible(faces)
+}
+
+
+#' @noRd
+print_mesh_space <- function(x, ...) {
+  cli::cli_text("{.cls mesh_space} (v{x$schema_version})")
+  cli::cli_bullets(c(
+    "*" = "vertex space: {.val {x$vertex_space}}",
+    "*" = "hemisphere: {.val {x$hemi}}",
+    "*" = if (x$anatomical) {
+      "anatomical, mapped to MNI305"
+    } else {
+      "not anatomical, no MNI305 mapping"
+    },
+    "*" = "units: {.val {x$units}}"
+  ))
+  if (!is.null(x$surface)) {
+    cli::cli_bullets(c("*" = "surface: {.val {x$surface}}"))
+  }
+  if (!is.null(x$source)) {
+    cli::cli_bullets(c("*" = "source: {x$source}"))
+  }
+  invisible(x)
 }

@@ -12,7 +12,7 @@ context_label_pattern <- paste0(
 #'
 #' Returns the atlas `palette` when it can tell the atlas's regions apart, and
 #' otherwise a palette of automatically assigned, distinguishable colours. Use
-#' this instead of reading `atlas$palette` directly whenever the palette is
+#' this instead of reading [atlas_palette()] directly whenever the palette is
 #' about to be drawn: some atlases are built from colour lookup tables that give
 #' every region the same colour (often black), and rendering those faithfully
 #' produces a solid silhouette in which no region can be told from its
@@ -44,15 +44,15 @@ atlas_plot_palette <- function(atlas) {
   }
 
   plot_labels <- plot_palette_labels(atlas)
-  stored <- atlas$palette
+  stored <- atlas_slot(atlas, "palette")
 
-  if (palette_is_usable(stored, plot_labels, atlas$core$label)) {
+  if (palette_is_usable(stored, plot_labels, atlas_slot(atlas, "core")$label)) {
     return(stored)
   }
 
   if (!is.null(stored) && length(stored) > 0L) {
     cli::cli_warn(c(
-      "Atlas {.val {atlas$atlas}} has no usable colour palette.",
+      "Atlas {.val {atlas_name(atlas)}} has no usable colour palette.",
       "i" = "Every region is the same colour, so no region can be told from
              its neighbours; falling back to automatically assigned colours.",
       "!" = "Fix the atlas colour lookup table to give each region its
@@ -60,7 +60,7 @@ atlas_plot_palette <- function(atlas) {
     ))
   }
 
-  fallback_palette(plot_labels, atlas$core$label)
+  fallback_palette(plot_labels, atlas_slot(atlas, "core")$label)
 }
 
 
@@ -152,8 +152,11 @@ fallback_palette <- function(labels, core_labels = NULL) {
 #' @noRd
 #' @keywords internal
 plot_palette_labels <- function(atlas) {
-  geom <- tryCatch(geom_from_data(atlas$data), error = function(e) NULL)
+  geom <- tryCatch(
+    geom_from_data(atlas_slot(atlas, "data")),
+    error = function(e) NULL
+  )
   geom_labels <- if (!is.null(geom) && "label" %in% names(geom)) geom$label
-  all_labels <- unique(c(atlas$core$label, geom_labels))
+  all_labels <- unique(c(atlas_slot(atlas, "core")$label, geom_labels))
   all_labels[!is.na(all_labels)]
 }

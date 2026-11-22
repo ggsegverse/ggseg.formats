@@ -20,15 +20,61 @@ describe("as_ggseg_atlas", {
     result <- as_ggseg_atlas(lst)
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_identical(result$atlas, "test")
+    expect_identical(atlas_name(result), "test")
   })
 
   it("errors for unsupported object types", {
-    expect_error(as_ggseg_atlas(~age), "Cannot convert.*to.*ggseg_atlas")
+    expect_error(as_ggseg_atlas(~age), class = "ggseg.formats_not_atlas")
   })
 
   it("errors for empty list", {
-    expect_error(as_ggseg_atlas(list()), "Cannot convert list")
+    expect_error(as_ggseg_atlas(list()), class = "ggseg.formats_not_atlas")
+  })
+})
+
+
+describe("as_ggseg_atlas() repairs a published 2.x atlas", {
+  # Six atlas objects published in the 2.x series -- ggsegCraddock's three
+  # cerebellar atlases, ggsegMcalt's, ggsegAal's `aal3_cerebellum` and
+  # ggsegDemoatlas -- ship a legacy `hemi` spelling. They are tagged lists
+  # carrying a modern payload, so they take the `restamp_class()` path, which
+  # upgraded without repairing anything. The spellings are accepted as input;
+  # only the constructed object has to conform.
+  it("normalises a legacy hemi spelling on the way in", {
+    for (spelling in c("vermis", "middle", "lh", "rh")) {
+      atlas <- legacy_list_atlas(dk())
+      atlas$core$hemi[1] <- spelling
+
+      result <- as_ggseg_atlas(atlas)
+
+      expect_true(is_ggseg_atlas(result))
+      expect_true(all(
+        atlas_core(result)$hemi %in% c("left", "right", "midline", NA)
+      ))
+    }
+  })
+
+  it("collapses duplicated core labels on the way in", {
+    atlas <- legacy_list_atlas(dk())
+    atlas$core$label[2] <- atlas$core$label[1]
+
+    expect_warning(
+      result <- as_ggseg_atlas(atlas),
+      class = "ggseg.formats_collapsed_duplicate_labels"
+    )
+    expect_identical(anyDuplicated(atlas_core(result)$label), 0L)
+  })
+  it("normalises a legacy hemi spelling in an untagged list", {
+    # An untagged list built through the public constructor skipped the
+    # repair, because the constructor must refuse a bad `hemi` from an atlas
+    # author rather than quietly fix it.
+    atlas <- unclass(legacy_list_atlas(dk()))
+    atlas$core$hemi[1] <- "vermis"
+
+    result <- as_ggseg_atlas(atlas)
+
+    expect_true(is_ggseg_atlas(result))
+    expect_false("vermis" %in% atlas_core(result)$hemi)
   })
 })
 
@@ -66,8 +112,8 @@ describe("as_ggseg_atlas.ggseg_atlas", {
     result <- as_ggseg_atlas(legacy)
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_s3_class(result$data, "ggseg_atlas_data")
-    expect_identical(result$atlas, "legacy")
+    expect_s3_class(atlas_data(result), "ggseg_atlas_data")
+    expect_identical(atlas_name(result), "legacy")
   })
 
   it("returns unchanged if already has proper data structure", {
@@ -129,7 +175,7 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_identical(result$atlas, "old")
+    expect_identical(atlas_name(result), "old")
   })
 
   it("auto-converts old brain_atlas with sf-in-data to ggseg_atlas", {
@@ -161,8 +207,8 @@ describe("as_ggseg_atlas.brain_atlas (legacy auto-conversion)", {
     )
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_false(is.null(result$core))
-    expect_s3_class(result$data, "ggseg_atlas_data")
+    expect_false(is.null(atlas_core(result)))
+    expect_s3_class(atlas_data(result), "ggseg_atlas_data")
   })
 })
 
@@ -196,7 +242,7 @@ describe("as_ggseg_atlas.list", {
     result <- as_ggseg_atlas(legacy_list)
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_s3_class(result$data, "ggseg_atlas_data")
+    expect_s3_class(atlas_data(result), "ggseg_atlas_data")
   })
 })
 
@@ -257,9 +303,9 @@ describe("convert_legacy_brain_data", {
     result <- convert_legacy_brain_data(legacy)
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_false(is.null(result$core))
-    expect_s3_class(result$data, "ggseg_atlas_data")
-    expect_identical(result$atlas, "legacy")
+    expect_false(is.null(atlas_core(result)))
+    expect_s3_class(atlas_data(result), "ggseg_atlas_data")
+    expect_identical(atlas_name(result), "legacy")
   })
 
   it("renames side column to view", {
@@ -315,7 +361,7 @@ describe("convert_legacy_brain_data", {
     result <- convert_legacy_brain_data(legacy)
 
     expect_s3_class(result, "ggseg_atlas")
-    expect_null(result$palette)
+    expect_null(atlas_palette(result))
   })
 })
 
@@ -401,7 +447,7 @@ describe("as_ggseg_atlas.brain_atlas legacy paths", {
       result <- as_ggseg_atlas(old_atlas)
     )
     expect_s3_class(result, "ggseg_atlas")
-    expect_s3_class(result$data, "ggseg_atlas_data")
+    expect_s3_class(atlas_data(result), "ggseg_atlas_data")
   })
 
   it("errors for unrecognized brain_atlas structure", {
@@ -473,8 +519,8 @@ describe("legacy core label de-duplication", {
       ),
       class = "ggseg.formats_collapsed_duplicate_labels"
     )
-    expect_identical(nrow(atlas$core), 1L)
-    expect_identical(atlas$core$label, "Left-Thalamus")
+    expect_identical(nrow(atlas_core(atlas)), 1L)
+    expect_identical(atlas_core(atlas)$label, "Left-Thalamus")
     expect_true(is_ggseg_atlas(atlas))
   })
 
@@ -494,5 +540,77 @@ describe("legacy core label de-duplication", {
       dedupe_legacy_core_labels(data.frame(a = 1)),
       data.frame(a = 1)
     )
+  })
+})
+
+describe("as_ggseg_atlas() at a package boundary", {
+  it("returns a current atlas untouched", {
+    expect_identical(as_ggseg_atlas(dk()), dk())
+  })
+
+  it("upgrades a legacy list atlas", {
+    out <- as_ggseg_atlas(legacy_list_atlas(dk()))
+    expect_true(S7::S7_inherits(out))
+    expect_true(atlas_schema_is_current(out))
+  })
+
+  it("upgrades an atlas on an older schema", {
+    stale <- dk()
+    S7::prop(stale, "schema") <- atlas_schema_version() - 1L
+    expect_true(atlas_schema_is_current(as_ggseg_atlas(stale)))
+  })
+
+  it("carries the atlas across unchanged", {
+    # The boundary must not alter what it lets through.
+    original <- dk()
+    out <- as_ggseg_atlas(legacy_list_atlas(original))
+    expect_identical(
+      as.data.frame(atlas_core(out)),
+      as.data.frame(atlas_core(original))
+    )
+    expect_identical(atlas_palette(out), atlas_palette(original))
+    expect_identical(atlas_geom(out), atlas_geom(original))
+  })
+
+  it("blames the caller's argument for a non-atlas", {
+    takes_an_atlas <- function(brain) as_ggseg_atlas(brain)
+    expect_error(
+      takes_an_atlas(42),
+      class = "ggseg.formats_not_atlas"
+    )
+    expect_error(takes_an_atlas(42), "brain")
+  })
+
+  it("reports an invalid atlas with the defect as the cause", {
+    broken <- legacy_list_atlas(dk())
+    broken$core$label <- NULL
+    expect_error(
+      as_ggseg_atlas(broken),
+      class = "ggseg.formats_invalid_atlas"
+    )
+  })
+
+  it("is silent on the way through", {
+    # A boundary that chatters is a boundary people route around.
+    expect_silent(as_ggseg_atlas(legacy_list_atlas(dk())))
+  })
+
+  it("still deprecation-warns for a pre-2.0 brain_atlas", {
+    # The one thing the upgrade does not swallow: `brain_atlas` predates the
+    # current class entirely, so the warning is worth hearing.
+    old <- structure(
+      as.list(dk()),
+      class = c("cortical_atlas", "brain_atlas", "list")
+    )
+    expect_warning(as_ggseg_atlas(old), class = "lifecycle_warning_deprecated")
+  })
+
+  it("works for every bundled atlas, in both representations", {
+    for (atlas in list(dk(), aseg(), tracula(), suit())) {
+      expect_true(atlas_schema_is_current(as_ggseg_atlas(atlas)))
+      expect_true(atlas_schema_is_current(as_ggseg_atlas(legacy_list_atlas(
+        atlas
+      ))))
+    }
   })
 })

@@ -26,14 +26,18 @@ describe("assert_ggseg_atlas", {
     cnd <- rlang::catch_cnd(outer(42), "error")
     expect_identical(conditionCall(cnd), quote(outer(42)))
 
-    broken <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    broken <- legacy_list_atlas(dk())
     broken$core$label <- NULL
     cnd <- rlang::catch_cnd(outer(broken), "error")
     expect_identical(conditionCall(cnd), quote(outer(broken)))
   })
 
   it("surfaces a missing core column instead of the class", {
-    atlas <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(dk())
     atlas$core$label <- NULL
 
     expect_error(
@@ -44,7 +48,9 @@ describe("assert_ggseg_atlas", {
   })
 
   it("surfaces a duplicated core label", {
-    atlas <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(dk())
     atlas$core$label[2] <- atlas$core$label[1]
 
     expect_error(
@@ -56,7 +62,7 @@ describe("assert_ggseg_atlas", {
 
   it("surfaces a non-character core display column", {
     atlas <- dk()
-    atlas$core$display <- seq_len(nrow(atlas$core))
+    atlas@core$display <- seq_len(nrow(atlas_core(atlas)))
 
     expect_error(
       assert_ggseg_atlas(atlas),
@@ -66,7 +72,9 @@ describe("assert_ggseg_atlas", {
   })
 
   it("surfaces an unnamed palette", {
-    atlas <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(dk())
     atlas$palette <- unname(atlas_palette(atlas))
 
     expect_error(
@@ -78,8 +86,8 @@ describe("assert_ggseg_atlas", {
 
   it("surfaces a core label without 3D geometry", {
     atlas <- aseg()
-    dropped <- atlas$data$meshes$label[1]
-    atlas$data$meshes <- atlas$data$meshes[-1, ]
+    dropped <- atlas_data(atlas)$meshes$label[1]
+    atlas@data$meshes <- atlas_data(atlas)$meshes[-1, ]
 
     expect_error(
       assert_ggseg_atlas(atlas),
@@ -90,7 +98,9 @@ describe("assert_ggseg_atlas", {
   })
 
   it("surfaces a data slot that is not a ggseg_atlas_data", {
-    atlas <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(dk())
     atlas$data <- data.frame(label = "lh_bankssts")
 
     expect_error(
@@ -101,7 +111,9 @@ describe("assert_ggseg_atlas", {
   })
 
   it("surfaces a type that disagrees with the data class", {
-    atlas <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(dk())
     class(atlas$data) <- c(
       "ggseg_data_subcortical",
       "ggseg_atlas_data",
@@ -126,6 +138,9 @@ describe("validate_ggseg_atlas", {
     expect_length(valid, 1)
     expect_null(attributes(valid))
 
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(atlas)
     atlas$core$label <- NULL
     expect_silent(invalid <- validate_ggseg_atlas(atlas))
     expect_false(invalid)
@@ -135,7 +150,9 @@ describe("validate_ggseg_atlas", {
 
 describe("atlas format converters", {
   it("report why an invalid atlas cannot be converted", {
-    atlas <- dk()
+    # Exercises the legacy-list path: an S7 atlas cannot be constructed
+    # invalid, so the invalid fixture is a legacy tagged list.
+    atlas <- legacy_list_atlas(dk())
     atlas$core$label[2] <- atlas$core$label[1]
 
     expect_error(

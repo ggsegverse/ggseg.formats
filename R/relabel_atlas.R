@@ -40,13 +40,13 @@ atlas_relabel <- function(atlas, mapping) {
     x
   }
 
-  core <- atlas$core
+  core <- atlas_slot(atlas, "core")
   core$label <- remap(core$label)
 
-  palette <- atlas$palette
+  palette <- atlas_slot(atlas, "palette")
   names(palette) <- remap(names(palette))
 
-  data <- atlas$data
+  data <- atlas_slot(atlas, "data")
   for (slot in names(data)) {
     if (is.data.frame(data[[slot]]) && "label" %in% names(data[[slot]])) {
       data[[slot]]$label <- remap(data[[slot]]$label)
@@ -54,12 +54,12 @@ atlas_relabel <- function(atlas, mapping) {
   }
 
   ggseg_atlas(
-    atlas = atlas$atlas,
-    type = atlas$type,
+    atlas = atlas_slot(atlas, "atlas"),
+    type = atlas_slot(atlas, "type"),
     palette = palette,
     core = core,
     data = data,
-    provenance = atlas$provenance
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 

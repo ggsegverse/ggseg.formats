@@ -184,7 +184,9 @@ is_brain_atlas <- function(x) {
 #' @examples
 #' atlas <- assert_ggseg_atlas(dk())
 #'
-#' broken <- dk()
+#' # An S7 atlas cannot be constructed invalid, so the invalid case is a
+#' # legacy list atlas -- the shape an older release built.
+#' broken <- structure(as.list(dk()), class = c("ggseg_atlas", "list"))
 #' broken$core$label <- NULL
 #' try(assert_ggseg_atlas(broken))
 assert_ggseg_atlas <- function(
@@ -198,6 +200,11 @@ assert_ggseg_atlas <- function(
       class = "ggseg.formats_not_atlas",
       call = call
     )
+  }
+
+  stale <- atlas_schema_defect(x, arg)
+  if (!is.null(stale)) {
+    cli::cli_abort(stale, class = "ggseg.formats_stale_schema", call = call)
   }
 
   defect <- atlas_structure_defect(x)
@@ -225,162 +232,31 @@ is_ggseg3d_atlas <- function(x) {
 }
 
 
-#' @export
-#' @importFrom stats na.omit
-print.ggseg_atlas <- function(x, n = 10, ...) {
-  data <- x$data
-  geom <- geom_from_data(data)
-  has_sf <- !is.null(geom)
-  has_3d <- !is.null(data$vertices) ||
-    !is.null(data$meshes) ||
-    !is.null(data$centerlines)
-
-  print_atlas_summary(x, has_sf)
-  print_atlas_rendering(x, data, has_sf, has_3d)
-
-  cli::cli_rule()
-
-  print_data_head(x$core, n)
-
-  invisible(x)
-}
-
-
-#' @export
-as.list.ggseg_atlas <- function(x, ...) {
-  list(
-    atlas = x$atlas,
-    type = x$type,
-    palette = x$palette,
-    core = x$core,
-    data = x$data
-  )
-}
-
-
-#' @export
-as.data.frame.ggseg_atlas <- function(x, ...) {
-  sf_data <- as_sf_for_data_frame(x)
-
-  # Geometry travels out of band. Base merge(), cbind() and `[` each strip a
-  # different part of the sf representation when sf is not loaded, so every
-  # operation below runs on attributes only, paired back by `.ggseg_row`.
-  sf_column <- attr(sf_data, "sf_column")
-  if (is.null(sf_column)) {
-    sf_column <- "geometry"
-  }
-  geometry <- sf_data[[sf_column]]
-
-  result <- sf_data
-  result[[sf_column]] <- NULL
-  class(result) <- "data.frame"
-  result$.ggseg_row <- seq_len(nrow(result))
-
-  result <- merge_core_into_sf(result, x$core)
-
-  if (x$type == "cortical") {
-    result <- infer_cortical_hemi(result)
-  }
-
-  # merge.sf moves the geometry column to the end of the merged frame, so with
-  # sf loaded it has always landed after the core columns and before the three
-  # added below. Insert it there, so the column order does not depend on
-  # whether sf happens to be installed.
-  geom_pos <- ncol(result) - 1L
-
-  result$atlas <- x$atlas
-  result$type <- x$type
-
-  if (!is.null(x$palette)) {
-    result$colour <- unname(x$palette[result$label])
-  }
-
-  result <- order_context_behind(result, x$core$label)
-
-  geometry <- reorder_sfc(geometry, result$.ggseg_row)
-  result$.ggseg_row <- NULL
-  rownames(result) <- NULL
-  attach_sfc(result, geometry, sf_column, after = geom_pos)
-}
-
-#' @importFrom graphics mtext par plot.new plot.window polygon polypath
-#' @export
-plot.ggseg_atlas <- function(x, ...) {
-  flat <- polygons_unnest(atlas_polygons(x))
-  flat <- order_context_behind(flat, x$core$label)
-  fill_colors <- resolve_fill_colors(
-    flat$label,
-    atlas_plot_palette(x),
-    x$core$label
-  )
-  dots <- list(...)
-
-  # One panel per spatially separate piece, arranged in a near-square grid so
-  # each gets enough room to read. This is a quick overview of the atlas, not a
-  # publication figure.
-  cell <- plot_cells(flat, resolve_plot_hemi(flat$label, x$core))
-  cells <- order_cells_spatially(cell, flat$x)
-  ncol <- ceiling(sqrt(length(cells)))
-  nrow <- ceiling(length(cells) / ncol)
-  cell_tables <- split(flat, cell)
-
-  old_par <- par(
-    mfrow = c(nrow, ncol),
-    mar = c(0.3, 0.3, 0.3, 0.3),
-    oma = c(0, 0, 2, 0)
-  )
-  on.exit(par(old_par), add = TRUE)
-
-  for (ci in cells) {
-    cf <- cell_tables[[as.character(ci)]]
-    plot.new()
-    plot.window(
-      xlim = range(cf$x, na.rm = TRUE),
-      ylim = range(cf$y, na.rm = TRUE),
-      asp = 1
-    )
-    # Factor levels follow first appearance (not the alphabetical order a bare
-    # character split would impose) so the context-behind ordering set above is
-    # honoured when the pieces are drawn.
-    piece_id <- piece_keys(cf)
-    pieces <- split(cf, factor(piece_id, levels = unique(piece_id)))
-    invisible(lapply(pieces, function(piece) {
-      draw_piece(piece, fill_colors[[piece$label[[1L]]]], dots)
-    }))
-  }
-
-  mtext(paste(x$atlas, x$type, "atlas"), outer = TRUE, cex = 1, line = 0.5)
-
-  invisible(x)
-}
-
-#' Order plot panels by their left-to-right position
-#'
-#' Panel ids come from [plot_cells()], which numbers cells in the order views
-#' are encountered in the row table. For `brain_polygons` those rows are nested
-#' by `label`, so encounter order depends on which views the first label happens
-#' to carry -- it neither follows the atlas layout nor is stable. Ordering by
-#' each cell's leftmost x makes the panels read in the order the views are
-#' actually laid out, so [atlas_view_reorder()] is honoured.
-#' @noRd
-#' @keywords internal
-order_cells_spatially <- function(cell, x) {
-  cells <- unique(cell)
-  left <- vapply(
-    cells,
-    function(ci) min(x[cell == ci], na.rm = TRUE),
-    numeric(1)
-  )
-  cells[order(left, cells)]
-}
-
-
-#' Lightweight class check for atlas-classed objects
+#' Does this object claim to be an atlas?
 #'
 #' `TRUE` when `x` carries the `ggseg_atlas` or legacy `brain_atlas` class
-#' tag, without the structural revalidation that [is_ggseg_atlas()] performs.
-#' @noRd
-#' @keywords internal
+#' tag, without the structural revalidation [is_ggseg_atlas()] performs. The
+#' two answer different questions, and the difference matters at exactly one
+#' kind of boundary: code that has to *repair* an atlas needs to recognise a
+#' broken one, which `is_ggseg_atlas()` reports as `FALSE`.
+#'
+#' Use [is_ggseg_atlas()] to decide whether an atlas can be drawn or saved.
+#' Use this to decide whether an object is an atlas at all -- upgrading a
+#' published atlas, migrating a legacy one, or reporting why one is rejected.
+#'
+#' @param x an object
+#' @return A logical scalar.
+#' @seealso [is_ggseg_atlas()], which also revalidates the structure, and
+#'   [assert_ggseg_atlas()], which aborts with the reason.
+#' @export
+#' @examples
+#' is_atlas_class(dk())
+#'
+#' # A structurally broken atlas still claims to be one, which is what lets
+#' # the migration verbs take hold of it.
+#' broken <- structure(list(atlas = "x"), class = c("ggseg_atlas", "list"))
+#' is_atlas_class(broken)
+#' is_ggseg_atlas(broken)
 is_atlas_class <- function(x) {
   inherits(x, "ggseg_atlas") || inherits(x, "brain_atlas")
 }
@@ -414,12 +290,12 @@ atlas_structure_defect <- function(x) {
   rlang::try_fetch(
     suppressMessages(suppressWarnings({
       ggseg_atlas(
-        atlas = x$atlas,
-        type = x$type,
-        core = x$core,
-        data = x$data,
-        palette = x$palette,
-        provenance = x$provenance
+        atlas = atlas_slot(x, "atlas"),
+        type = atlas_slot(x, "type"),
+        core = atlas_slot(x, "core"),
+        data = atlas_slot(x, "data"),
+        palette = atlas_slot(x, "palette"),
+        provenance = atlas_slot(x, "provenance")
       )
       NULL
     })),
@@ -435,26 +311,26 @@ atlas_structure_defect <- function(x) {
 #' @noRd
 #' @keywords internal
 as_sf_for_data_frame <- function(x) {
-  geom <- if (inherits(x$data, "ggseg_atlas_data")) {
-    geom_from_data(x$data)
+  geom <- if (inherits(atlas_slot(x, "data"), "ggseg_atlas_data")) {
+    geom_from_data(atlas_slot(x, "data"))
   } else {
     NULL
   }
   has_2d_slot <- !is.null(geom) ||
-    inherits(x$data, "sf") ||
-    inherits(x$data, "data.frame")
+    inherits(atlas_slot(x, "data"), "sf") ||
+    inherits(atlas_slot(x, "data"), "data.frame")
   if (!has_2d_slot) {
     cli::cli_abort("Cannot convert ggseg_atlas to data.frame: no 2D geometry.")
   }
   # The geom slot is already an sf-class frame in both representations --
   # polygons_to_sf() builds one through sfheaders -- so that path needs no sf.
-  # The legacy fallback does: `x$data` is a plain frame whose geometry column
+  # The legacy fallback does: the payload is a plain frame whose geometry column
   # has to be promoted, which only st_as_sf() can do.
   sf_data <- if (!is.null(geom)) {
     if (inherits(geom, "brain_polygons")) polygons_to_sf(geom) else geom
   } else {
     require_sf("as.data.frame.ggseg_atlas()")
-    sf::st_as_sf(x$data)
+    sf::st_as_sf(atlas_slot(x, "data"))
   }
 
   if (nrow(sf_data) == 0) {
@@ -974,12 +850,14 @@ validate_core_display <- function(core, atlas) {
 #' @noRd
 #' @keywords internal
 print_atlas_summary <- function(x, has_sf) {
-  n_regions <- length(stats::na.omit(unique(x$core$region))) # nolint
-  hemis <- paste0(unique(x$core$hemi), collapse = ", ") # nolint
+  n_regions <- length(stats::na.omit(unique(atlas_slot(x, "core")$region))) # nolint
+  hemis <- paste0(unique(atlas_slot(x, "core")$hemi), collapse = ", ") # nolint
 
-  cli::cli_h1("{x$atlas} ggseg atlas")
+  name <- atlas_slot(x, "atlas") # nolint: object_usage_linter
+  cli::cli_h1("{name} ggseg atlas")
 
-  cli::cli_text("{.strong Type: {x$type}}")
+  type <- atlas_slot(x, "type") # nolint: object_usage_linter
+  cli::cli_text("{.strong Type: {type}}")
   cli::cli_text("{.strong Regions:} {n_regions}")
   cli::cli_text("{.strong Hemispheres:} {hemis}")
 
@@ -999,7 +877,7 @@ print_atlas_summary <- function(x, has_sf) {
 #' @noRd
 #' @keywords internal
 print_atlas_rendering <- function(x, data, has_sf, has_3d) {
-  has_palette <- !is.null(x$palette) # nolint: object_usage_linter
+  has_palette <- !is.null(atlas_slot(x, "palette")) # nolint: object_usage_linter
 
   check <- function(val) {
     # nolint: object_usage_linter
@@ -1013,12 +891,12 @@ print_atlas_rendering <- function(x, data, has_sf, has_3d) {
   cli::cli_text("{.strong Palette:} {check(has_palette)}")
 
   # nolint start: object_usage_linter
-  render_3d <- if (!is.null(data$centerlines)) {
+  render_3d <- if (!is.null(atlas_slot(data, "centerlines"))) {
     # nolint end
     "centerlines"
-  } else if (!is.null(data$meshes)) {
+  } else if (!is.null(atlas_slot(data, "meshes"))) {
     "meshes"
-  } else if (!is.null(data$vertices)) {
+  } else if (!is.null(atlas_slot(data, "vertices"))) {
     "vertices"
   } else {
     "none"
@@ -1066,19 +944,185 @@ new_ggseg_atlas <- function(
   data,
   provenance = NULL
 ) {
-  slots <- list(
+  out <- atlas_class_for_type(type)(
     atlas = atlas,
-    type = type,
-    palette = palette,
     core = core,
-    data = data
+    data = data,
+    palette = palette,
+    provenance = provenance,
+    schema = atlas_schema_version()
   )
+  # The validator computes `type` from the class, and S7 runs it while a
+  # two-level subclass -- `wm_atlas` under `subcortical_atlas` -- still carries
+  # its parent, so the type it checks against is the parent's and a wm atlas
+  # with a subcortical payload passes. Revalidating the finished object closes
+  # that, for this subclass and any added later.
+  out <- S7::validate(out)
+  tag_legacy_atlas_classes(out)
+}
+
+
+#' @importFrom stats na.omit
+#' @noRd
+print_ggseg_atlas <- function(x, n = 10, ...) {
+  data <- atlas_slot(x, "data")
+  geom <- geom_from_data(data)
+  has_sf <- !is.null(geom)
+  has_3d <- !is.null(atlas_slot(data, "vertices")) ||
+    !is.null(atlas_slot(data, "meshes")) ||
+    !is.null(atlas_slot(data, "centerlines"))
+
+  print_atlas_summary(x, has_sf)
+  print_atlas_rendering(x, data, has_sf, has_3d)
+
+  cli::cli_rule()
+
+  print_data_head(atlas_slot(x, "core"), n)
+
+  invisible(x)
+}
+
+
+#' @noRd
+as_list_ggseg_atlas <- function(x, ...) {
+  out <- list(
+    atlas = atlas_slot(x, "atlas"),
+    type = atlas_slot(x, "type"),
+    palette = atlas_slot(x, "palette"),
+    core = atlas_slot(x, "core"),
+    data = atlas_slot(x, "data")
+  )
+  # With `$`, `[[` and `unclass()` gone this is the only list view, and
+  # `structure(as.list(a), class = ...)` is the documented way to make a
+  # legacy copy -- so dropping the build record loses it for good. `schema`
+  # stays out: it describes the S7 object, and a list is not one.
+  provenance <- atlas_slot(x, "provenance")
   if (!is.null(provenance)) {
-    slots$provenance <- provenance
+    out$provenance <- provenance
+  }
+  out
+}
+
+
+#' @noRd
+as_data_frame_ggseg_atlas <- function(x, ...) {
+  sf_data <- as_sf_for_data_frame(x)
+
+  # Geometry travels out of band. Base merge(), cbind() and `[` each strip a
+  # different part of the sf representation when sf is not loaded, so every
+  # operation below runs on attributes only, paired back by `.ggseg_row`.
+  sf_column <- attr(sf_data, "sf_column")
+  if (is.null(sf_column)) {
+    sf_column <- "geometry"
+  }
+  geometry <- sf_data[[sf_column]]
+
+  result <- sf_data
+  result[[sf_column]] <- NULL
+  class(result) <- "data.frame"
+  result$.ggseg_row <- seq_len(nrow(result))
+
+  result <- merge_core_into_sf(result, atlas_slot(x, "core"))
+
+  if (atlas_slot(x, "type") == "cortical") {
+    result <- infer_cortical_hemi(result)
   }
 
-  structure(
-    slots,
-    class = atlas_class(type)
+  # merge.sf moves the geometry column to the end of the merged frame, so with
+  # sf loaded it has always landed after the core columns and before the three
+  # added below. Insert it there, so the column order does not depend on
+  # whether sf happens to be installed.
+  geom_pos <- ncol(result) - 1L
+
+  result$atlas <- atlas_slot(x, "atlas")
+  result$type <- atlas_slot(x, "type")
+
+  if (!is.null(atlas_slot(x, "palette"))) {
+    result$colour <- unname(atlas_slot(x, "palette")[result$label])
+  }
+
+  result <- order_context_behind(result, atlas_slot(x, "core")$label)
+
+  geometry <- reorder_sfc(geometry, result$.ggseg_row)
+  result$.ggseg_row <- NULL
+  rownames(result) <- NULL
+  attach_sfc(result, geometry, sf_column, after = geom_pos)
+}
+
+
+#' @importFrom graphics mtext par plot.new plot.window polygon polypath
+#' @noRd
+plot_ggseg_atlas <- function(x, ...) {
+  flat <- polygons_unnest(atlas_polygons(x))
+  flat <- order_context_behind(flat, atlas_slot(x, "core")$label)
+  fill_colors <- resolve_fill_colors(
+    flat$label,
+    atlas_plot_palette(x),
+    atlas_slot(x, "core")$label
   )
+  dots <- list(...)
+
+  # One panel per spatially separate piece, arranged in a near-square grid so
+  # each gets enough room to read. This is a quick overview of the atlas, not a
+  # publication figure.
+  cell <- plot_cells(flat, resolve_plot_hemi(flat$label, atlas_slot(x, "core")))
+  cells <- order_cells_spatially(cell, flat$x)
+  ncol <- ceiling(sqrt(length(cells)))
+  nrow <- ceiling(length(cells) / ncol)
+  cell_tables <- split(flat, cell)
+
+  old_par <- par(
+    mfrow = c(nrow, ncol),
+    mar = c(0.3, 0.3, 0.3, 0.3),
+    oma = c(0, 0, 2, 0)
+  )
+  on.exit(par(old_par), add = TRUE)
+
+  for (ci in cells) {
+    cf <- cell_tables[[as.character(ci)]]
+    plot.new()
+    plot.window(
+      xlim = range(cf$x, na.rm = TRUE),
+      ylim = range(cf$y, na.rm = TRUE),
+      asp = 1
+    )
+    # Factor levels follow first appearance (not the alphabetical order a bare
+    # character split would impose) so the context-behind ordering set above is
+    # honoured when the pieces are drawn.
+    piece_id <- piece_keys(cf)
+    pieces <- split(cf, factor(piece_id, levels = unique(piece_id)))
+    invisible(lapply(pieces, function(piece) {
+      draw_piece(piece, fill_colors[[piece$label[[1L]]]], dots)
+    }))
+  }
+
+  mtext(
+    paste(atlas_slot(x, "atlas"), atlas_slot(x, "type"), "atlas"),
+    outer = TRUE,
+    cex = 1,
+    line = 0.5
+  )
+
+  invisible(x)
+}
+
+
+#' Order plot panels by their left-to-right position
+#'
+#' Panel ids come from [plot_cells()], which numbers cells in the order views
+#' are encountered in the row table. For `brain_polygons` those rows are nested
+#' by `label`, so encounter order depends on which views the first label happens
+#' to carry -- it neither follows the atlas layout nor is stable. Ordering by
+#' each cell's leftmost x makes the panels read in the order the views are
+#' actually laid out, so [atlas_view_reorder()] is honoured.
+#' @noRd
+#' @keywords internal
+order_cells_spatially <- function(cell, x) {
+  cells <- unique(cell)
+  left <- vapply(
+    cells,
+    function(ci) min(x[cell == ci], na.rm = TRUE),
+    numeric(1)
+  )
+  cells[order(left, cells)]
 }

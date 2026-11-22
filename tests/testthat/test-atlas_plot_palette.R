@@ -1,5 +1,5 @@
 uniform_palette <- function(atlas, colour = "#000000") {
-  stats::setNames(rep(colour, nrow(atlas$core)), atlas$core$label)
+  stats::setNames(rep(colour, nrow(atlas_core(atlas))), atlas_core(atlas)$label)
 }
 
 describe("is_context_label()", {
@@ -117,29 +117,29 @@ describe("atlas_plot_palette()", {
     ))
     expect_warning(atlas_plot_palette(a), "dk")
     cols <- suppressWarnings(atlas_plot_palette(a))
-    expect_gt(length(unique(cols[a$core$label])), 1L)
+    expect_gt(length(unique(cols[atlas_core(a)$label])), 1L)
   })
 
   it("falls back for an all-black palette", {
     a <- suppressWarnings(set_atlas_palette(dk(), uniform_palette(dk())))
     cols <- suppressWarnings(atlas_plot_palette(a))
-    expect_false(any(cols[a$core$label] == "#000000"))
+    expect_false(any(cols[atlas_core(a)$label] == "#000000"))
   })
 
   it("keeps context grey when falling back", {
     a <- suppressWarnings(set_atlas_palette(aseg(), uniform_palette(aseg())))
     cols <- suppressWarnings(atlas_plot_palette(a))
-    context <- setdiff(names(cols), a$core$label)
+    context <- setdiff(names(cols), atlas_core(a)$label)
     expect_gt(length(context), 0L)
     expect_true(all(cols[context] == context_fill_colour))
   })
 
   it("keeps a core medial wall grey when falling back", {
     a <- aseg()
-    extra <- a$core[1, , drop = FALSE]
+    extra <- atlas_core(a)[1, , drop = FALSE]
     extra$region <- "cortex"
     extra$label <- "cortex_"
-    a$core <- rbind(a$core, extra)
+    a@core <- rbind(atlas_core(a), extra)
     a <- suppressWarnings(set_atlas_palette(a, uniform_palette(a)))
     cols <- suppressWarnings(atlas_plot_palette(a))
     expect_identical(unname(cols["cortex_"]), context_fill_colour)
@@ -147,9 +147,9 @@ describe("atlas_plot_palette()", {
 
   it("falls back silently when the atlas carries no palette at all", {
     a <- dk()
-    a$palette <- NULL
+    a@palette <- NULL
     cols <- expect_no_warning(atlas_plot_palette(a))
-    expect_gt(length(unique(cols[a$core$label])), 1L)
+    expect_gt(length(unique(cols[atlas_core(a)$label])), 1L)
   })
 })
 

@@ -6,7 +6,8 @@
 #' the modified atlas, so it composes with the pipe.
 #'
 #' @inheritParams atlas_palette
-#' @param value Named character vector of colours keyed by atlas `label`.
+#' @param value Named character vector of colours keyed by atlas `label`,
+#'   or `NULL` to clear the palette.
 #'
 #' @return The `ggseg_atlas` with its palette replaced.
 #' @family atlas setters
@@ -20,9 +21,17 @@ set_atlas_palette <- function(atlas, value) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
+  if (is.null(value)) {
+    # A palette-less atlas is a state the class allows and the renderers cope
+    # with, so the setter has to be able to produce it. Without this, clearing
+    # a palette was only reachable by assigning the property directly.
+    return(set_atlas_slot(atlas, "palette", NULL))
+  }
+
   if (!is.character(value) || is.null(names(value))) {
     cli::cli_abort(c(
-      "{.arg value} must be a named character vector of colours.",
+      "{.arg value} must be a named character vector of colours, or {.val NULL}
+       to clear it.",
       "i" = "Names are the atlas region {.field label}s."
     ))
   }
@@ -33,8 +42,7 @@ set_atlas_palette <- function(atlas, value) {
       "i" = "e.g. {.val {utils::head(absent, 3)}} ({length(absent)} total)."
     ))
   }
-  atlas$palette <- value
-  atlas
+  set_atlas_slot(atlas, "palette", value)
 }
 
 
@@ -73,12 +81,12 @@ set_atlas_type <- function(atlas, value) {
   value <- match.arg(value, atlas_types())
 
   ggseg_atlas(
-    atlas = atlas$atlas,
+    atlas = atlas_slot(atlas, "atlas"),
     type = value,
-    core = atlas$core,
-    data = atlas$data,
-    palette = atlas$palette,
-    provenance = atlas$provenance
+    core = atlas_slot(atlas, "core"),
+    data = atlas_slot(atlas, "data"),
+    palette = atlas_slot(atlas, "palette"),
+    provenance = atlas_slot(atlas, "provenance")
   )
 }
 
@@ -110,6 +118,127 @@ set_atlas_provenance <- function(atlas, value) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
-  atlas$provenance <- validate_provenance(value)
-  atlas
+  set_atlas_slot(atlas, "provenance", validate_provenance(value))
+}
+
+
+#' Set the short name of an atlas
+#'
+#' Replaces the name an atlas is published and cited under. The counterpart to
+#' [atlas_name()], and the setter that was missing from the family: a pipeline
+#' that builds an atlas under a working name and renames the finished object
+#' had no way to do it short of assigning the property.
+#'
+#' @inheritParams atlas_palette
+#' @param value A single, non-missing character string.
+#'
+#' @return The `ggseg_atlas` with its name replaced.
+#' @family atlas setters
+#' @seealso [atlas_name()] to read it.
+#' @export
+#' @examples
+#' atlas_name(set_atlas_name(aseg(), "aseg_subcortical"))
+set_atlas_name <- function(atlas, value) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  if (!is.character(value) || length(value) != 1 || is.na(value)) {
+    cli::cli_abort("{.arg value} must be a single, non-missing string.")
+  }
+  set_atlas_slot(atlas, "atlas", value)
+}
+
+
+#' Set the 2D geometry of an atlas
+#'
+#' Replaces the single `geom` slot of the atlas payload, which holds either an
+#' sf data frame or a `brain_polygons` data frame. The counterpart to
+#' [atlas_geom()]: the geometry pipelines in ggseg.extra rewrite geometry
+#' constantly -- smoothing, eroding, reshaping -- and had to reach into the
+#' payload to put the result back.
+#'
+#' Writing geometry does not rewrite `core`. A verb that drops regions as well
+#' as geometry has to update both, and because the validator spans properties
+#' that has to land in one step -- see [set_atlas_core()].
+#'
+#' @inheritParams atlas_palette
+#' @param value An sf data frame or a `brain_polygons` data frame, keyed by
+#'   `label`.
+#'
+#' @return The `ggseg_atlas` with its 2D geometry replaced.
+#' @family atlas setters
+#' @seealso [atlas_geom()] to read it.
+#' @export
+#' @examples
+#' a <- dk()
+#' identical(atlas_geom(set_atlas_geom(a, atlas_geom(a))), atlas_geom(a))
+set_atlas_geom <- function(atlas, value) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  if (!is.null(value) && !is.data.frame(value)) {
+    cli::cli_abort(
+      "{.arg value} must be an {.cls sf} or {.cls brain_polygons} data frame."
+    )
+  }
+  # An atlas built before the unified slot keeps geometry in a top-level `sf`
+  # and may have no payload at all. Writing `geom` into that shape leaves the
+  # old `sf` in place to shadow it, and the write is lost at the next
+  # coercion, so upgrade first and write to the one place geometry lives.
+  atlas <- as_ggseg_atlas(atlas)
+  data <- atlas_slot(atlas, "data")
+  data$geom <- value
+  set_atlas_slot(atlas, "data", data)
+}
+
+
+#' Set the core table of an atlas, and the palette that is keyed on it
+#'
+#' `core` and `palette` are keyed on the same labels, so a verb that drops or
+#' renames regions changes both. The validator spans properties and runs on
+#' every assignment, which means the two cannot be assigned one after the
+#' other: the first assignment is checked against the stale value of the
+#' other and fails. This lands them together.
+#'
+#' It also keeps S7 an implementation detail of this package. Without it, every
+#' atlas-editing package needs `Imports: S7` and has to know that
+#' `S7::props()<-` is the way to make a paired edit.
+#'
+#' @inheritParams atlas_palette
+#' @param value A data frame with one row per region, carrying at least
+#'   `region` and `label`.
+#' @param palette A named character vector of colours keyed by the new
+#'   `label`s, `NULL` to clear it, or `"keep"` (the default) to carry the
+#'   existing palette across, dropping entries for labels that have gone.
+#'
+#' @return The `ggseg_atlas` with its core table, and palette, replaced.
+#' @family atlas setters
+#' @seealso [atlas_core()] to read it.
+#' @export
+#' @examples
+#' a <- dk()
+#' keep <- head(atlas_core(a), 10)
+#' nrow(atlas_core(set_atlas_core(a, keep)))
+set_atlas_core <- function(atlas, value, palette = "keep") {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  if (!is.data.frame(value)) {
+    cli::cli_abort("{.arg value} must be a data.frame.")
+  }
+
+  # A legacy list has no validator spanning its slots, so assigning into one
+  # accepted a duplicated label or a `hemi` outside the vocabulary in silence
+  # and handed back an atlas every later check refuses. Upgrade first and the
+  # invariants hold for both representations.
+  atlas <- as_ggseg_atlas(atlas)
+
+  if (identical(palette, "keep")) {
+    palette <- atlas_slot(atlas, "palette")
+    if (!is.null(palette)) {
+      palette <- palette[names(palette) %in% value$label]
+    }
+  }
+
+  atlas_set_props(atlas, core = value, palette = palette)
 }

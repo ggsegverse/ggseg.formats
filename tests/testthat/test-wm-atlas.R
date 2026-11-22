@@ -11,29 +11,6 @@ describe("atlas_types()", {
 })
 
 
-describe("atlas_class()", {
-  it("gives a type with no parent the class it always had", {
-    # paste0() does not drop a NULL -- paste0(NULL, "_atlas") is "_atlas" --
-    # so a parent appended unconditionally would put a bogus class on every
-    # other type.
-    for (type in setdiff(atlas_types(), "wm")) {
-      expect_identical(
-        atlas_class(type),
-        c(paste0(type, "_atlas"), "ggseg_atlas", "list"),
-        info = type
-      )
-    }
-  })
-
-  it("makes a white-matter atlas a subcortical atlas as well", {
-    expect_identical(
-      atlas_class("wm"),
-      c("wm_atlas", "subcortical_atlas", "ggseg_atlas", "list")
-    )
-  })
-})
-
-
 describe("a white-matter atlas", {
   wm_atlas <- function() {
     meshes <- data.frame(
@@ -134,5 +111,48 @@ describe("ggseg_data_wm()", {
 
   it("needs geometry or meshes, like its parent", {
     expect_error(ggseg_data_wm(), "At least one of")
+  })
+})
+
+describe("a wm atlas cannot be built invalid", {
+  it("refuses a subcortical payload at construction", {
+    # `wm_atlas` sits under `subcortical_atlas`, and S7 runs the validator
+    # while the two-level subclass is still stamped with its parent -- so the
+    # `type` the validator computed was "subcortical" and a wm atlas carrying
+    # a subcortical payload was constructed, invalid the moment it existed.
+    # nolint start: undesirable_operator_linter.
+    expect_error(
+      ggseg.formats:::new_ggseg_atlas(
+        "x",
+        "wm",
+        NULL,
+        atlas_core(aseg()),
+        atlas_data(aseg()),
+        NULL
+      )
+    )
+    # nolint end
+  })
+
+  it("keeps the wm payload through a geometry verb", {
+    # `rebuild_data_with_geom()` sniffs which slots are filled, so a wm
+    # payload came back as `ggseg_data_subcortical` and the atlas no longer
+    # validated -- with the validator now running, that would be a hard error
+    # out of every view and region verb.
+    atlas <- ggseg_atlas(
+      atlas = "wmtest",
+      type = "wm",
+      core = atlas_core(aseg()),
+      palette = atlas_palette(aseg()),
+      data = ggseg_data_wm(
+        geom = atlas_data(aseg())$geom,
+        meshes = atlas_data(aseg())$meshes
+      )
+    )
+
+    result <- atlas_view_gather(atlas)
+
+    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+    expect_true(is_ggseg_atlas(result))
   })
 })

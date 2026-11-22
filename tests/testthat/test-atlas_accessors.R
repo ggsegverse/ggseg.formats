@@ -90,8 +90,8 @@ describe("atlas_sf", {
 
   it("errors when atlas has no 2D geometry", {
     atlas <- dk()
-    atlas$data$geom <- NULL
-    atlas$data$sf <- NULL
+    atlas@data$geom <- NULL
+    atlas@data$sf <- NULL
     expect_error(atlas_sf(atlas), "does not contain 2D geometry")
   })
 
@@ -190,7 +190,7 @@ describe("atlas_sf", {
     demoted <- atlas_region_contextual(atlas, "zzz", match_on = "region")
     result <- atlas_sf(demoted)
 
-    is_core <- result$label %in% demoted$core$label
+    is_core <- result$label %in% atlas_core(demoted)$label
     expect_lt(max(which(!is_core)), min(which(is_core)))
     # alphabetical order (lh_aaa, lh_ctx, lh_zzz) would put a core row first;
     # guard against a regression to the merge() default sort.
@@ -449,5 +449,60 @@ describe("atlas_meshes", {
 
   it("errors for non-ggseg_atlas input", {
     expect_error(atlas_meshes(data.frame()), "must be a.*ggseg_atlas")
+  })
+})
+
+describe("the accessors refuse a non-atlas", {
+  it("names the class they need", {
+    for (f in list(atlas_core, atlas_data, atlas_name)) {
+      expect_error(f(42), "ggseg_atlas")
+      expect_error(f(list()), "ggseg_atlas")
+    }
+  })
+
+  it("reads what it was given", {
+    expect_identical(atlas_name(dk()), "dk")
+    expect_identical(atlas_core(dk()), atlas_slot(dk(), "core"))
+    expect_identical(atlas_data(dk()), atlas_slot(dk(), "data"))
+  })
+})
+
+
+describe("the geometry predicates answer FALSE too", {
+  # These exist so a renderer can ask "is there anything to draw" -- an
+  # answer that is only ever TRUE is not an answer.
+  it("reports no 2D geometry when there is none", {
+    expect_false(has_atlas_geom(set_atlas_geom(aseg(), NULL)))
+  })
+
+  it("reports no 3D geometry for a 2D-only atlas", {
+    flat <- ggseg_atlas(
+      atlas = "flat",
+      type = "subcortical",
+      core = atlas_core(aseg()),
+      palette = atlas_palette(aseg()),
+      data = ggseg_data_subcortical(geom = atlas_data(aseg())$geom)
+    )
+
+    expect_false(has_atlas_3d(flat))
+    expect_false(has_atlas_meshes(flat))
+  })
+
+  it("finds geometry a pre-2.0 atlas kept in a top-level slot", {
+    # The whole reason the predicate is not just a payload lookup.
+    legacy <- structure(
+      list(
+        atlas = "dk",
+        type = "cortical",
+        palette = atlas_palette(dk()),
+        core = atlas_core(dk()),
+        sf = atlas_geom(dk()),
+        vertices = atlas_data(dk())$vertices
+      ),
+      class = c("cortical_atlas", "ggseg_atlas", "list")
+    )
+
+    expect_true(has_atlas_vertices(legacy))
+    expect_true(has_atlas_3d(legacy))
   })
 })

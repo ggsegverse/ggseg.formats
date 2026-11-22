@@ -25,8 +25,18 @@ An atlas carrying one cannot be constructed, so it cannot be passed
 through any verb that validates -- including
 \code{\link[=migrate_atlas_display]{migrate_atlas_display()}}. This repairs \code{core} directly for that reason.
 }
+\section{Which atlases this serves}{
+
+
+A \code{ggseg_atlas} cannot carry a \code{hemi} outside the vocabulary: the invariant
+is checked on construction and on every assignment, so there is nothing for
+this to repair. What it repairs is a \emph{legacy list} atlas -- one built by a
+release before 3.0.0 and still shipped by an installed atlas package --
+which is why the example builds one.
+}
+
 \examples{
-atlas <- dk()
-atlas$core$hemi[1] <- "middle"
-unique(migrate_atlas_hemi(atlas)$core$hemi)
+legacy <- structure(as.list(dk()), class = c("cortical_atlas", "list"))
+legacy$core$hemi[1] <- "middle"
+unique(migrate_atlas_hemi(legacy)$core$hemi)
 }

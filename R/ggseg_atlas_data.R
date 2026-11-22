@@ -280,81 +280,6 @@ ggseg_data_tract <- function(
 }
 
 
-#' @export
-print.ggseg_data_cortical <- function(x, n = 10, ...) {
-  cli::cli_h2("ggseg_data_cortical")
-
-  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
-  if (!is.null(twod_summary)) {
-    cli::cli_text(twod_summary)
-  }
-
-  if (!is.null(x$vertices)) {
-    cli::cli_text("{.strong 3D (ggseg3d):} vertex indices")
-    print_data_head(x$vertices, n)
-  }
-
-  invisible(x)
-}
-
-
-#' @export
-print.ggseg_data_subcortical <- function(x, n = 10, ...) {
-  cli::cli_h2("ggseg_data_subcortical")
-
-  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
-  if (!is.null(twod_summary)) {
-    cli::cli_text(twod_summary)
-  }
-
-  if (!is.null(x$meshes)) {
-    cli::cli_text("{.strong 3D (ggseg3d):} meshes")
-    print_mesh_summary(x$meshes, n)
-  }
-
-  invisible(x)
-}
-
-
-#' @export
-print.ggseg_data_cerebellar <- function(x, n = 10, ...) {
-  cli::cli_h2("ggseg_data_cerebellar")
-
-  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
-  if (!is.null(twod_summary)) {
-    cli::cli_text(twod_summary)
-  }
-
-  if (!is.null(x$vertices)) {
-    cli::cli_text("{.strong 3D (ggseg3d):} vertex indices (SUIT surface)")
-    print_data_head(x$vertices, n)
-  }
-
-  invisible(x)
-}
-
-
-#' @export
-print.ggseg_data_tract <- function(x, ...) {
-  cli::cli_h2("ggseg_data_tract")
-
-  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
-  if (!is.null(twod_summary)) {
-    cli::cli_text(twod_summary)
-  }
-
-  if (!is.null(x$centerlines)) {
-    n_tracts <- nrow(x$centerlines) # nolint: object_usage_linter
-    total_points <- sum(vapply(x$centerlines$points, nrow, integer(1))) # nolint
-    cli::cli_text(
-      "{.strong 3D (ggseg3d):} {n_tracts} centerlines ({total_points} points)"
-    )
-  }
-
-  invisible(x)
-}
-
-
 # Deprecated wrappers ----
 
 #' @param sf Deprecated. Pass 2D geometry via `geom` instead.
@@ -553,4 +478,79 @@ print_mesh_summary <- function(meshes, n = 10) {
     )
   )
   print_data_head(summary_df, n)
+}
+
+
+#' @noRd
+print_ggseg_data_cortical <- function(x, n = 10, ...) {
+  cli::cli_h2("ggseg_data_cortical")
+
+  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
+  if (!is.null(twod_summary)) {
+    cli::cli_text(twod_summary)
+  }
+
+  if (!is.null(x$vertices)) {
+    cli::cli_text("{.strong 3D (ggseg3d):} vertex indices")
+    print_data_head(x$vertices, n)
+  }
+
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_data_subcortical <- function(x, n = 10, ...) {
+  cli::cli_h2("ggseg_data_subcortical")
+
+  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
+  if (!is.null(twod_summary)) {
+    cli::cli_text(twod_summary)
+  }
+
+  if (!is.null(x$meshes)) {
+    cli::cli_text("{.strong 3D (ggseg3d):} meshes")
+    print_mesh_summary(x$meshes, n)
+  }
+
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_data_cerebellar <- function(x, n = 10, ...) {
+  cli::cli_h2("ggseg_data_cerebellar")
+
+  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
+  if (!is.null(twod_summary)) {
+    cli::cli_text(twod_summary)
+  }
+
+  if (!is.null(x$vertices)) {
+    cli::cli_text("{.strong 3D (ggseg3d):} vertex indices (SUIT surface)")
+    print_data_head(x$vertices, n)
+  }
+
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_data_tract <- function(x, ...) {
+  cli::cli_h2("ggseg_data_tract")
+
+  twod_summary <- summarise_2d(x) # nolint: object_usage_linter
+  if (!is.null(twod_summary)) {
+    cli::cli_text(twod_summary)
+  }
+
+  if (!is.null(x$centerlines)) {
+    n_tracts <- nrow(x$centerlines) # nolint: object_usage_linter
+    total_points <- sum(vapply(x$centerlines$points, nrow, integer(1))) # nolint
+    cli::cli_text(
+      "{.strong 3D (ggseg3d):} {n_tracts} centerlines ({total_points} points)"
+    )
+  }
+
+  invisible(x)
 }

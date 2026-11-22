@@ -1,13 +1,13 @@
-Accumbens
 accumbens
+Accumbens
 aseg
 Athanasia
 Balsters
 Brodmann
 Busa
 callosal
-Caudate
 caudate
+Caudate
 centerline
 centerlines
 CMD
@@ -30,6 +30,10 @@ GDAL
 GEOS
 ggplot
 ggseg
+ggsegAal
+ggsegCraddock
+ggsegDemoatlas
+ggsegMcalt
 ggsegSUIT
 ggsegverse
 globus
@@ -45,6 +49,7 @@ Lifecycle
 lite
 losslessly
 LUT
+MCALT
 MNI
 MULTIPOLYGON
 NeuroImage
@@ -82,8 +87,8 @@ symdifference
 tibble
 tidyverse
 TRActs
-TRACULA
 tracula
+TRACULA
 triangularis
 UnderLying
 unioned

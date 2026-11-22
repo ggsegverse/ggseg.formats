@@ -1,3 +1,70 @@
+#' Get the core table of an atlas
+#'
+#' Returns the `core` data frame: one row per region, carrying `label` (the
+#' key the palette and every geometry slot join on), `region`, `hemi`, and
+#' whatever grouping or metadata columns the atlas curates (`display`, `lobe`,
+#' `network`, `structure`).
+#'
+#' @param atlas a `ggseg_atlas` object
+#' @return A data frame with one row per region.
+#' @family atlas accessors
+#' @seealso [atlas_labels()] and [atlas_regions()] for single columns of it,
+#'   [atlas_core_add()] to add columns to it.
+#' @export
+#' @examples
+#' head(atlas_core(dk()))
+#' nrow(atlas_core(aseg()))
+atlas_core <- function(atlas) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  atlas_slot(atlas, "core")
+}
+
+
+#' Get the geometry payload of an atlas
+#'
+#' Returns the whole `ggseg_data_*` payload. Prefer the accessor for the
+#' geometry you actually want -- [atlas_geom()], [atlas_sf()],
+#' [atlas_polygons()], [atlas_vertices()], [atlas_meshes()],
+#' [atlas_centerlines()] -- and reach for this only when the payload itself is
+#' the subject.
+#'
+#' @param atlas a `ggseg_atlas` object
+#' @return A `ggseg_atlas_data` object.
+#' @family atlas accessors
+#' @export
+#' @examples
+#' class(atlas_data(dk()))
+atlas_data <- function(atlas) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  atlas_slot(atlas, "data")
+}
+
+
+#' Get the short name of an atlas
+#'
+#' Returns the atlas's own name, the one it is published and cited under --
+#' `"dk"`, `"aseg"`, `"schaefer17_100"`. Named `atlas_name()` rather than
+#' `atlas_atlas()`, which is what the slot would suggest.
+#'
+#' @param atlas a `ggseg_atlas` object
+#' @return A length-one character vector.
+#' @family atlas accessors
+#' @export
+#' @examples
+#' atlas_name(dk())
+#' atlas_name(aseg())
+atlas_name <- function(atlas) {
+  if (!is_atlas_class(atlas)) {
+    cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
+  }
+  atlas_slot(atlas, "atlas")
+}
+
+
 #' Get the palette of an atlas
 #'
 #' Retrieves the colour palette from a brain atlas: a named character vector
@@ -18,20 +85,20 @@ atlas_palette <- function(atlas, ...) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas} object.")
   }
-  atlas$palette
+  atlas_slot(atlas, "palette")
 }
 
 
 #' Get the raw 2D geometry of an atlas
 #'
-#' Returns the single 2D geometry object stored in `atlas$data$geom`, which is
+#' Returns the single 2D geometry object the atlas payload carries, which is
 #' either an sf-class data frame or a `brain_polygons` data.frame. Its class
 #' determines which rendering path is used downstream.
 #'
 #' For backward compatibility with released atlases built before the unified
 #' `geom` slot, this falls back to the legacy `sf` slot. Reverse dependencies
 #' should call this accessor (or [atlas_sf()] / [atlas_polygons()]) rather than
-#' reaching into `atlas$data` directly.
+#' reaching into the payload directly.
 #'
 #' @param atlas a ggseg_atlas object
 #' @return an sf or `brain_polygons` object, or `NULL` if the atlas has no 2D
@@ -45,7 +112,7 @@ atlas_geom <- function(atlas) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
-  geom_from_data(atlas$data)
+  geom_from_data(atlas_slot(atlas, "data"))
 }
 
 #' Classify or test an atlas's 2D geometry
@@ -76,14 +143,15 @@ atlas_geometry_type <- function(atlas) {
 #' @rdname atlas_geometry_type
 #' @export
 is_atlas_sf <- function(atlas) {
-  is_ggseg_atlas(atlas) && inherits(geom_from_data(atlas$data), "sf")
+  is_ggseg_atlas(atlas) &&
+    inherits(geom_from_data(atlas_slot(atlas, "data")), "sf")
 }
 
 #' @rdname atlas_geometry_type
 #' @export
 is_atlas_polygon <- function(atlas) {
   is_ggseg_atlas(atlas) &&
-    inherits(geom_from_data(atlas$data), "brain_polygons")
+    inherits(geom_from_data(atlas_slot(atlas, "data")), "brain_polygons")
 }
 
 #' Get atlas data for 2D rendering
@@ -130,11 +198,17 @@ atlas_sf <- function(atlas) {
   # `order_context_behind()` establishes upstream. Re-apply that ordering
   # afterwards so contextual rows draw behind the core regions, mirroring
   # `as.data.frame.ggseg_atlas()`.
-  result <- merge(sf_data, atlas$core, by = "label", all.x = TRUE, sort = FALSE)
-  result <- order_context_behind(result, atlas$core$label)
+  result <- merge(
+    sf_data,
+    atlas_slot(atlas, "core"),
+    by = "label",
+    all.x = TRUE,
+    sort = FALSE
+  )
+  result <- order_context_behind(result, atlas_slot(atlas, "core")$label)
 
-  if (!is.null(atlas$palette)) {
-    result$colour <- unname(atlas$palette[result$label])
+  if (!is.null(atlas_slot(atlas, "palette"))) {
+    result$colour <- unname(atlas_slot(atlas, "palette")[result$label])
   }
 
   class(result) <- c("ggseg_sf", class(result))
@@ -185,14 +259,18 @@ atlas_vertices <- function(atlas) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
-  if (is.null(atlas$data$vertices)) {
+  if (is.null(atlas_slot(atlas, "data")$vertices)) {
     cli::cli_abort("Atlas does not contain vertices for 3D rendering.")
   }
 
-  result <- df_left_join(atlas$data$vertices, atlas$core, by = "label")
+  result <- df_left_join(
+    atlas_slot(atlas, "data")$vertices,
+    atlas_slot(atlas, "core"),
+    by = "label"
+  )
 
-  if (!is.null(atlas$palette)) {
-    result$colour <- unname(atlas$palette[result$label])
+  if (!is.null(atlas_slot(atlas, "palette"))) {
+    result$colour <- unname(atlas_slot(atlas, "palette")[result$label])
   }
 
   class(result) <- c("ggseg_vertices", class(result))
@@ -223,7 +301,7 @@ atlas_centerlines <- function(atlas) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
-  if (is.null(atlas$data$centerlines)) {
+  if (is.null(atlas_slot(atlas, "data")$centerlines)) {
     cli::cli_abort(c(
       "Atlas does not contain tract centerlines.",
       "i" = "Only tract atlases carry centerlines; this one is \\
@@ -231,10 +309,14 @@ atlas_centerlines <- function(atlas) {
     ))
   }
 
-  result <- df_left_join(atlas$data$centerlines, atlas$core, by = "label")
+  result <- df_left_join(
+    atlas_slot(atlas, "data")$centerlines,
+    atlas_slot(atlas, "core"),
+    by = "label"
+  )
 
-  if (!is.null(atlas$palette)) {
-    result$colour <- unname(atlas$palette[result$label])
+  if (!is.null(atlas_slot(atlas, "palette"))) {
+    result$colour <- unname(atlas_slot(atlas, "palette")[result$label])
   }
 
   class(result) <- c("ggseg_centerlines", class(result))
@@ -259,78 +341,24 @@ atlas_meshes <- function(atlas) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
 
-  if (is.null(atlas$data$meshes)) {
+  if (is.null(atlas_slot(atlas, "data")$meshes)) {
     cli::cli_abort("Atlas does not contain meshes for 3D rendering.")
   }
 
-  result <- df_left_join(atlas$data$meshes, atlas$core, by = "label")
+  result <- df_left_join(
+    atlas_slot(atlas, "data")$meshes,
+    atlas_slot(atlas, "core"),
+    by = "label"
+  )
 
-  if (!is.null(atlas$palette)) {
-    result$colour <- unname(atlas$palette[result$label])
+  if (!is.null(atlas_slot(atlas, "palette"))) {
+    result$colour <- unname(atlas_slot(atlas, "palette")[result$label])
   }
 
   class(result) <- c("ggseg_meshes", class(result))
   result
 }
 
-
-#' @export
-print.ggseg_sf <- function(x, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  views <- if ("view" %in% names(x)) {
-    toString(unique(x$view))
-  }
-  cli::cli_rule("{.cls ggseg_sf} data: {dims}")
-  if (!is.null(views)) {
-    cli::cli_text("Views: {views}")
-  }
-  NextMethod()
-  invisible(x)
-}
-
-#' @export
-print.ggseg_vertices <- function(x, n = 10, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  vert_lengths <- if ("vertices" %in% names(x)) {
-    vapply(x$vertices, length, integer(1))
-  }
-  cli::cli_rule("{.cls ggseg_vertices} data: {dims}")
-  if (!is.null(vert_lengths) && length(vert_lengths) > 0) {
-    cli::cli_text(
-      "Vertices per region: {format(min(vert_lengths), big.mark = ',')}
-\u2013{format(max(vert_lengths), big.mark = ',')}"
-    )
-  }
-  print_data_head(x, n)
-  invisible(x)
-}
-
-#' @export
-print.ggseg_centerlines <- function(x, n = 10, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  n_points <- if ("points" %in% names(x)) {
-    vapply(x$points, NROW, integer(1))
-  }
-  cli::cli_rule("{.cls ggseg_centerlines} data: {dims}")
-  if (!is.null(n_points) && length(n_points) > 0) {
-    cli::cli_text(
-      "Points per tract: {format(min(n_points), big.mark = ',')}
-\u2013{format(max(n_points), big.mark = ',')}"
-    )
-  }
-  print_data_head(x, n)
-  invisible(x)
-}
-
-#' @export
-print.ggseg_meshes <- function(x, n = 10, ...) {
-  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
-  cli::cli_rule("{.cls ggseg_meshes} data: {dims}")
-  if ("mesh" %in% names(x)) {
-    print_mesh_summary(x, n)
-  }
-  invisible(x)
-}
 
 #' How an atlas was built
 #'
@@ -361,7 +389,139 @@ atlas_provenance <- function(atlas) {
   if (!is_atlas_class(atlas)) {
     cli::cli_abort("{.arg atlas} must be a {.cls ggseg_atlas}.")
   }
-  atlas$provenance
+  atlas_slot(atlas, "provenance")
+}
+
+
+#' Does an atlas carry this geometry?
+#'
+#' The geometry accessors abort when the geometry they name is absent, because
+#' a caller that asks for meshes and gets `NULL` usually goes on to fail
+#' further away from the cause. That leaves no way to *ask*, though, and both
+#' renderers want to: ggseg3d decides whether there is anything to draw in 3D,
+#' and ggseg.extra warns before previewing a large atlas. Without these the
+#' only way to ask was to reach into the payload, which is the one thing the
+#' accessors exist to stop.
+#'
+#' @param atlas a `ggseg_atlas` object
+#' @return A logical scalar. `FALSE` for an object that is not an atlas, so
+#'   these are safe to use in control flow.
+#' @name has_atlas_geometry
+#' @family atlas accessors
+#' @examples
+#' has_atlas_vertices(dk())
+#' has_atlas_meshes(dk())
+#' has_atlas_meshes(aseg())
+#' has_atlas_3d(tracula())
+NULL
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_geom <- function(atlas) {
+  if (!is_atlas_class(atlas)) {
+    return(FALSE)
+  }
+  !is.null(geom_from_data(atlas_slot(atlas, "data")))
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_vertices <- function(atlas) {
+  has_atlas_payload(atlas, "vertices")
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_meshes <- function(atlas) {
+  has_atlas_payload(atlas, "meshes")
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_centerlines <- function(atlas) {
+  has_atlas_payload(atlas, "centerlines")
+}
+
+#' @rdname has_atlas_geometry
+#' @export
+has_atlas_3d <- function(atlas) {
+  has_atlas_vertices(atlas) ||
+    has_atlas_meshes(atlas) ||
+    has_atlas_centerlines(atlas)
+}
+
+#' @noRd
+has_atlas_payload <- function(atlas, name) {
+  if (!is_atlas_class(atlas)) {
+    return(FALSE)
+  }
+  data <- atlas_slot(atlas, name)
+  if (!is.null(data)) {
+    return(TRUE)
+  }
+  !is.null(atlas_slot(atlas, "data")[[name]])
+}
+
+
+#' @noRd
+print_ggseg_sf <- function(x, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  views <- if ("view" %in% names(x)) {
+    toString(unique(x$view))
+  }
+  cli::cli_rule("{.cls ggseg_sf} data: {dims}")
+  if (!is.null(views)) {
+    cli::cli_text("Views: {views}")
+  }
+  NextMethod()
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_vertices <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  vert_lengths <- if ("vertices" %in% names(x)) {
+    vapply(atlas_slot(x, "vertices"), length, integer(1))
+  }
+  cli::cli_rule("{.cls ggseg_vertices} data: {dims}")
+  if (!is.null(vert_lengths) && length(vert_lengths) > 0) {
+    cli::cli_text(
+      "Vertices per region: {format(min(vert_lengths), big.mark = ',')}
+\u2013{format(max(vert_lengths), big.mark = ',')}"
+    )
+  }
+  print_data_head(x, n)
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_centerlines <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  n_points <- if ("points" %in% names(x)) {
+    vapply(x$points, NROW, integer(1))
+  }
+  cli::cli_rule("{.cls ggseg_centerlines} data: {dims}")
+  if (!is.null(n_points) && length(n_points) > 0) {
+    cli::cli_text(
+      "Points per tract: {format(min(n_points), big.mark = ',')}
+\u2013{format(max(n_points), big.mark = ',')}"
+    )
+  }
+  print_data_head(x, n)
+  invisible(x)
+}
+
+
+#' @noRd
+print_ggseg_meshes <- function(x, n = 10, ...) {
+  dims <- paste(nrow(x), "\u00d7", ncol(x)) # nolint [object_usage_linter]
+  cli::cli_rule("{.cls ggseg_meshes} data: {dims}")
+  if ("mesh" %in% names(x)) {
+    print_mesh_summary(x, n)
+  }
+  invisible(x)
 }
 
 
@@ -371,8 +531,9 @@ geom_from_data <- function(data) {
   if (!is.null(data$geom)) {
     return(data$geom)
   }
-  data$sf
+  atlas_slot(data, "sf")
 }
+
 
 #' The sf-class geometry of an atlas data object, or NULL if it is polygon-only
 #' @keywords internal
@@ -381,6 +542,7 @@ data_sf <- function(data) {
   geom <- geom_from_data(data)
   if (inherits(geom, "sf")) geom else NULL
 }
+
 
 #' The brain_polygons geometry of an atlas data object, or NULL if it is sf
 #' @keywords internal

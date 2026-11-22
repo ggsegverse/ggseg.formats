@@ -25,7 +25,7 @@ describe("ggseg_atlas class", {
   })
 
   it("print method works", {
-    expect_s3_class(dk()$core, "tbl_df")
+    expect_s3_class(atlas_core(dk()), "tbl_df")
     expect_snapshot(print(dk()))
   })
 
@@ -156,8 +156,8 @@ describe("cerebellar atlas construction and data.frame conversion", {
     atlas <- make_cerebellar_atlas()
     expect_s3_class(atlas, "cerebellar_atlas")
     expect_s3_class(atlas, "ggseg_atlas")
-    expect_identical(atlas$type, "cerebellar")
-    expect_identical(nrow(atlas$core), 3L)
+    expect_identical(atlas_type(atlas), "cerebellar")
+    expect_identical(nrow(atlas_core(atlas)), 3L)
   })
 
   it("as.data.frame preserves the midline hemisphere and its label", {
@@ -467,7 +467,7 @@ describe("as.list.ggseg_atlas", {
       sort(names(out)),
       sort(c("atlas", "type", "palette", "core", "data"))
     )
-    expect_identical(out$atlas, dk()$atlas)
+    expect_identical(out$atlas, atlas_name(dk()))
     expect_identical(out$type, "cortical")
   })
 })
@@ -553,7 +553,7 @@ describe("plot.ggseg_atlas", {
       core = core,
       data = ggseg_data_subcortical(geom = sf_geom)
     )
-    expect_null(atlas$palette)
+    expect_null(atlas_palette(atlas))
     local_null_pdf()
     expect_no_error(plot(atlas))
   })
@@ -823,5 +823,75 @@ describe("as.data.frame with legacy data structure", {
     df <- as.data.frame(atlas)
     expect_s3_class(df, "data.frame")
     expect_true("lh_frontal" %in% df$label)
+  })
+})
+
+describe("as.list() keeps the build record", {
+  it("round-trips provenance through the legacy list recipe", {
+    # `structure(as.list(a), class = ...)` is the documented way to make a
+    # legacy copy, so a dropped `provenance` is lost for good.
+    record <- list(pipeline = "mine", created = "2026-01-01")
+    atlas <- set_atlas_provenance(dk(), record)
+
+    legacy <- legacy_list_atlas(atlas)
+
+    expect_identical(atlas_provenance(as_ggseg_atlas(legacy)), record)
+  })
+
+  it("stays five slots for an atlas with no provenance", {
+    expect_named(
+      as.list(dk()),
+      c("atlas", "type", "palette", "core", "data")
+    )
+  })
+})
+
+describe("the atlas interface is accessors only", {
+  # The headline of this release: `$` is removed, not deprecated, and `type`
+  # is computed from the class. Both are stated in prose in AGENTS.md and the
+  # vignette; this is what holds them.
+  it("refuses every way into the slots but the accessors", {
+    atlas <- dk()
+
+    expect_error(atlas$core)
+    expect_error(atlas[["core"]])
+    expect_error(unclass(atlas)$core)
+  })
+
+  it("keeps type read-only", {
+    atlas <- dk()
+
+    expect_error(S7::prop(atlas, "type") <- "tract")
+    # `set_atlas_type()` is the retype route, and it cannot be used to make
+    # the type disagree with the payload either.
+    expect_error(set_atlas_type(atlas, "tract"), "ggseg_data_tract")
+  })
+})
+
+
+describe("set_atlas_core() holds the invariants on a legacy atlas", {
+  it("refuses a duplicated label it used to accept in silence", {
+    legacy <- legacy_list_atlas(dk())
+    dupe <- atlas_core(legacy)[c(1, 1), , drop = FALSE]
+
+    expect_error(set_atlas_core(legacy, dupe))
+  })
+
+  it("refuses a hemi outside the vocabulary", {
+    legacy <- legacy_list_atlas(dk())
+    core <- atlas_core(legacy)
+    core$hemi[1] <- "vermis"
+
+    expect_error(set_atlas_core(legacy, core))
+  })
+
+  it("upgrades a legacy atlas it accepts", {
+    legacy <- legacy_list_atlas(dk())
+    core <- atlas_core(legacy)[1:10, , drop = FALSE]
+
+    result <- set_atlas_core(legacy, core)
+
+    expect_true(is_ggseg_atlas(result))
+    expect_identical(nrow(atlas_core(result)), 10L)
   })
 })
