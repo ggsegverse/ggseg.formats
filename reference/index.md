@@ -284,6 +284,8 @@ inside a view. All return a new `ggseg_atlas`.
   [`atlas_view_remove_region()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   [`atlas_view_remove_small()`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md)
   : Change which regions are drawn inside a view
+- [`labels_to_pattern()`](https://ggsegverse.github.io/ggseg.formats/reference/labels_to_pattern.md)
+  : Match labels literally where a verb takes a pattern
 - [`atlas_region_remove()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
   [`atlas_region_contextual()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)
   [`atlas_region_op()`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md)

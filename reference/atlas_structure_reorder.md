@@ -72,6 +72,7 @@ Other atlas manipulations:
 [`atlas_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_manipulation.md),
 [`atlas_relabel()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_relabel.md),
 [`drawing_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/drawing_manipulation.md),
+[`labels_to_pattern()`](https://ggsegverse.github.io/ggseg.formats/reference/labels_to_pattern.md),
 [`region_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/region_manipulation.md),
 [`view_manipulation`](https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.md)
 
