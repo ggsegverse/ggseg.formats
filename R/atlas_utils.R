@@ -263,16 +263,14 @@ atlas_region_remove <- function(
   match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = TRUE)
   keep_mask[is.na(match_col)] <- TRUE
 
-  # The pattern is matched against the geometry too, and geometry carries
-  # labels that core does not -- context outlines like `cortex_`. Only a
-  # pattern that hits neither has done nothing.
   geom <- geom_from_data(atlas_slot(atlas, "data"))
-  if (all(keep_mask) && !any(geom_matches_pattern(geom, pattern))) {
+  if (!region_pattern_selects(atlas, pattern, match_on)) {
     warn_no_region_match(pattern, "Nothing was removed.", atlas)
     return(atlas)
   }
@@ -317,11 +315,15 @@ atlas_region_contextual <- function(
   ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = ignore.case)
   keep_mask[is.na(match_col)] <- TRUE
 
+  # Core-only on purpose, unlike its siblings: this demotes a core region, so
+  # a pattern that matches only an already-contextual outline demotes nothing
+  # and is worth saying out loud.
   if (all(keep_mask)) {
     warn_no_region_match(pattern, "No region was made contextual.", atlas)
     return(atlas)
@@ -509,6 +511,7 @@ atlas_region_rename <- function(
   match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   new_core <- atlas_slot(atlas, "core")
   match_values <- new_core[[match_on]]
@@ -542,6 +545,7 @@ atlas_region_rename <- function(
 #' @family atlas manipulations
 atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- grepl(pattern, match_col, ignore.case = TRUE)
@@ -827,7 +831,13 @@ atlas_prune_region <- function(
 ) {
   match_on <- match.arg(match_on)
   match <- match.arg(match)
+  check_region_pattern(pattern)
   views <- resolve_view_scope(views, atlas, match)
+
+  if (!region_pattern_selects(atlas, pattern, match_on)) {
+    warn_no_region_match(pattern, "Nothing was pruned.", atlas)
+    return(atlas)
+  }
 
   if (is.null(data_sf(atlas_slot(atlas, "data")))) {
     return(prune_region_poly(atlas, pattern, match_on, views))
@@ -1216,6 +1226,52 @@ warn_no_region_match <- function(
     ),
     call = call
   )
+}
+
+
+#' Abort on a pattern the regex engine cannot compile
+#'
+#' A label is a plausible thing to pass as `pattern`, and atlas labels hold
+#' regex metacharacters: `lh_V5-MT+_L` (Brainnetome) compiles but matches
+#' nothing, while an unbalanced bracket does not compile at all and surfaces
+#' as a bare TRE error naming neither the argument nor the way out.
+#' @noRd
+check_region_pattern <- function(pattern, call = rlang::caller_env()) {
+  ok <- tryCatch(
+    {
+      grepl(pattern, "", ignore.case = TRUE)
+      TRUE
+    },
+    error = function(cnd) FALSE,
+    warning = function(cnd) FALSE
+  )
+  if (!ok) {
+    cli::cli_abort(
+      c(
+        "{.arg pattern} is not a valid regular expression: {.val {pattern}}.",
+        "i" = "To match labels literally, wrap them with
+          {.fn labels_to_pattern}."
+      ),
+      call = call
+    )
+  }
+  invisible(pattern)
+}
+
+
+#' Whether a pattern selects any label in the atlas
+#'
+#' Geometry carries labels core does not -- context outlines like `cortex_` --
+#' so a pattern that hits neither has selected nothing. Scoped to the atlas as
+#' a whole, never to the views being operated on: a label absent from one view
+#' is an ordinary per-view prune, not a mistake.
+#' @noRd
+region_pattern_selects <- function(atlas, pattern, match_on) {
+  match_col <- atlas_slot(atlas, "core")[[match_on]]
+  if (any(grepl(pattern, match_col, ignore.case = TRUE) & !is.na(match_col))) {
+    return(TRUE)
+  }
+  geom_matches_pattern(geom_from_data(atlas_slot(atlas, "data")), pattern)
 }
 
 
@@ -2066,14 +2122,20 @@ prune_weak_matrix <- function(atlas, flat, view_names, threshold, weights) {
 #' Drop each label from the views its prune matrix rules out
 #' @noRd
 apply_prune_weak <- function(atlas, keep, view_names) {
-  for (label in rownames(keep)) {
-    drop_views <- view_names[!keep[label, ]]
-    if (length(drop_views)) {
+  # One call per view, not per label: each call re-packs every view's
+  # coordinates and revalidates the atlas, and views are few where labels
+  # are many.
+  for (view in view_names) {
+    drop_labels <- rownames(keep)[!keep[, view]]
+    # TRE refuses to compile much past 2500 alternation branches, and the
+    # drop set grows with the atlas, so batch rather than pass it whole.
+    batches <- split(drop_labels, ceiling(seq_along(drop_labels) / 500L))
+    for (batch in batches) {
       atlas <- atlas_prune_region(
         atlas,
-        paste0("^", label, "$"),
+        labels_to_pattern(batch),
         match_on = "label",
-        views = drop_views
+        views = view
       )
     }
   }

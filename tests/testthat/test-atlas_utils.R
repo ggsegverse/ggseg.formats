@@ -1173,7 +1173,12 @@ describe("atlas_view_remove_region (deprecated)", {
       match_on = "region",
       views = one_view
     )
-    as_label <- atlas_prune_region(atlas, "^frontal$", views = one_view)
+    # Deliberately matches nothing, which `atlas_prune_region()` now warns
+    # about; that it does nothing is the point of the comparison below.
+    as_label <- expect_warning(
+      atlas_prune_region(atlas, "^frontal$", views = one_view),
+      "No regions matched"
+    )
     unscoped <- atlas_prune_region(atlas, "^frontal$", match_on = "region")
 
     # Both comparisons have to be able to differ, or the equality below
@@ -1504,6 +1509,77 @@ describe("atlas_prune_weak region keying", {
       }
     )
   }
+})
+
+
+describe("atlas_prune_weak label escaping", {
+  views_of <- function(atlas, label) {
+    flat <- polygons_unnest(atlas_polygons(atlas))
+    sort(unique(flat$view[flat$label == label]))
+  }
+
+  # `ggsegBrainnetome` ships `lh_V5-MT+_L`, and an unescaped `^label$` reads
+  # the `+` as a quantifier and matches nothing -- the label survived in the
+  # views it lost. An unbalanced `(` aborts instead of missing quietly.
+  for (bad in c("lh_V5-MT+_L", "lh_area(1_L")) {
+    for (polygons in c(FALSE, TRUE)) {
+      it(
+        paste0(
+          "prunes a label holding regex metacharacters: ",
+          bad,
+          " [",
+          rep_name(polygons),
+          "]"
+        ),
+        {
+          spec <- rbind(
+            data.frame(label = bad, view = "view_a", size = 4),
+            data.frame(label = bad, view = "view_b", size = 1),
+            data.frame(label = "rh_other", view = "view_a", size = 1),
+            data.frame(label = "rh_other", view = "view_b", size = 4)
+          )
+          core <- data.frame(
+            hemi = c("left", "right"),
+            region = c("metachar", "other"),
+            label = c(bad, "rh_other"),
+            display = c("metachar", "other")
+          )
+          atlas <- make_prune_weak_spec_atlas(spec, core, polygons = polygons)
+
+          result <- suppressMessages(atlas_prune_weak(atlas))
+
+          # Both views keep a region, so neither is dropped whole: the label
+          # leaving `view_b` can only be the prune itself.
+          expect_setequal(atlas_views(result), c("view_a", "view_b"))
+          expect_identical(views_of(result, bad), "view_a")
+          expect_identical(views_of(result, "rh_other"), "view_b")
+        }
+      )
+    }
+  }
+
+  # An unescaped `.` is a wildcard, so `^lh_a.c$` also matches `lh_abc` and
+  # would prune a sibling from a view it should keep.
+  it("does not prune a label the unescaped pattern would over-match", {
+    spec <- rbind(
+      data.frame(label = "lh_a.c", view = "view_a", size = 4),
+      data.frame(label = "lh_a.c", view = "view_b", size = 1),
+      data.frame(label = "lh_abc", view = "view_a", size = 4),
+      data.frame(label = "lh_abc", view = "view_b", size = 4)
+    )
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("dotted", "plain"),
+      label = c("lh_a.c", "lh_abc"),
+      display = c("dotted", "plain")
+    )
+    atlas <- make_prune_weak_spec_atlas(spec, core, polygons = TRUE)
+
+    result <- suppressMessages(atlas_prune_weak(atlas))
+
+    expect_identical(views_of(result, "lh_a.c"), "view_a")
+    expect_setequal(views_of(result, "lh_abc"), c("view_a", "view_b"))
+  })
 })
 
 
@@ -3486,4 +3562,79 @@ describe("atlas_prune_small() piece guard", {
     expect_true(label %in% kept$label)
     expect_lte(length(unique(kept$view[kept$label == label])), length(views))
   })
+})
+
+
+describe("atlas_prune_region() pattern guard", {
+  it("warns instead of silently doing nothing when nothing matches", {
+    expect_warning(
+      result <- atlas_prune_region(dk(), "lh_nosuchlabel", match_on = "label"),
+      "No regions matched"
+    )
+    expect_identical(result, dk())
+  })
+
+  # A label is the obvious thing to pass here, and atlas labels carry regex
+  # metacharacters: `ggsegBrainnetome` ships `lh_V5-MT+_L`, whose `+` reads as
+  # a quantifier, so the call used to be a silent no-op.
+  it("warns on a label whose metacharacters match nothing", {
+    atlas <- atlas_region_rename(dk(), "^bankssts$", "V5-MT+")
+
+    expect_warning(
+      atlas_prune_region(atlas, "lh_V5-MT+_L", match_on = "label"),
+      "No regions matched"
+    )
+  })
+
+  it("aborts on a pattern the engine cannot compile", {
+    expect_error(
+      atlas_prune_region(dk(), "lh_area(1_L", match_on = "label"),
+      "not a valid regular expression"
+    )
+  })
+
+  it("stays silent for a pattern that matches outside the scoped views", {
+    label <- atlas_core(dk())$label[[1]]
+    views <- atlas_views(dk())
+
+    expect_no_warning(
+      atlas_prune_region(
+        dk(),
+        labels_to_pattern(label),
+        match_on = "label",
+        views = views[[1]]
+      )
+    )
+  })
+})
+
+
+describe("atlas_prune_weak() and the no-match guard", {
+  # The guard is scoped to the atlas, not to the views being pruned, because
+  # `atlas_prune_weak()` prunes label by label out of single views and every
+  # one of those labels is legitimately absent from the others.
+  it("does not warn about unmatched regions on a real atlas", {
+    expect_no_warning(suppressMessages(atlas_prune_weak(dk())))
+  })
+})
+
+describe("the pattern guard across the region verbs", {
+  # Only `atlas_prune_region()` had the guard at first, so its four siblings
+  # still surfaced a bare TRE error for a label holding a bracket.
+  verbs <- list(
+    atlas_region_remove = function(a, p) atlas_region_remove(a, p),
+    atlas_region_keep = function(a, p) atlas_region_keep(a, p),
+    atlas_region_contextual = function(a, p) atlas_region_contextual(a, p),
+    atlas_region_rename = function(a, p) atlas_region_rename(a, p, "x"),
+    atlas_prune_region = function(a, p) atlas_prune_region(a, p)
+  )
+
+  for (verb in names(verbs)) {
+    it(paste0(verb, "() names the bad pattern instead of the engine error"), {
+      expect_error(
+        verbs[[verb]](dk(), "lh_area(1_L"),
+        "not a valid regular expression"
+      )
+    })
+  }
 })

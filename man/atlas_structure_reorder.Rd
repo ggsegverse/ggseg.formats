@@ -68,6 +68,7 @@ Other atlas manipulations:
 \code{\link{atlas_manipulation}},
 \code{\link[=atlas_relabel]{atlas_relabel()}},
 \code{\link{drawing_manipulation}},
+\code{\link[=labels_to_pattern]{labels_to_pattern()}},
 \code{\link{region_manipulation}},
 \code{\link{view_manipulation}}
 }

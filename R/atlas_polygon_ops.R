@@ -156,29 +156,28 @@ polygon_geometry_areas <- function(flat) {
     idx <- piece$subgroup == ring
     polygon_ring_area(piece$x[idx], piece$y[idx])
   }
-  lv$area <- vapply(
-    seq_len(nrow(lv)),
-    function(k) {
-      sub <- flat[flat$label == lv$label[k] & flat$view == lv$view[k], ]
-      sum(vapply(
-        unique(sub$group),
-        function(g) {
-          piece <- sub[sub$group == g, ]
-          rings <- unique(piece$subgroup)
-          ext <- min(rings)
-          holes <- setdiff(rings, ext)
-          a_holes <- sum(vapply(
-            holes,
-            function(r) ring_area_of(piece, r),
-            numeric(1)
-          ))
-          ring_area_of(piece, ext) - a_holes
-        },
-        numeric(1)
-      ))
+  piece_area <- function(piece) {
+    rings <- unique(piece$subgroup)
+    ext <- min(rings)
+    holes <- setdiff(rings, ext)
+    ring_area_of(piece, ext) -
+      sum(vapply(holes, function(r) ring_area_of(piece, r), numeric(1)))
+  }
+  # Keyed on match() indices, not pasted text: paste() renders NA as "NA",
+  # which would merge an NA label with one literally spelled "NA" and give
+  # both their summed area.
+  pair_key <- function(label, view) {
+    match(label, lv$label) + (match(view, lv$view) - 1L) * nrow(lv)
+  }
+  rows_by_key <- split(seq_len(nrow(flat)), pair_key(flat$label, flat$view))
+  lv$area <- as.numeric(vapply(
+    rows_by_key[as.character(pair_key(lv$label, lv$view))],
+    function(idx) {
+      sub <- flat[idx, , drop = FALSE]
+      sum(vapply(split(sub, as.character(sub$group)), piece_area, numeric(1)))
     },
     numeric(1)
-  )
+  ))
   lv
 }
 

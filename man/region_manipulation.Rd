@@ -155,6 +155,7 @@ Other atlas manipulations:
 \code{\link[=atlas_relabel]{atlas_relabel()}},
 \code{\link[=atlas_structure_reorder]{atlas_structure_reorder()}},
 \code{\link{drawing_manipulation}},
+\code{\link[=labels_to_pattern]{labels_to_pattern()}},
 \code{\link{view_manipulation}}
 }
 \concept{atlas manipulations}

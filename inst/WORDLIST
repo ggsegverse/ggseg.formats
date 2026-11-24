@@ -3,6 +3,7 @@ Accumbens
 aseg
 Athanasia
 Balsters
+Brainnetome
 Brodmann
 Busa
 callosal
@@ -31,6 +32,7 @@ GEOS
 ggplot
 ggseg
 ggsegAal
+ggsegBrainnetome
 ggsegCraddock
 ggsegDemoatlas
 ggsegMcalt
