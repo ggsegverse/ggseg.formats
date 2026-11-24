@@ -827,7 +827,13 @@ atlas_prune_region <- function(
 ) {
   match_on <- match.arg(match_on)
   match <- match.arg(match)
+  check_region_pattern(pattern)
   views <- resolve_view_scope(views, atlas, match)
+
+  if (!region_pattern_selects(atlas, pattern, match_on)) {
+    warn_no_region_match(pattern, "Nothing was pruned.", atlas)
+    return(atlas)
+  }
 
   if (is.null(data_sf(atlas_slot(atlas, "data")))) {
     return(prune_region_poly(atlas, pattern, match_on, views))
@@ -1216,6 +1222,64 @@ warn_no_region_match <- function(
     ),
     call = call
   )
+}
+
+
+#' Split a vector into batches of at most `size`
+#'
+#' Zero-length input yields no batches, so the caller's loop does not run.
+#' @noRd
+split_by_size <- function(x, size) {
+  if (length(x) == 0L) {
+    return(list())
+  }
+  unname(split(x, ceiling(seq_along(x) / size)))
+}
+
+
+#' Abort on a pattern the regex engine cannot compile
+#'
+#' A label is a plausible thing to pass as `pattern`, and atlas labels hold
+#' regex metacharacters: `lh_V5-MT+_L` (Brainnetome) compiles but matches
+#' nothing, while an unbalanced bracket does not compile at all and surfaces
+#' as a bare TRE error naming neither the argument nor the way out.
+#' @noRd
+check_region_pattern <- function(pattern, call = rlang::caller_env()) {
+  ok <- tryCatch(
+    {
+      grepl(pattern, "", ignore.case = TRUE)
+      TRUE
+    },
+    error = function(cnd) FALSE,
+    warning = function(cnd) FALSE
+  )
+  if (!ok) {
+    cli::cli_abort(
+      c(
+        "{.arg pattern} is not a valid regular expression: {.val {pattern}}.",
+        "i" = "To match labels literally, wrap them with
+          {.fn labels_to_pattern}."
+      ),
+      call = call
+    )
+  }
+  invisible(pattern)
+}
+
+
+#' Whether a pattern selects any label in the atlas
+#'
+#' Geometry carries labels core does not -- context outlines like `cortex_` --
+#' so a pattern that hits neither has selected nothing. Scoped to the atlas as
+#' a whole, never to the views being operated on: a label absent from one view
+#' is an ordinary per-view prune, not a mistake.
+#' @noRd
+region_pattern_selects <- function(atlas, pattern, match_on) {
+  match_col <- atlas_slot(atlas, "core")[[match_on]]
+  if (any(grepl(pattern, match_col, ignore.case = TRUE) & !is.na(match_col))) {
+    return(TRUE)
+  }
+  geom_matches_pattern(geom_from_data(atlas_slot(atlas, "data")), pattern)
 }
 
 
@@ -2071,10 +2135,12 @@ apply_prune_weak <- function(atlas, keep, view_names) {
   # are many.
   for (view in view_names) {
     drop_labels <- rownames(keep)[!keep[, view]]
-    if (length(drop_labels)) {
+    # TRE refuses to compile much past 2500 alternation branches, and the
+    # drop set grows with the atlas, so batch rather than pass it whole.
+    for (batch in split_by_size(drop_labels, 500L)) {
       atlas <- atlas_prune_region(
         atlas,
-        labels_to_pattern(drop_labels),
+        labels_to_pattern(batch),
         match_on = "label",
         views = view
       )

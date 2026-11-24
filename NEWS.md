@@ -5,15 +5,29 @@
 - `atlas_prune_weak()` prunes a label holding regex metacharacters. The views
   it ruled out kept `lh_V5-MT+_L` (ggsegBrainnetome) silently, and a label
   with an unbalanced `(` aborted.
-- `atlas_prune_weak()` is no longer quadratic in the label count: one prune
-  per view instead of per label, and areas are summed by key. `dk()` 3.2 s ->
-  0.3 s, a 210-label atlas 59 s -> 1.4 s.
+- `atlas_prune_weak()` no longer re-walks every view once per label: it prunes
+  once per view, in batches, and sums areas by key. `dk()` 3.2 s -> 0.3 s,
+  `ggsegBrainnetome` (246 labels) 59 s -> 1.4 s. Cost still grows with the
+  atlas; it is the per-label repetition that is gone.
+- `atlas_prune_region()` warns when its `pattern` selects no region, instead of
+  returning the atlas untouched. A label is the obvious thing to pass, and
+  `lh_V5-MT+_L` reads its `+` as a quantifier, so the call did nothing in
+  silence. A pattern the regex engine cannot compile now names itself, rather
+  than surfacing a bare engine error.
+- `polygon_geometry_areas()` keeps an `NA` label distinct from one spelled
+  `"NA"`; they shared a key and so shared their summed area, which could carry
+  a region past an `atlas_prune_small()` cut.
 - `tracula()` is no longer mirrored left-to-right in 3D. Its cached build
   artefact predated the fix that reads `.trk` streamlines into RAS world
   millimetres, so every tract sat on the opposite side of the midline from the
   hemisphere it was labelled. 2D was unaffected. Rebuilding also clears the
   whole cache now, step 1 included, so a stale artefact cannot survive a
   rebuild again.
+
+## New features
+
+- `labels_to_pattern()` is exported, for matching labels literally where a
+  verb takes a pattern.
 
 ## Breaking changes
 

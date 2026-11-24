@@ -204,3 +204,59 @@ describe("polygons_renest()", {
     )
   })
 })
+
+
+describe("polygon_geometry_areas()", {
+  # A square with a square hole, a second disjoint piece, and a second label
+  # in a second view: enough shape to tell a scaled, hole-blind, mis-keyed or
+  # first-piece-only implementation from a correct one.
+  square <- function(x0, y0, side) {
+    data.frame(
+      x = c(x0, x0 + side, x0 + side, x0),
+      y = c(y0, y0, y0 + side, y0 + side)
+    )
+  }
+  ring <- function(x0, y0, side, label, view, group, subgroup) {
+    cbind(
+      square(x0, y0, side),
+      label = label,
+      view = view,
+      group = group,
+      subgroup = subgroup
+    )
+  }
+
+  flat <- rbind(
+    ring(0, 0, 4, "lh_a", "view_a", 1L, 1L),
+    ring(1, 1, 2, "lh_a", "view_a", 1L, 2L),
+    ring(10, 0, 3, "lh_a", "view_a", 2L, 1L),
+    ring(0, 0, 1, "lh_b", "view_b", 1L, 1L)
+  )
+
+  it("sums exterior minus holes over disjoint pieces", {
+    areas <- polygon_geometry_areas(flat)
+
+    # 4x4 square minus its 2x2 hole, plus a disjoint 3x3 square.
+    expect_equal(areas$area[areas$label == "lh_a"], (16 - 4) + 9)
+    expect_equal(areas$area[areas$label == "lh_b"], 1)
+  })
+
+  it("keys each area to its own label and view", {
+    areas <- polygon_geometry_areas(flat)
+
+    expect_identical(areas$label, c("lh_a", "lh_b"))
+    expect_identical(areas$view, c("view_a", "view_b"))
+  })
+
+  it("keeps an NA label distinct from one spelled \"NA\"", {
+    na_flat <- rbind(
+      ring(0, 0, 2, NA_character_, "view_a", 1L, 1L),
+      ring(0, 0, 1, "NA", "view_a", 2L, 1L)
+    )
+
+    areas <- polygon_geometry_areas(na_flat)
+
+    expect_equal(areas$area[is.na(areas$label)], 4)
+    expect_equal(areas$area[!is.na(areas$label)], 1)
+  })
+})

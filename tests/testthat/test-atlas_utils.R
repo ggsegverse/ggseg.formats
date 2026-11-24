@@ -1173,7 +1173,12 @@ describe("atlas_view_remove_region (deprecated)", {
       match_on = "region",
       views = one_view
     )
-    as_label <- atlas_prune_region(atlas, "^frontal$", views = one_view)
+    # Deliberately matches nothing, which `atlas_prune_region()` now warns
+    # about; that it does nothing is the point of the comparison below.
+    as_label <- expect_warning(
+      atlas_prune_region(atlas, "^frontal$", views = one_view),
+      "No regions matched"
+    )
     unscoped <- atlas_prune_region(atlas, "^frontal$", match_on = "region")
 
     # Both comparisons have to be able to differ, or the equality below
@@ -1552,6 +1557,29 @@ describe("atlas_prune_weak label escaping", {
       )
     }
   }
+
+  # An unescaped `.` is a wildcard, so `^lh_a.c$` also matches `lh_abc` and
+  # would prune a sibling from a view it should keep.
+  it("does not prune a label the unescaped pattern would over-match", {
+    spec <- rbind(
+      data.frame(label = "lh_a.c", view = "view_a", size = 4),
+      data.frame(label = "lh_a.c", view = "view_b", size = 1),
+      data.frame(label = "lh_abc", view = "view_a", size = 4),
+      data.frame(label = "lh_abc", view = "view_b", size = 4)
+    )
+    core <- data.frame(
+      hemi = c("left", "left"),
+      region = c("dotted", "plain"),
+      label = c("lh_a.c", "lh_abc"),
+      display = c("dotted", "plain")
+    )
+    atlas <- make_prune_weak_spec_atlas(spec, core, polygons = TRUE)
+
+    result <- suppressMessages(atlas_prune_weak(atlas))
+
+    expect_identical(views_of(result, "lh_a.c"), "view_a")
+    expect_setequal(views_of(result, "lh_abc"), c("view_a", "view_b"))
+  })
 })
 
 
@@ -3533,5 +3561,73 @@ describe("atlas_prune_small() piece guard", {
 
     expect_true(label %in% kept$label)
     expect_lte(length(unique(kept$view[kept$label == label])), length(views))
+  })
+})
+
+
+describe("atlas_prune_region() pattern guard", {
+  it("warns instead of silently doing nothing when nothing matches", {
+    expect_warning(
+      result <- atlas_prune_region(dk(), "lh_nosuchlabel", match_on = "label"),
+      "No regions matched"
+    )
+    expect_identical(result, dk())
+  })
+
+  # A label is the obvious thing to pass here, and atlas labels carry regex
+  # metacharacters: `ggsegBrainnetome` ships `lh_V5-MT+_L`, whose `+` reads as
+  # a quantifier, so the call used to be a silent no-op.
+  it("warns on a label whose metacharacters match nothing", {
+    atlas <- atlas_region_rename(dk(), "^bankssts$", "V5-MT+")
+
+    expect_warning(
+      atlas_prune_region(atlas, "lh_V5-MT+_L", match_on = "label"),
+      "No regions matched"
+    )
+  })
+
+  it("aborts on a pattern the engine cannot compile", {
+    expect_error(
+      atlas_prune_region(dk(), "lh_area(1_L", match_on = "label"),
+      "not a valid regular expression"
+    )
+  })
+
+  it("stays silent for a pattern that matches outside the scoped views", {
+    label <- atlas_core(dk())$label[[1]]
+    views <- atlas_views(dk())
+
+    expect_no_warning(
+      atlas_prune_region(
+        dk(),
+        labels_to_pattern(label),
+        match_on = "label",
+        views = views[[1]]
+      )
+    )
+  })
+})
+
+
+describe("split_by_size()", {
+  it("returns no batches for an empty vector", {
+    expect_identical(split_by_size(character(), 500L), list())
+  })
+
+  it("splits into batches of at most size, keeping order and every element", {
+    batches <- split_by_size(letters, 10L)
+
+    expect_identical(lengths(batches), c(10L, 10L, 6L))
+    expect_identical(unlist(batches), letters)
+  })
+})
+
+
+describe("atlas_prune_weak() and the no-match guard", {
+  # The guard is scoped to the atlas, not to the views being pruned, because
+  # `atlas_prune_weak()` prunes label by label out of single views and every
+  # one of those labels is legitimately absent from the others.
+  it("does not warn about unmatched regions on a real atlas", {
+    expect_no_warning(suppressMessages(atlas_prune_weak(dk())))
   })
 })

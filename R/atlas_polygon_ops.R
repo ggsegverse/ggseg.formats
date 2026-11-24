@@ -163,13 +163,18 @@ polygon_geometry_areas <- function(flat) {
     ring_area_of(piece, ext) -
       sum(vapply(holes, function(r) ring_area_of(piece, r), numeric(1)))
   }
-  key <- paste(flat$label, flat$view, sep = "\r")
-  rows_by_key <- split(seq_len(nrow(flat)), key)
+  # Keyed on match() indices, not pasted text: paste() renders NA as "NA",
+  # which would merge an NA label with one literally spelled "NA" and give
+  # both their summed area.
+  pair_key <- function(label, view) {
+    match(label, lv$label) + (match(view, lv$view) - 1L) * nrow(lv)
+  }
+  rows_by_key <- split(seq_len(nrow(flat)), pair_key(flat$label, flat$view))
   lv$area <- as.numeric(vapply(
-    rows_by_key[paste(lv$label, lv$view, sep = "\r")],
+    rows_by_key[as.character(pair_key(lv$label, lv$view))],
     function(idx) {
       sub <- flat[idx, , drop = FALSE]
-      sum(vapply(split(sub, sub$group), piece_area, numeric(1)))
+      sum(vapply(split(sub, as.character(sub$group)), piece_area, numeric(1)))
     },
     numeric(1)
   ))
