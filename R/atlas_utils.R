@@ -263,16 +263,14 @@ atlas_region_remove <- function(
   match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = TRUE)
   keep_mask[is.na(match_col)] <- TRUE
 
-  # The pattern is matched against the geometry too, and geometry carries
-  # labels that core does not -- context outlines like `cortex_`. Only a
-  # pattern that hits neither has done nothing.
   geom <- geom_from_data(atlas_slot(atlas, "data"))
-  if (all(keep_mask) && !any(geom_matches_pattern(geom, pattern))) {
+  if (!region_pattern_selects(atlas, pattern, match_on)) {
     warn_no_region_match(pattern, "Nothing was removed.", atlas)
     return(atlas)
   }
@@ -317,11 +315,15 @@ atlas_region_contextual <- function(
   ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- !grepl(pattern, match_col, ignore.case = ignore.case)
   keep_mask[is.na(match_col)] <- TRUE
 
+  # Core-only on purpose, unlike its siblings: this demotes a core region, so
+  # a pattern that matches only an already-contextual outline demotes nothing
+  # and is worth saying out loud.
   if (all(keep_mask)) {
     warn_no_region_match(pattern, "No region was made contextual.", atlas)
     return(atlas)
@@ -509,6 +511,7 @@ atlas_region_rename <- function(
   match_on = c("label", "region")
 ) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   new_core <- atlas_slot(atlas, "core")
   match_values <- new_core[[match_on]]
@@ -542,6 +545,7 @@ atlas_region_rename <- function(
 #' @family atlas manipulations
 atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
   match_on <- match.arg(match_on)
+  check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
   keep_mask <- grepl(pattern, match_col, ignore.case = TRUE)
@@ -1222,18 +1226,6 @@ warn_no_region_match <- function(
     ),
     call = call
   )
-}
-
-
-#' Split a vector into batches of at most `size`
-#'
-#' Zero-length input yields no batches, so the caller's loop does not run.
-#' @noRd
-split_by_size <- function(x, size) {
-  if (length(x) == 0L) {
-    return(list())
-  }
-  unname(split(x, ceiling(seq_along(x) / size)))
 }
 
 
@@ -2137,7 +2129,8 @@ apply_prune_weak <- function(atlas, keep, view_names) {
     drop_labels <- rownames(keep)[!keep[, view]]
     # TRE refuses to compile much past 2500 alternation branches, and the
     # drop set grows with the atlas, so batch rather than pass it whole.
-    for (batch in split_by_size(drop_labels, 500L)) {
+    batches <- split(drop_labels, ceiling(seq_along(drop_labels) / 500L))
+    for (batch in batches) {
       atlas <- atlas_prune_region(
         atlas,
         labels_to_pattern(batch),

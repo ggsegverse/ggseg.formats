@@ -3609,20 +3609,6 @@ describe("atlas_prune_region() pattern guard", {
 })
 
 
-describe("split_by_size()", {
-  it("returns no batches for an empty vector", {
-    expect_identical(split_by_size(character(), 500L), list())
-  })
-
-  it("splits into batches of at most size, keeping order and every element", {
-    batches <- split_by_size(letters, 10L)
-
-    expect_identical(lengths(batches), c(10L, 10L, 6L))
-    expect_identical(unlist(batches), letters)
-  })
-})
-
-
 describe("atlas_prune_weak() and the no-match guard", {
   # The guard is scoped to the atlas, not to the views being pruned, because
   # `atlas_prune_weak()` prunes label by label out of single views and every
@@ -3630,4 +3616,25 @@ describe("atlas_prune_weak() and the no-match guard", {
   it("does not warn about unmatched regions on a real atlas", {
     expect_no_warning(suppressMessages(atlas_prune_weak(dk())))
   })
+})
+
+describe("the pattern guard across the region verbs", {
+  # Only `atlas_prune_region()` had the guard at first, so its four siblings
+  # still surfaced a bare TRE error for a label holding a bracket.
+  verbs <- list(
+    atlas_region_remove = function(a, p) atlas_region_remove(a, p),
+    atlas_region_keep = function(a, p) atlas_region_keep(a, p),
+    atlas_region_contextual = function(a, p) atlas_region_contextual(a, p),
+    atlas_region_rename = function(a, p) atlas_region_rename(a, p, "x"),
+    atlas_prune_region = function(a, p) atlas_prune_region(a, p)
+  )
+
+  for (verb in names(verbs)) {
+    it(paste0(verb, "() names the bad pattern instead of the engine error"), {
+      expect_error(
+        verbs[[verb]](dk(), "lh_area(1_L"),
+        "not a valid regular expression"
+      )
+    })
+  }
 })
