@@ -26,7 +26,7 @@
 #'   or NULL.
 #' @param atlas_3d A `ggseg3d_atlas` with mesh data, or NULL.
 #' @param atlas_name Name for the output atlas. If NULL, derived from input.
-#' @param type Atlas type: `"cortical"` or `"subcortical"`. If NULL, inferred
+#' @param type Atlas type, as accepted by [ggseg_atlas()]. If NULL, inferred
 #'   from the input atlases.
 #' @param surface Which surface to match against when inferring vertices
 #'   (e.g., `"inflated"`). Must match the 3D atlas surface exactly.
@@ -216,7 +216,10 @@ convert_rgl_mesh <- function(m) {
       i = if ("it" %in% names(m)) m$it[1, ] else m$faces$i,
       j = if ("it" %in% names(m)) m$it[2, ] else m$faces$j,
       k = if ("it" %in% names(m)) m$it[3, ] else m$faces$k
-    )
+    ),
+    # `meshes_to_centerlines()` reads `centerline`/`tangents` from here, so a
+    # legacy tract atlas has no centerlines at all without this.
+    metadata = m$metadata
   )
 }
 
@@ -271,25 +274,13 @@ extract_2d_data <- function(atlas_2d) {
       c("i" = "Created atlas from 2D only; 3D rendering needs vertex data.")
     )
   }
-  list(core = NULL, palette = NULL, vertices = vertices, meshes = NULL)
-}
-
-
-#' @noRd
-#' @keywords internal
-build_atlas_data <- function(type, sf_data, vertices_df, meshes_df) {
-  switch(
-    type,
-    "cortical" = ggseg_data_cortical(
-      geom = sf_data,
-      vertices = vertices_df
-    ),
-    "subcortical" = ggseg_data_subcortical(
-      geom = sf_data,
-      meshes = meshes_df
-    ),
-    "tract" = ggseg_data_tract(geom = sf_data, meshes = meshes_df),
-    ggseg_data_cortical(geom = sf_data, vertices = vertices_df)
+  # A cerebellar atlas keeps its deep nuclei as per-region meshes alongside the
+  # surface vertices, so dropping them loses labels the core still lists.
+  list(
+    core = NULL,
+    palette = NULL,
+    vertices = vertices,
+    meshes = atlas_slot(atlas_2d, "data")$meshes
   )
 }
 
@@ -482,11 +473,11 @@ assemble_legacy_atlas <- function(setup, result, original_palette) {
     original_palette,
     core
   )
-  data <- build_atlas_data(
-    atlas_slot(setup, "type"),
+  data <- as_atlas_data(
     setup$sf_data,
-    atlas_slot(result, "vertices"),
-    atlas_slot(result, "meshes")
+    atlas_slot(setup, "type"),
+    vertices = atlas_slot(result, "vertices"),
+    meshes = atlas_slot(result, "meshes")
   )
   ggseg_atlas(
     atlas = setup$atlas_name,
