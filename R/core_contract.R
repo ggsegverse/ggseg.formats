@@ -324,6 +324,40 @@ atlas_views_empty <- function(atlas) {
 }
 
 
+#' Match labels literally where a verb takes a pattern
+#'
+#' The region verbs take a regular expression, but a label is not one:
+#' `lh_V5-MT+_L` (Brainnetome) reads its `+` as a quantifier and matches
+#' nothing, the FreeSurfer medial wall is spelled
+#' `Background+FreeSurfer_Defined_Medial_Wall`, and a label holding a bracket
+#' does not compile at all. This escapes each label and anchors the result.
+#'
+#' An empty `labels` has to match nothing, where `"^(|)$"` would match
+#' everything. `"$x"` is a character after the end of the string, which
+#' nothing satisfies, and unlike a negative lookahead it is valid in the
+#' default engine.
+#'
+#' @param labels Character vector of labels to match literally.
+#' @return A single anchored pattern string. An empty `labels` gives a
+#'   pattern that matches nothing.
+#'
+#' @examples
+#' labels_to_pattern(c("lh_bankssts", "rh_bankssts"))
+#'
+#' dk() |> atlas_prune_region(labels_to_pattern("lh_bankssts"))
+#'
+#' @seealso [drawing_manipulation], [region_manipulation]
+#' @export
+#' @family atlas manipulations
+labels_to_pattern <- function(labels) {
+  if (length(labels) == 0L) {
+    return("$x")
+  }
+  escaped <- gsub("([][^$.|?*+(){}\\])", "\\\\\\1", labels)
+  paste0("^(", paste(escaped, collapse = "|"), ")$")
+}
+
+
 #' Every label/view pair an atlas's 2D geometry draws, whichever backend
 #' holds it
 #'
@@ -420,44 +454,6 @@ rebuild_atlas_core <- function(atlas, core) {
     palette = atlas_slot(atlas, "palette"),
     provenance = atlas_slot(atlas, "provenance")
   )
-}
-
-
-#' An anchored alternation matching exactly these labels
-#'
-#' A label may hold regex metacharacters -- the FreeSurfer medial wall is
-#' spelled `Background+FreeSurfer_Defined_Medial_Wall` -- so each is escaped
-#' before it goes into the pattern.
-#'
-#' An empty set has to match nothing, where `"^(|)$"` would match everything
-#' and quietly polish the parcels with the backdrop's settings. `"$x"` is a
-#' character after the end of the string, which nothing satisfies, and
-#' unlike a negative lookahead it is valid in the default engine.
-#' Match labels literally in a pattern argument
-#'
-#' The region verbs take a regular expression, but atlas labels are not
-#' regular expressions: `lh_V5-MT+_L` (Brainnetome) reads its `+` as a
-#' quantifier and matches nothing, and a label holding a bracket does not
-#' compile at all. Wrap labels with this to match them exactly.
-#'
-#' @param labels Character vector of labels to match literally.
-#' @return A single anchored pattern string. An empty `labels` gives a
-#'   pattern that matches nothing.
-#'
-#' @examples
-#' labels_to_pattern(c("lh_bankssts", "rh_bankssts"))
-#'
-#' dk() |> atlas_prune_region(labels_to_pattern("lh_bankssts"))
-#'
-#' @seealso [drawing_manipulation], [region_manipulation]
-#' @export
-#' @family atlas manipulations
-labels_to_pattern <- function(labels) {
-  if (length(labels) == 0L) {
-    return("$x")
-  }
-  escaped <- gsub("([][^$.|?*+(){}\\])", "\\\\\\1", labels)
-  paste0("^(", paste(escaped, collapse = "|"), ")$")
 }
 
 

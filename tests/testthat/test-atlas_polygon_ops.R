@@ -237,8 +237,8 @@ describe("polygon_geometry_areas()", {
     areas <- polygon_geometry_areas(flat)
 
     # 4x4 square minus its 2x2 hole, plus a disjoint 3x3 square.
-    expect_equal(areas$area[areas$label == "lh_a"], (16 - 4) + 9)
-    expect_equal(areas$area[areas$label == "lh_b"], 1)
+    expect_identical(areas$area[areas$label == "lh_a"], (16 - 4) + 9)
+    expect_identical(areas$area[areas$label == "lh_b"], 1)
   })
 
   it("keys each area to its own label and view", {
@@ -256,7 +256,7 @@ describe("polygon_geometry_areas()", {
 
     areas <- polygon_geometry_areas(na_flat)
 
-    expect_equal(areas$area[is.na(areas$label)], 4)
-    expect_equal(areas$area[!is.na(areas$label)], 1)
+    expect_identical(areas$area[is.na(areas$label)], 4)
+    expect_identical(areas$area[!is.na(areas$label)], 1)
   })
 })

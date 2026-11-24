@@ -2,7 +2,7 @@
 % Please edit documentation in R/core_contract.R
 \name{labels_to_pattern}
 \alias{labels_to_pattern}
-\title{An anchored alternation matching exactly these labels}
+\title{Match labels literally where a verb takes a pattern}
 \usage{
 labels_to_pattern(labels)
 }
@@ -14,21 +14,17 @@ A single anchored pattern string. An empty \code{labels} gives a
 pattern that matches nothing.
 }
 \description{
-A label may hold regex metacharacters -- the FreeSurfer medial wall is
-spelled \code{Background+FreeSurfer_Defined_Medial_Wall} -- so each is escaped
-before it goes into the pattern.
+The region verbs take a regular expression, but a label is not one:
+\verb{lh_V5-MT+_L} (Brainnetome) reads its \code{+} as a quantifier and matches
+nothing, the FreeSurfer medial wall is spelled
+\code{Background+FreeSurfer_Defined_Medial_Wall}, and a label holding a bracket
+does not compile at all. This escapes each label and anchors the result.
 }
 \details{
-An empty set has to match nothing, where \code{"^(|)$"} would match everything
-and quietly polish the parcels with the backdrop's settings. \code{"$x"} is a
-character after the end of the string, which nothing satisfies, and
-unlike a negative lookahead it is valid in the default engine.
-Match labels literally in a pattern argument
-
-The region verbs take a regular expression, but atlas labels are not
-regular expressions: \verb{lh_V5-MT+_L} (Brainnetome) reads its \code{+} as a
-quantifier and matches nothing, and a label holding a bracket does not
-compile at all. Wrap labels with this to match them exactly.
+An empty \code{labels} has to match nothing, where \code{"^(|)$"} would match
+everything. \code{"$x"} is a character after the end of the string, which
+nothing satisfies, and unlike a negative lookahead it is valid in the
+default engine.
 }
 \examples{
 labels_to_pattern(c("lh_bankssts", "rh_bankssts"))
