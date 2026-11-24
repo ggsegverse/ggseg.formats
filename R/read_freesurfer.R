@@ -125,7 +125,9 @@ read_atlas_files <- function(subjects_dir, atlas) {
 #' file_path <- "all_subj_aseg.txt"
 #' read_freesurfer_table(file_path)
 read_freesurfer_table <- function(path, measure = NULL, ...) {
-  dat <- read.table(path, header = TRUE, ...)
+  # check.names = FALSE: mangling `Left-Thalamus` to `Left.Thalamus` cannot be
+  # undone, since a tract label like `lh.af.bbr.prep` has dots of its own.
+  dat <- read.table(path, header = TRUE, check.names = FALSE, ...)
   names(dat)[1] <- "subject"
 
   measure_cols <- setdiff(names(dat), "subject")
@@ -147,10 +149,6 @@ read_freesurfer_table <- function(path, measure = NULL, ...) {
       nchar(dat$label[has_suffix]) - nchar(suffix)
     )
     names(dat)[names(dat) == "value"] <- measure
-  }
-
-  if (any(grepl(".", dat$label, fixed = TRUE))) {
-    dat$label <- gsub(".", "-", dat$label, fixed = TRUE)
   }
 
   as_tbl(dat)

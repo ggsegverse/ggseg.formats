@@ -497,8 +497,9 @@ atlas_context_remove <- function(atlas) {
 #'   receives the regions of the matching rows and returns the new ones, which
 #'   is how to set a region outright for a label:
 #'   `atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")`. A
-#'   string that changes nothing, because the pattern is in the labels but
-#'   not in their regions, is reported with a warning.
+#'   pattern that matches no row, and a string that changes nothing because
+#'   the pattern is in the labels but not in their regions, are each reported
+#'   with a warning.
 #' @export
 #' @family atlas manipulations
 atlas_region_rename <- function(
@@ -515,6 +516,12 @@ atlas_region_rename <- function(
   match_values <- new_core[[match_on]]
   match_mask <- grepl(pattern, match_values, ignore.case = ignore.case)
   match_mask[is.na(match_values)] <- FALSE
+
+  if (!any(match_mask)) {
+    warn_no_region_match(pattern, "No region was renamed.", atlas)
+    return(atlas)
+  }
+
   regions <- new_core$region[match_mask]
 
   if (is.function(replacement)) {
@@ -764,6 +771,7 @@ atlas_view_keep <- function(atlas, views, match = c("exact", "pattern")) {
     return(atlas_view_gather(set_atlas_polygons(atlas, new_poly)))
   }
 
+  require_sf("atlas_view_keep()")
   keep_mask <- data_sf(atlas_slot(atlas, "data"))$view %in% matched
   new_sf <- data_sf(atlas_slot(atlas, "data"))[keep_mask, , drop = FALSE]
 
