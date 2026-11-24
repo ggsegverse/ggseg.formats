@@ -265,6 +265,16 @@ describe("compute_tangents", {
     expect_identical(nrow(tangents), 2L)
   })
 
+  it("rejects a centerline with fewer than two points", {
+    centerlines <- data.frame(label = "a")
+    centerlines$points <- list(matrix(c(0, 0, 0), ncol = 3))
+
+    expect_error(
+      ggseg_data_tract(centerlines = centerlines),
+      "at least 2 points"
+    )
+  })
+
   it("handles zero-length tangent vectors", {
     pts <- matrix(c(0, 0, 0, 0, 0, 0, 1, 0, 0), ncol = 3, byrow = TRUE)
     centerlines <- data.frame(label = "a")

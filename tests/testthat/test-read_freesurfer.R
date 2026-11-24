@@ -161,21 +161,27 @@ describe("read_freesurfer_table()", {
     unlink(tmp)
   })
 
-  it("replaces dots with hyphens in labels", {
+  it("keeps the dots in TRACULA labels, so the table still joins", {
     tmp <- tempfile(fileext = ".table")
+    # TRACULA's own labels carry dots, and FreeSurfer's structure names carry
+    # dashes. read.table() mangles both to dots, and that cannot be undone.
     writeLines(
       c(
-        "subject\troi.one\troi.two",
-        "bert\t1.5\t2.5"
+        "subject\tacomm.bbr.prep\tcc.genu.bbr.prep\tLeft-Thalamus",
+        "bert\t1.5\t2.5\t3.5"
       ),
       tmp
     )
 
     dat <- read_freesurfer_table(tmp)
 
-    expect_false(any(grepl(".", dat$label, fixed = TRUE)))
-    expect_true(all(grepl("-", dat$label, fixed = TRUE)))
-    expect_identical(dat$label, c("roi-one", "roi-two"))
+    expect_identical(
+      dat$label,
+      c("acomm.bbr.prep", "cc.genu.bbr.prep", "Left-Thalamus")
+    )
+    expect_true(
+      all(head(dat$label, 2) %in% atlas_labels(tracula()))
+    )
 
     unlink(tmp)
   })

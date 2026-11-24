@@ -185,6 +185,13 @@ describe("migrate_atlas_hemi()", {
     expect_no_error(assert_ggseg_atlas(migrate_atlas_hemi(atlas)))
   })
 
+  it("names the column when core has no hemi at all", {
+    atlas <- legacy_list_atlas(dk())
+    atlas$core$hemi <- NULL
+
+    expect_error(migrate_atlas_hemi(atlas), "hemi")
+  })
+
   it("keeps NA, which means no side applies", {
     atlas <- dk()
     atlas@core$hemi[1] <- NA_character_
