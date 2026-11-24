@@ -66,7 +66,7 @@ describe("aggregate_brain_values()", {
       ignore = c("hemi", "subject"),
       warn_collapse = FALSE
     )
-    expect_identical(names(agg), c("label", "value"))
+    expect_named(agg, c("label", "value"))
   })
 
   it("returns no rows, with the same columns, for empty data", {
@@ -77,7 +77,7 @@ describe("aggregate_brain_values()", {
       warn_collapse = FALSE
     )
     expect_identical(nrow(agg), 0L)
-    expect_identical(names(agg), c("label", "subject", "value"))
+    expect_named(agg, c("label", "subject", "value"))
   })
 
   it("errors clearly when fun does not reduce to a single value", {

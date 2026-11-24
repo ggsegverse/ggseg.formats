@@ -21,8 +21,8 @@ Before ggseg 3.0.0 several \code{data} rows for the same region drew on top of
 each other, so the last row won; they are now reduced with \code{fun}
 (\code{\link[=aggregate_brain_values]{aggregate_brain_values()}}, mean by default). That is a silent numeric
 change for anyone plotting a cohort they have not summarised themselves, so
-say so the first time it happens in a session. The warning has class \code{"ggseg_collapsed_rows"}, so
-it can be muffled or caught on its own.
+say so the first time it happens in a session. The warning has class
+\code{"ggseg_collapsed_rows"}, so it can be muffled or caught on its own.
 }
 \examples{
 thickness <- data.frame(

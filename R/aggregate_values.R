@@ -107,8 +107,8 @@ aggregate_brain_values <- function(
 #' each other, so the last row won; they are now reduced with `fun`
 #' ([aggregate_brain_values()], mean by default). That is a silent numeric
 #' change for anyone plotting a cohort they have not summarised themselves, so
-#' say so the first time it happens in a session. The warning has class `"ggseg_collapsed_rows"`, so
-#' it can be muffled or caught on its own.
+#' say so the first time it happens in a session. The warning has class
+#' `"ggseg_collapsed_rows"`, so it can be muffled or caught on its own.
 #'
 #' @param data A data frame of values to plot.
 #' @param keys Character vector of columns identifying an atlas region.
