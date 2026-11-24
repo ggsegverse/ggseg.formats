@@ -1507,6 +1507,54 @@ describe("atlas_prune_weak region keying", {
 })
 
 
+describe("atlas_prune_weak label escaping", {
+  views_of <- function(atlas, label) {
+    flat <- polygons_unnest(atlas_polygons(atlas))
+    sort(unique(flat$view[flat$label == label]))
+  }
+
+  # `ggsegBrainnetome` ships `lh_V5-MT+_L`, and an unescaped `^label$` reads
+  # the `+` as a quantifier and matches nothing -- the label survived in the
+  # views it lost. An unbalanced `(` aborts instead of missing quietly.
+  for (bad in c("lh_V5-MT+_L", "lh_area(1_L")) {
+    for (polygons in c(FALSE, TRUE)) {
+      it(
+        paste0(
+          "prunes a label holding regex metacharacters: ",
+          bad,
+          " [",
+          rep_name(polygons),
+          "]"
+        ),
+        {
+          spec <- rbind(
+            data.frame(label = bad, view = "view_a", size = 4),
+            data.frame(label = bad, view = "view_b", size = 1),
+            data.frame(label = "rh_other", view = "view_a", size = 1),
+            data.frame(label = "rh_other", view = "view_b", size = 4)
+          )
+          core <- data.frame(
+            hemi = c("left", "right"),
+            region = c("metachar", "other"),
+            label = c(bad, "rh_other"),
+            display = c("metachar", "other")
+          )
+          atlas <- make_prune_weak_spec_atlas(spec, core, polygons = polygons)
+
+          result <- suppressMessages(atlas_prune_weak(atlas))
+
+          # Both views keep a region, so neither is dropped whole: the label
+          # leaving `view_b` can only be the prune itself.
+          expect_setequal(atlas_views(result), c("view_a", "view_b"))
+          expect_identical(views_of(result, bad), "view_a")
+          expect_identical(views_of(result, "rh_other"), "view_b")
+        }
+      )
+    }
+  }
+})
+
+
 describe("atlas_prune_weak", {
   views_of <- function(atlas, label) {
     flat <- polygons_unnest(atlas_polygons(atlas))

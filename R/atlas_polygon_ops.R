@@ -156,29 +156,23 @@ polygon_geometry_areas <- function(flat) {
     idx <- piece$subgroup == ring
     polygon_ring_area(piece$x[idx], piece$y[idx])
   }
-  lv$area <- vapply(
-    seq_len(nrow(lv)),
-    function(k) {
-      sub <- flat[flat$label == lv$label[k] & flat$view == lv$view[k], ]
-      sum(vapply(
-        unique(sub$group),
-        function(g) {
-          piece <- sub[sub$group == g, ]
-          rings <- unique(piece$subgroup)
-          ext <- min(rings)
-          holes <- setdiff(rings, ext)
-          a_holes <- sum(vapply(
-            holes,
-            function(r) ring_area_of(piece, r),
-            numeric(1)
-          ))
-          ring_area_of(piece, ext) - a_holes
-        },
-        numeric(1)
-      ))
+  piece_area <- function(piece) {
+    rings <- unique(piece$subgroup)
+    ext <- min(rings)
+    holes <- setdiff(rings, ext)
+    ring_area_of(piece, ext) -
+      sum(vapply(holes, function(r) ring_area_of(piece, r), numeric(1)))
+  }
+  key <- paste(flat$label, flat$view, sep = "\r")
+  rows_by_key <- split(seq_len(nrow(flat)), key)
+  lv$area <- as.numeric(vapply(
+    rows_by_key[paste(lv$label, lv$view, sep = "\r")],
+    function(idx) {
+      sub <- flat[idx, , drop = FALSE]
+      sum(vapply(split(sub, sub$group), piece_area, numeric(1)))
     },
     numeric(1)
-  )
+  ))
   lv
 }
 

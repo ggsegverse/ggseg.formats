@@ -2066,14 +2066,17 @@ prune_weak_matrix <- function(atlas, flat, view_names, threshold, weights) {
 #' Drop each label from the views its prune matrix rules out
 #' @noRd
 apply_prune_weak <- function(atlas, keep, view_names) {
-  for (label in rownames(keep)) {
-    drop_views <- view_names[!keep[label, ]]
-    if (length(drop_views)) {
+  # One call per view, not per label: each call re-packs every view's
+  # coordinates and revalidates the atlas, and views are few where labels
+  # are many.
+  for (view in view_names) {
+    drop_labels <- rownames(keep)[!keep[, view]]
+    if (length(drop_labels)) {
       atlas <- atlas_prune_region(
         atlas,
-        paste0("^", label, "$"),
+        labels_to_pattern(drop_labels),
         match_on = "label",
-        views = drop_views
+        views = view
       )
     }
   }

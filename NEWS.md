@@ -2,6 +2,12 @@
 
 ## Bug fixes
 
+- `atlas_prune_weak()` prunes a label holding regex metacharacters. The views
+  it ruled out kept `lh_V5-MT+_L` (ggsegBrainnetome) silently, and a label
+  with an unbalanced `(` aborted.
+- `atlas_prune_weak()` is no longer quadratic in the label count: one prune
+  per view instead of per label, and areas are summed by key. `dk()` 3.2 s ->
+  0.3 s, a 210-label atlas 59 s -> 1.4 s.
 - `tracula()` is no longer mirrored left-to-right in 3D. Its cached build
   artefact predated the fix that reads `.trk` streamlines into RAS world
   millimetres, so every tract sat on the opposite side of the midline from the
