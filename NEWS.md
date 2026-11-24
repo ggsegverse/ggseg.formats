@@ -44,6 +44,9 @@
   relying on locale-dependent folding.
 - `labels_to_pattern()` is exported, for matching labels literally where a
   verb takes a pattern.
+- `aggregate_brain_values()` and `warn_collapsed_rows()` are exported.
+  They move here from ggseg, so ggseg3d can collapse several data rows per
+  region with one shared implementation instead of letting the last row win.
 
 ## Breaking changes
 

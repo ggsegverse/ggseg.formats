@@ -27,6 +27,7 @@ reference:
     contents:
       - convert_legacy_brain_atlas
       - contains("brain_")
+      - -aggregate_brain_values
       - migrate_atlas_display
       - migrate_atlas_hemi
   - title: Accessors
@@ -69,6 +70,13 @@ reference:
       - has_concept("atlas manipulations")
       - relabel_atlas
       - selectors
+  - title: Data aggregation
+    desc: |
+      Collapse several data rows per atlas region to a single value, shared by
+      the 2D and 3D plotting packages.
+    contents:
+      - aggregate_brain_values
+      - warn_collapsed_rows
   - title: Bundled atlases
     desc: Ready-to-use atlases shipped with the package.
     contents:
