@@ -11,7 +11,10 @@ read_freesurfer_table(path, measure = NULL, ...)
 
 \item{measure}{which measure is the table of}
 
-\item{...}{additional arguments to \code{read.table}}
+\item{...}{additional arguments to \code{read.table}. \code{check.names} is not
+among them: the reader needs it \code{FALSE}, because mangling
+\code{Left-Thalamus} to \code{Left.Thalamus} cannot be undone when a tract label
+like \code{lh.af.bbr.prep} has dots of its own.}
 }
 \value{
 data.frame with stats information for subjects from FreeSurfer

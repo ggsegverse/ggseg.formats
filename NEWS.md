@@ -11,6 +11,9 @@
 
 ## Bug fixes
 
+- `read_freesurfer_table()` refuses a repeated column name instead of dropping
+  its values, and says why `check.names` cannot be passed through `...`.
+
 - `read_freesurfer_table()` keeps the dots in a label. It rewrote every dot to
   a dash to undo `read.table()`'s mangling, which destroyed all 42 `tracula()`
   labels and left the stats table joining to nothing.
