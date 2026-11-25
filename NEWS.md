@@ -25,7 +25,9 @@
   than surfacing a bare engine error.
 - `polygon_geometry_areas()` keeps an `NA` label distinct from one spelled
   `"NA"`; they shared a key and so shared their summed area, which could carry
-  a region past an `atlas_prune_small()` cut.
+  a region past an `atlas_prune_small()` cut. `polygons_remove_small()` and
+  `polygons_remove_small_pieces()` now key on the same `match()` indices, so
+  all three agree.
 - `tracula()` is no longer mirrored left-to-right in 3D. Its cached build
   artefact predated the fix that reads `.trk` streamlines into RAS world
   millimetres, so every tract sat on the opposite side of the midline from the
@@ -35,6 +37,11 @@
 
 ## New features
 
+- `atlas_region_remove()`, `atlas_region_keep()`, `atlas_region_rename()` and
+  `atlas_prune_region()` take `ignore.case`, as `atlas_region_contextual()`
+  already did. An exported signature change; the default `TRUE` keeps current
+  behaviour, and `FALSE` matches labels that differ only in case without
+  relying on locale-dependent folding.
 - `labels_to_pattern()` is exported, for matching labels literally where a
   verb takes a pattern.
 

@@ -260,3 +260,68 @@ describe("polygon_geometry_areas()", {
     expect_identical(areas$area[!is.na(areas$label)], 1)
   })
 })
+
+
+# The NA label and one spelled "NA" ----
+#
+# All three area-keyed helpers key label x view on match() indices rather than
+# pasted text, because paste() renders NA as the string "NA" and so merges an
+# NA label with one literally spelled "NA".
+describe("area-keyed helpers with an NA label", {
+  square <- function(x0, side, label, group) {
+    data.frame(
+      label = label,
+      view = "view_a",
+      x = c(x0, x0 + side, x0 + side, x0),
+      y = c(0, 0, side, side),
+      group = group,
+      subgroup = 1L
+    )
+  }
+  # Nested by hand: `polygons_renest()` keys with `==`, which cannot select an
+  # NA label, so it is the one input the normal constructor cannot build.
+  nest_by_label <- function(flat) {
+    labels <- unique(flat$label)
+    out <- as_tbl(data.frame(label = labels))
+    out$geometry <- lapply(labels, function(l) {
+      rows <- if (is.na(l)) {
+        is.na(flat$label)
+      } else {
+        !is.na(flat$label) &
+          flat$label == l
+      }
+      as_tbl(flat[rows, setdiff(names(flat), "label"), drop = FALSE])
+    })
+    structure(out, class = unique(c("brain_polygons", class(out))))
+  }
+
+  it("polygons_remove_small() keeps the NA label's own geometry", {
+    polys <- nest_by_label(rbind(
+      square(0, 2, NA_character_, 1L),
+      square(10, 1, "NA", 1L)
+    ))
+
+    res <- polygons_remove_small(
+      polys,
+      min_area = 2,
+      core_labels = c(NA_character_, "NA")
+    )
+
+    # The 1x1 "NA" geometry goes; the 2x2 NA-labelled one is not small.
+    expect_identical(res$n_removed, 1L)
+    expect_identical(res$polygons$label, NA_character_)
+  })
+
+  it("polygons_remove_small_pieces() scores the NA label on its own", {
+    polys <- nest_by_label(rbind(
+      square(0, 1, NA_character_, 1L),
+      square(10, 10, "NA", 1L)
+    ))
+
+    res <- polygons_remove_small_pieces(polys, min_area = 10)
+
+    # The NA label's only piece is its largest, so it survives being small.
+    expect_identical(res$n_removed, 0L)
+    expect_setequal(res$polygons$label, c(NA_character_, "NA"))
+  })
+})

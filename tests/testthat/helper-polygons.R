@@ -78,3 +78,42 @@ rings_as_polygons <- function(spec) {
 rings_as_geom <- function(spec, polygons = FALSE) {
   if (polygons) rings_as_polygons(spec) else rings_as_sf(spec)
 }
+
+
+# Two labels differing only in case, plus a context outline absent from core,
+# each drawn in two views. Case folding is locale-dependent, so a verb that
+# cannot be told to match exactly cannot select one of these labels at all.
+make_case_atlas <- function(polygons = TRUE) {
+  spec <- list(
+    ring_square("lh_Area_1", "axial_1", 0, 0),
+    ring_square("lh_area_1", "axial_1", 2, 0),
+    ring_square("lh_other", "axial_1", 4, 0),
+    ring_square("Cortex", "axial_1", 6, 0),
+    ring_square("lh_Area_1", "axial_2", 10, 0),
+    ring_square("lh_area_1", "axial_2", 12, 0),
+    ring_square("lh_other", "axial_2", 14, 0),
+    ring_square("Cortex", "axial_2", 16, 0)
+  )
+  core <- data.frame(
+    hemi = c("left", "left", "left"),
+    region = c("Area_1", "area_1", "Other_other"),
+    label = c("lh_Area_1", "lh_area_1", "lh_other"),
+    display = c("Area 1", "area 1", "Other other")
+  )
+  ggseg_atlas(
+    atlas = "test",
+    type = "cortical",
+    core = core,
+    palette = setNames(c("#FF0000", "#00FF00", "#0000FF"), core$label),
+    data = ggseg_data_cortical(geom = rings_as_geom(spec, polygons))
+  )
+}
+
+case_geom_labels <- function(x) {
+  geom <- atlas_geom(x)
+  if (inherits(geom, "brain_polygons")) {
+    polygons_unnest(geom)$label
+  } else {
+    geom$label
+  }
+}

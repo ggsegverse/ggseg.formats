@@ -1,2 +1,2 @@
-#' @param pattern Character pattern to match. Uses
-#'   `grepl(..., ignore.case = TRUE)`.
+#' @param pattern Character pattern to match, with [grepl()]. Case is ignored
+#'   unless `ignore.case = FALSE`.
