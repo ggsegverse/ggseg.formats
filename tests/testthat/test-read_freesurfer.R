@@ -286,3 +286,31 @@ describe("read_freesurfer_stats() header/column mismatch", {
     expect_error(read_freesurfer_stats(path), basename(path), fixed = TRUE)
   })
 })
+
+
+describe("read_freesurfer_table() header handling", {
+  it("refuses a repeated column name instead of dropping its values", {
+    # Keeping names verbatim means duplicates survive read.table, and the long
+    # format cannot represent two columns with one label: the second column's
+    # values vanished silently.
+    path <- withr::local_tempfile(fileext = ".txt")
+    writeLines(
+      c("subject\tLeft-Caudate\tLeft-Caudate", "bert\t1\t2"),
+      path
+    )
+
+    expect_error(read_freesurfer_table(path), "Left-Caudate")
+  })
+
+  it("refuses check.names through ... rather than failing on a double match", {
+    # `check.names` is fixed FALSE on purpose, so passing it used to abort with
+    # R's "matched by multiple actual arguments" instead of saying why.
+    path <- withr::local_tempfile(fileext = ".txt")
+    writeLines(c("subject\tLeft-Caudate", "bert\t1"), path)
+
+    expect_error(
+      read_freesurfer_table(path, check.names = TRUE),
+      "cannot be set here"
+    )
+  })
+})
