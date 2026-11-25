@@ -150,9 +150,16 @@ df_bind_rows <- function(dfs, .id = NULL) {
 df_nest <- function(df, key, into) {
   ukey <- unique(df[[key]])
   rest <- setdiff(names(df), key)
-  geoms <- lapply(ukey, function(k) {
-    as_tbl(df[df[[key]] == k, rest, drop = FALSE])
-  })
+  # One pass to group the rows, rather than a full scan and subset of the
+  # whole table per key: that is O(keys x rows), and the table is every
+  # coordinate in the atlas. Grouped on `match()` indices rather than on the
+  # values, which keeps first-appearance key order and keeps an `NA` key in
+  # its own group -- `df[[key]] == k` yielded NA-index rows for it, so an
+  # NA-labelled group came back as every row filled with NA.
+  grp <- factor(match(df[[key]], ukey), levels = seq_along(ukey))
+  geoms <- unname(lapply(split(seq_len(nrow(df)), grp), function(i) {
+    as_tbl(df[i, rest, drop = FALSE])
+  }))
   out <- as_tbl(stats::setNames(list(ukey), key))
   out[[into]] <- geoms
   out

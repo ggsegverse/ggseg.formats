@@ -156,3 +156,44 @@ describe("print_data_head", {
     expect_snapshot(print_data_head(as_tbl(data.frame(x = 1:5)), n = 2))
   })
 })
+
+
+describe("df_nest()", {
+  it("groups an NA key on its own instead of corrupting both groups", {
+    # `df[[key]] == k` is NA for an NA key, and an NA index yields a row of
+    # NAs: the NA row leaked into "a" as an all-NA row AND the NA group came
+    # back as every row filled with NA. Both groups were wrong.
+    flat <- data.frame(
+      label = c("a", NA, "a"),
+      x = c(1, 2, 3),
+      y = c(1, 2, 3)
+    )
+
+    nested <- df_nest(flat, "label", "geometry")
+
+    expect_identical(nrow(nested), 2L)
+    a <- nested$geometry[[which(nested$label == "a")]]
+    na <- nested$geometry[[which(is.na(nested$label))]]
+    expect_identical(a$x, c(1, 3))
+    expect_identical(na$x, 2)
+  })
+
+  it("keeps keys in first-appearance order", {
+    flat <- data.frame(label = c("z", "a", "z"), x = 1:3)
+
+    expect_identical(df_nest(flat, "label", "geometry")$label, c("z", "a"))
+  })
+
+  it("round-trips through df_unnest()", {
+    flat <- data.frame(
+      label = c("a", "b", "a"),
+      x = c(1, 2, 3),
+      stringsAsFactors = FALSE
+    )
+
+    back <- df_unnest(df_nest(flat, "label", "geometry"), "geometry")
+
+    expect_setequal(back$label, flat$label)
+    expect_identical(sort(back$x), sort(flat$x))
+  })
+})
