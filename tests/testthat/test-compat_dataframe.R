@@ -178,10 +178,16 @@ describe("df_nest()", {
     expect_identical(na$x, 2)
   })
 
-  it("keeps keys in first-appearance order", {
+  it("keeps keys in first-appearance order, and the column unnamed", {
     flat <- data.frame(label = c("z", "a", "z"), x = 1:3)
 
-    expect_identical(df_nest(flat, "label", "geometry")$label, c("z", "a"))
+    nested <- df_nest(flat, "label", "geometry")
+
+    expect_identical(nested$label, c("z", "a"))
+    # `split()` names its result by level label, so without unname() the
+    # list-column carries "1", "2" and stops being identical() to a frame
+    # built before the change.
+    expect_null(names(nested$geometry))
   })
 
   it("round-trips through df_unnest()", {
@@ -193,7 +199,12 @@ describe("df_nest()", {
 
     back <- df_unnest(df_nest(flat, "label", "geometry"), "geometry")
 
-    expect_setequal(back$label, flat$label)
-    expect_identical(sort(back$x), sort(flat$x))
+    # Pins the label-to-value PAIRING, which sorting each column separately
+    # does not: that would pass an implementation nesting row 1's x under the
+    # wrong key. Row order is grouped by key rather than restored, so the
+    # frames are not comparable whole.
+    expect_identical(back$x[back$label == "a"], c(1, 3))
+    expect_identical(back$x[back$label == "b"], 2)
+    expect_identical(nrow(back), nrow(flat))
   })
 })
