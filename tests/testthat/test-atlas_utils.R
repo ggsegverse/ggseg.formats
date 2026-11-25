@@ -3913,16 +3913,17 @@ describe("apply_prune_weak() call volume", {
     keep[1, "v2"] <- TRUE
     keep[2, "v3"] <- TRUE
 
-    calls <- 0L
+    seen <- new.env(parent = emptyenv())
+    seen$calls <- 0L
     local_mocked_bindings(
       atlas_prune_region = function(atlas, ...) {
-        calls <<- calls + 1L
+        seen$calls <- seen$calls + 1L
         atlas
       }
     )
     apply_prune_weak("atlas", keep, view_names)
 
     # v1 drops nothing; v2 and v3 drop 599 labels each, two batches apiece.
-    expect_identical(calls, 4L)
+    expect_identical(seen$calls, 4L)
   })
 })
