@@ -11,6 +11,10 @@
 
 ## Bug fixes
 
+- A legacy cerebellar 3D atlas keeps its deep-nucleus meshes. `cerebellar`
+  was missing from the mesh-bearing types, so the meshes were dropped in
+  silence rather than carried across.
+
 - Legacy upgrade paths handle `cerebellar` and `wm` atlases. Three separate
   type-to-payload maps knew only three of the five `atlas_types()`, so
   `convert_legacy_brain_atlas(atlas_2d = suit())` blamed the data and a legacy

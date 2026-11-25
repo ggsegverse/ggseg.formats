@@ -986,6 +986,37 @@ describe("convert_legacy_brain_atlas across every atlas type", {
     expect_s3_class(atlas_data(result), "ggseg_data_cerebellar")
   })
 
+  it("keeps a cerebellar 3D atlas's meshes", {
+    # A cerebellar atlas stores its deep nuclei as per-region meshes, but
+    # `cerebellar` was missing from the mesh-bearing types, so the call fell
+    # through to the vertex and cortical branches -- which do nothing for it --
+    # and every mesh was dropped with no warning.
+    withr::local_options(lifecycle_verbosity = "quiet")
+    mock_3d <- data.frame(atlas = "test_3d", hemi = "left", surf = "LCBC")
+    mock_3d$ggseg_3d <- list(
+      data.frame(
+        region = "Dentate",
+        label = "Left-Dentate",
+        colour = "#0000FF",
+        stringsAsFactors = FALSE
+      )
+    )
+    mock_3d$ggseg_3d[[1]]$mesh <- list(
+      list(
+        vb = matrix(c(1, 2, 3, 1, 4, 5, 6, 1, 7, 8, 9, 1), nrow = 4),
+        it = matrix(c(1, 2, 3), nrow = 3)
+      )
+    )
+
+    result <- suppressMessages(
+      convert_legacy_brain_atlas(atlas_3d = mock_3d, type = "cerebellar")
+    )
+
+    expect_identical(atlas_type(result), "cerebellar")
+    expect_s3_class(atlas_data(result), "ggseg_data_cerebellar")
+    expect_identical(nrow(atlas_data(result)$meshes), 1L)
+  })
+
   it("keeps a white-matter atlas white-matter", {
     withr::local_options(lifecycle_verbosity = "quiet")
     result <- suppressMessages(

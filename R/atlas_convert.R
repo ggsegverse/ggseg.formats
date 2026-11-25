@@ -171,7 +171,11 @@ extract_3d_data <- function(
   meshes <- NULL
   vertices <- NULL
 
-  if (type %in% c("subcortical", "tract", "wm") && "mesh" %in% names(dt)) {
+  # Cerebellar belongs here too: its deep nuclei are per-region meshes. Left
+  # out, a cerebellar 3D atlas fell through to the vertex and cortical
+  # branches, which do nothing for it, and the meshes were dropped in silence.
+  mesh_types <- c("subcortical", "tract", "wm", "cerebellar")
+  if (type %in% mesh_types && "mesh" %in% names(dt)) {
     meshes <- extract_meshes_from_rgl(dt)
     cli::cli_inform(c("i" = "Extracted meshes from 3D atlas."))
   } else if (has_vertex_data(dt)) {
