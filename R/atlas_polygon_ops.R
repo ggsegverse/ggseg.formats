@@ -66,9 +66,13 @@ polygons_keep_labels <- function(polygons, keep) {
 #' Drop labels matching a regex pattern
 #' @noRd
 #' @keywords internal
-polygons_drop_pattern <- function(polygons, pattern) {
+polygons_drop_pattern <- function(
+  polygons,
+  pattern,
+  ignore.case = TRUE # nolint: object_name_linter.
+) {
   flat <- polygons_unnest(polygons)
-  drop <- grepl(pattern, flat$label, ignore.case = TRUE)
+  drop <- grepl(pattern, flat$label, ignore.case = ignore.case)
   polygons_renest(flat[!drop, , drop = FALSE])
 }
 
@@ -102,7 +106,11 @@ polygons_remove_region <- function(polygons, drop_labels, views = NULL) {
 #' draws behind the regions -- so "nothing matched" has to consult both.
 #' @noRd
 #' @keywords internal
-geom_matches_pattern <- function(geom, pattern) {
+geom_matches_pattern <- function(
+  geom,
+  pattern,
+  ignore.case = TRUE # nolint: object_name_linter.
+) {
   if (is.null(geom)) {
     return(FALSE)
   }
@@ -111,7 +119,7 @@ geom_matches_pattern <- function(geom, pattern) {
   } else {
     geom$label
   }
-  any(grepl(pattern, labels, ignore.case = TRUE))
+  any(grepl(pattern, labels, ignore.case = ignore.case))
 }
 
 
@@ -121,14 +129,18 @@ geom_matches_pattern <- function(geom, pattern) {
 #' `polygons_drop_pattern()` (sf-free), sf geometry is row-filtered on `label`.
 #' @noRd
 #' @keywords internal
-geom_drop_pattern <- function(geom, pattern) {
+geom_drop_pattern <- function(
+  geom,
+  pattern,
+  ignore.case = TRUE # nolint: object_name_linter.
+) {
   if (is.null(geom)) {
     return(NULL)
   }
   if (inherits(geom, "brain_polygons")) {
-    return(polygons_drop_pattern(geom, pattern))
+    return(polygons_drop_pattern(geom, pattern, ignore.case))
   }
-  geom[!grepl(pattern, geom$label, ignore.case = TRUE), , drop = FALSE]
+  geom[!grepl(pattern, geom$label, ignore.case = ignore.case), , drop = FALSE]
 }
 
 
@@ -141,6 +153,22 @@ polygon_ring_area <- function(x, y) {
     return(0)
   }
   abs(sum(x * c(y[-1], y[1]) - c(x[-1], x[1]) * y)) / 2
+}
+
+
+#' A unique key per distinct combination of geometry columns
+#'
+#' Keyed on `match()` indices into `levels_df`, never on the values:
+#' `paste()` renders `NA` as the string `"NA"`, so pasting labels merges an
+#' `NA` label with one literally spelled `"NA"`. Indices are pasted instead,
+#' which is injective and -- unlike positional arithmetic -- cannot overflow
+#' on a three-column key. `levels_df` must contain every combination in `df`,
+#' which is what `unique(df[, cols])` gives.
+#' @noRd
+#' @keywords internal
+geometry_key <- function(df, levels_df, cols = c("label", "view")) {
+  idx <- lapply(cols, function(col) match(df[[col]], levels_df[[col]]))
+  do.call(paste, c(idx, list(sep = "\r")))
 }
 
 
@@ -163,15 +191,9 @@ polygon_geometry_areas <- function(flat) {
     ring_area_of(piece, ext) -
       sum(vapply(holes, function(r) ring_area_of(piece, r), numeric(1)))
   }
-  # Keyed on match() indices, not pasted text: paste() renders NA as "NA",
-  # which would merge an NA label with one literally spelled "NA" and give
-  # both their summed area.
-  pair_key <- function(label, view) {
-    match(label, lv$label) + (match(view, lv$view) - 1L) * nrow(lv)
-  }
-  rows_by_key <- split(seq_len(nrow(flat)), pair_key(flat$label, flat$view))
+  rows_by_key <- split(seq_len(nrow(flat)), geometry_key(flat, lv))
   lv$area <- as.numeric(vapply(
-    rows_by_key[as.character(pair_key(lv$label, lv$view))],
+    rows_by_key[geometry_key(lv, lv)],
     function(idx) {
       sub <- flat[idx, , drop = FALSE]
       sum(vapply(split(sub, as.character(sub$group)), piece_area, numeric(1)))
@@ -203,9 +225,11 @@ polygons_remove_small <- function(
   }
   small <- areas[is_small, c("label", "view"), drop = FALSE]
 
-  flat_key <- paste(flat$label, flat$view, sep = "\r")
-  small_key <- paste(small$label, small$view, sep = "\r")
-  kept <- flat[!flat_key %in% small_key, , drop = FALSE]
+  kept <- flat[
+    !geometry_key(flat, areas) %in% geometry_key(small, areas),
+    ,
+    drop = FALSE
+  ]
 
   list(polygons = polygons_renest(kept), n_removed = nrow(small))
 }
@@ -238,26 +262,24 @@ polygons_remove_small_pieces <- function(
     return(list(polygons = polygons, n_removed = 0L))
   }
 
-  piece_key <- paste(flat$label, flat$view, flat$group, sep = "\r")
+  cols <- c("label", "view", "group")
+  pieces <- unique(flat[, cols])
+  piece_key <- geometry_key(flat, pieces, cols)
+  pieces_key <- geometry_key(pieces, pieces, cols)
+  rows_by_key <- split(seq_len(nrow(flat)), piece_key)
   areas <- vapply(
-    split(flat, piece_key),
-    function(d) {
+    rows_by_key[pieces_key],
+    function(idx) {
+      d <- flat[idx, , drop = FALSE]
       rings <- unique(d$subgroup)
       ext <- min(rings)
       ring_area <- function(r) {
-        idx <- d$subgroup == r
-        polygon_ring_area(d$x[idx], d$y[idx])
+        i <- d$subgroup == r
+        polygon_ring_area(d$x[i], d$y[i])
       }
       ring_area(ext) - sum(vapply(setdiff(rings, ext), ring_area, numeric(1)))
     },
     numeric(1)
-  )
-
-  region_key <- vapply(
-    strsplit(names(areas), "\r", fixed = TRUE),
-    `[`,
-    character(1),
-    1
   )
 
   # Never drop a region's largest piece anywhere in the atlas, so no region
@@ -266,35 +288,27 @@ polygons_remove_small_pieces <- function(
   # properly, in another -- and keeping the speck put a lone 15-unit square
   # outside the brain outline in `adhd200_400_subcortical`, where the same
   # region covers 256 units in the axial view.
-  largest <- tapply(areas, region_key, max)[region_key]
+  largest <- stats::ave(
+    areas,
+    match(pieces$label, pieces$label),
+    FUN = max
+  )
   drop <- areas < min_area & areas < largest
 
   if (!is.null(views)) {
-    view_of <- vapply(
-      strsplit(names(areas), "\r", fixed = TRUE),
-      `[`,
-      character(1),
-      2
-    )
-    drop <- drop & view_of %in% views
+    drop <- drop & pieces$view %in% views
   }
 
   if (!is.null(labels) || !is.null(exclude)) {
-    label_of <- vapply(
-      strsplit(names(areas), "\r", fixed = TRUE),
-      `[`,
-      character(1),
-      1
-    )
     in_scope <- if (!is.null(labels)) {
-      grepl(labels, label_of, ignore.case = TRUE)
+      grepl(labels, pieces$label, ignore.case = TRUE)
     } else {
-      !grepl(exclude, label_of, ignore.case = TRUE)
+      !grepl(exclude, pieces$label, ignore.case = TRUE)
     }
     drop <- drop & in_scope
   }
 
-  keep_keys <- names(areas)[!drop]
+  keep_keys <- pieces_key[!drop]
   list(
     polygons = polygons_renest(flat[piece_key %in% keep_keys, , drop = FALSE]),
     n_removed = sum(drop)

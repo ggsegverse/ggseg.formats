@@ -10,7 +10,12 @@
 \alias{atlas_region_keep}
 \title{Change which regions an atlas has}
 \usage{
-atlas_region_remove(atlas, pattern, match_on = c("label", "region"))
+atlas_region_remove(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  ignore.case = TRUE
+)
 
 atlas_region_contextual(
   atlas,
@@ -35,27 +40,34 @@ atlas_region_rename(
   atlas,
   pattern,
   replacement,
-  match_on = c("label", "region")
+  match_on = c("label", "region"),
+  ignore.case = TRUE
 )
 
-atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
+atlas_region_keep(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  ignore.case = TRUE
+)
 }
 \arguments{
 \item{atlas}{A \code{ggseg_atlas} object}
 
-\item{pattern}{Character pattern to match. Uses
-\code{grepl(..., ignore.case = TRUE)}.}
+\item{pattern}{Character pattern to match, with \code{\link[=grepl]{grepl()}}. Case is ignored
+unless \code{ignore.case = FALSE}.}
 
 \item{match_on}{Column of \code{core} to match against: \code{"label"}, the default,
 or \code{"region"}. \code{label} is the identifier that is unique within an atlas
 and stable across them, so every verb that selects rows by name or
 pattern reads it unless told otherwise.}
 
-\item{ignore.case}{For \code{atlas_region_contextual()}: passed to \code{\link[=grepl]{grepl()}}.
-Defaults to \code{TRUE} for backwards compatibility, but note that a context
-pattern like \code{"Thalamus"} then also matches focus labels such as
-\code{"hypothalamus"}; set \code{FALSE} (and/or anchor the pattern) when that
-matters.}
+\item{ignore.case}{Whether \code{pattern} matches case-insensitively, passed to
+\code{\link[=grepl]{grepl()}}. Defaults to \code{TRUE} for backwards compatibility, so a pattern
+like \code{"abc"} also selects \code{"ABC"} and a context pattern like
+\code{"Thalamus"} also selects a focus label such as \code{"hypothalamus"}. Case
+folding is locale-dependent; set \code{FALSE} (and/or anchor the pattern) when
+labels differ only in case.}
 
 \item{x, y}{For \code{atlas_region_op()}: patterns selecting the two operands,
 or a selector such as \code{\link[=context]{context()}} or \code{\link[=regions]{regions()}}.}

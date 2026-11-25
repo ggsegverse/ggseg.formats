@@ -15,7 +15,8 @@ atlas_prune_region(
   pattern,
   match_on = c("label", "region"),
   views = NULL,
-  match = c("exact", "pattern")
+  match = c("exact", "pattern"),
+  ignore.case = TRUE
 )
 
 atlas_prune_small(
@@ -37,7 +38,8 @@ atlas_view_remove_region(
   pattern,
   match_on = c("label", "region"),
   views = NULL,
-  match = c("exact", "pattern")
+  match = c("exact", "pattern"),
+  ignore.case = TRUE
 )
 
 atlas_view_remove_small(
@@ -53,8 +55,8 @@ atlas_view_remove_small(
 \arguments{
 \item{atlas}{A \code{ggseg_atlas} object}
 
-\item{pattern}{Character pattern to match. Uses
-\code{grepl(..., ignore.case = TRUE)}.}
+\item{pattern}{Character pattern to match, with \code{\link[=grepl]{grepl()}}. Case is ignored
+unless \code{ignore.case = FALSE}.}
 
 \item{match_on}{Column of \code{core} to match against: \code{"label"}, the default,
 or \code{"region"}. \code{label} is the identifier that is unique within an atlas
@@ -73,6 +75,13 @@ as a whole view name. \code{"pattern"} takes \code{views} as a regular expressio
 instead, matched as a substring --- \code{"axial"} then reaches \code{axial_1} and
 \code{axial_2} as well. Prefer \code{"exact"}: a name that happens to sit inside
 another view's name silently scopes to both views under \code{"pattern"}.}
+
+\item{ignore.case}{Whether \code{pattern} matches case-insensitively, passed to
+\code{\link[=grepl]{grepl()}}. Defaults to \code{TRUE} for backwards compatibility, so a pattern
+like \code{"abc"} also selects \code{"ABC"} and a context pattern like
+\code{"Thalamus"} also selects a focus label such as \code{"hypothalamus"}. Case
+folding is locale-dependent; set \code{FALSE} (and/or anchor the pattern) when
+labels differ only in case.}
 
 \item{min_area}{For \code{atlas_prune_small()}: minimum area to keep.
 What it applies to depends on \code{scope}; with the default

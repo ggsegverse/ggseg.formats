@@ -237,11 +237,7 @@ NULL
 #' @template atlas
 #' @template pattern
 #' @template match_on
-#' @param ignore.case For `atlas_region_contextual()`: passed to [grepl()].
-#'   Defaults to `TRUE` for backwards compatibility, but note that a context
-#'   pattern like `"Thalamus"` then also matches focus labels such as
-#'   `"hypothalamus"`; set `FALSE` (and/or anchor the pattern) when that
-#'   matters.
+#' @template ignore_case
 #' @param replacement For `atlas_region_rename()`: replacement string or
 #'   function.
 #'
@@ -260,17 +256,18 @@ NULL
 atlas_region_remove <- function(
   atlas,
   pattern,
-  match_on = c("label", "region")
+  match_on = c("label", "region"),
+  ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
   check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
-  keep_mask <- !grepl(pattern, match_col, ignore.case = TRUE)
+  keep_mask <- !grepl(pattern, match_col, ignore.case = ignore.case)
   keep_mask[is.na(match_col)] <- TRUE
 
   geom <- geom_from_data(atlas_slot(atlas, "data"))
-  if (!region_pattern_selects(atlas, pattern, match_on)) {
+  if (!region_pattern_selects(atlas, pattern, match_on, ignore.case)) {
     warn_no_region_match(pattern, "Nothing was removed.", atlas)
     return(atlas)
   }
@@ -282,7 +279,7 @@ atlas_region_remove <- function(
     !names(atlas_slot(atlas, "palette")) %in% labels_to_remove
   ]
 
-  new_geom <- geom_drop_pattern(geom, pattern)
+  new_geom <- geom_drop_pattern(geom, pattern, ignore.case)
   new_data <- rebuild_data_with_geom(
     atlas_slot(atlas, "data"),
     new_geom,
@@ -508,21 +505,22 @@ atlas_region_rename <- function(
   atlas,
   pattern,
   replacement,
-  match_on = c("label", "region")
+  match_on = c("label", "region"),
+  ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
   check_region_pattern(pattern)
 
   new_core <- atlas_slot(atlas, "core")
   match_values <- new_core[[match_on]]
-  match_mask <- grepl(pattern, match_values, ignore.case = TRUE)
+  match_mask <- grepl(pattern, match_values, ignore.case = ignore.case)
   match_mask[is.na(match_values)] <- FALSE
   regions <- new_core$region[match_mask]
 
   if (is.function(replacement)) {
     new_core$region[match_mask] <- replacement(regions)
   } else {
-    renamed <- gsub(pattern, replacement, regions, ignore.case = TRUE)
+    renamed <- gsub(pattern, replacement, regions, ignore.case = ignore.case)
     warn_rename_changed_nothing(regions, renamed, pattern, match_on)
     new_core$region[match_mask] <- renamed
   }
@@ -543,12 +541,17 @@ atlas_region_rename <- function(
 #'   is preserved for surface continuity.
 #' @export
 #' @family atlas manipulations
-atlas_region_keep <- function(atlas, pattern, match_on = c("label", "region")) {
+atlas_region_keep <- function(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  ignore.case = TRUE # nolint: object_name_linter.
+) {
   match_on <- match.arg(match_on)
   check_region_pattern(pattern)
 
   match_col <- atlas_slot(atlas, "core")[[match_on]]
-  keep_mask <- grepl(pattern, match_col, ignore.case = TRUE)
+  keep_mask <- grepl(pattern, match_col, ignore.case = ignore.case)
   keep_mask[is.na(match_col)] <- FALSE
 
   if (!any(keep_mask)) {
@@ -809,6 +812,7 @@ atlas_view_keep <- function(atlas, views, match = c("exact", "pattern")) {
 #' @template match_on
 #' @template views
 #' @template match
+#' @template ignore_case
 #' @param min_area For `atlas_prune_small()`: minimum area to keep.
 #'   What it applies to depends on `scope`; with the default
 #'   `scope = "region"` context geometries are never removed.
@@ -827,34 +831,36 @@ atlas_prune_region <- function(
   pattern,
   match_on = c("label", "region"),
   views = NULL,
-  match = c("exact", "pattern")
+  match = c("exact", "pattern"),
+  ignore.case = TRUE # nolint: object_name_linter.
 ) {
   match_on <- match.arg(match_on)
   match <- match.arg(match)
   check_region_pattern(pattern)
   views <- resolve_view_scope(views, atlas, match)
 
-  if (!region_pattern_selects(atlas, pattern, match_on)) {
+  if (!region_pattern_selects(atlas, pattern, match_on, ignore.case)) {
     warn_no_region_match(pattern, "Nothing was pruned.", atlas)
     return(atlas)
   }
 
   if (is.null(data_sf(atlas_slot(atlas, "data")))) {
-    return(prune_region_poly(atlas, pattern, match_on, views))
+    return(prune_region_poly(atlas, pattern, match_on, views, ignore.case))
   }
 
   require_sf("atlas_prune_region()")
 
   if (match_on == "region") {
     match_col <- atlas_slot(atlas, "core")$region
-    hit <- grepl(pattern, match_col, ignore.case = TRUE) & !is.na(match_col)
+    hit <- grepl(pattern, match_col, ignore.case = ignore.case) &
+      !is.na(match_col)
     labels_to_remove <- atlas_slot(atlas, "core")$label[hit]
     is_match <- data_sf(atlas_slot(atlas, "data"))$label %in% labels_to_remove
   } else {
     is_match <- grepl(
       pattern,
       data_sf(atlas_slot(atlas, "data"))$label,
-      ignore.case = TRUE
+      ignore.case = ignore.case
     )
   }
 
@@ -1060,7 +1066,8 @@ atlas_view_remove_region <- function(
   pattern,
   match_on = c("label", "region"),
   views = NULL,
-  match = c("exact", "pattern")
+  match = c("exact", "pattern"),
+  ignore.case = TRUE # nolint: object_name_linter.
 ) {
   lifecycle::deprecate_warn(
     "0.1.0",
@@ -1072,7 +1079,8 @@ atlas_view_remove_region <- function(
     pattern = pattern,
     match_on = match_on,
     views = views,
-    match = match
+    match = match,
+    ignore.case = ignore.case
   )
 }
 
@@ -1266,12 +1274,22 @@ check_region_pattern <- function(pattern, call = rlang::caller_env()) {
 #' a whole, never to the views being operated on: a label absent from one view
 #' is an ordinary per-view prune, not a mistake.
 #' @noRd
-region_pattern_selects <- function(atlas, pattern, match_on) {
+region_pattern_selects <- function(
+  atlas,
+  pattern,
+  match_on,
+  ignore.case = TRUE # nolint: object_name_linter.
+) {
   match_col <- atlas_slot(atlas, "core")[[match_on]]
-  if (any(grepl(pattern, match_col, ignore.case = TRUE) & !is.na(match_col))) {
+  hit <- grepl(pattern, match_col, ignore.case = ignore.case)
+  if (any(hit & !is.na(match_col))) {
     return(TRUE)
   }
-  geom_matches_pattern(geom_from_data(atlas_slot(atlas, "data")), pattern)
+  geom_matches_pattern(
+    geom_from_data(atlas_slot(atlas, "data")),
+    pattern,
+    ignore.case
+  )
 }
 
 
@@ -1714,7 +1732,13 @@ region_op_result <- function(sf_data, x_labels, y_labels, action, into) {
 #' drop, removes them from the polygon representation, and re-packs views.
 #' @noRd
 #' @keywords internal
-prune_region_poly <- function(atlas, pattern, match_on, views) {
+prune_region_poly <- function(
+  atlas,
+  pattern,
+  match_on,
+  views,
+  ignore.case = TRUE # nolint: object_name_linter.
+) {
   if (is.null(data_poly(atlas_slot(atlas, "data")))) {
     cli::cli_warn("Atlas has no 2D geometry, nothing to remove")
     return(atlas)
@@ -1724,12 +1748,14 @@ prune_region_poly <- function(atlas, pattern, match_on, views) {
     hit <- grepl(
       pattern,
       atlas_slot(atlas, "core")$region,
-      ignore.case = TRUE
+      ignore.case = ignore.case
     ) &
       !is.na(atlas_slot(atlas, "core")$region)
     drop_labels <- atlas_slot(atlas, "core")$label[hit]
   } else {
-    drop_labels <- poly_labels[grepl(pattern, poly_labels, ignore.case = TRUE)]
+    drop_labels <- poly_labels[
+      grepl(pattern, poly_labels, ignore.case = ignore.case)
+    ]
   }
   new_poly <- polygons_remove_region(
     data_poly(atlas_slot(atlas, "data")),

@@ -3638,3 +3638,291 @@ describe("the pattern guard across the region verbs", {
     })
   }
 })
+
+
+# ignore.case across the region verbs ----
+
+describe("ignore.case on the pattern-driven region verbs", {
+  it("atlas_region_remove() removes only the exact-case label", {
+    atlas <- make_case_atlas()
+
+    expect_identical(
+      atlas_labels(atlas_region_remove(atlas, "^lh_area_1$")),
+      "lh_other"
+    )
+    expect_identical(
+      atlas_labels(
+        atlas_region_remove(atlas, "^lh_area_1$", ignore.case = FALSE)
+      ),
+      c("lh_Area_1", "lh_other")
+    )
+  })
+
+  for (polygons in c(TRUE, FALSE)) {
+    it(
+      paste0(
+        "atlas_region_remove() keeps the other case's geometry (",
+        if (polygons) "polygons" else "sf",
+        ")"
+      ),
+      {
+        if (!polygons) {
+          skip_if_not_installed("sf")
+        }
+        kept <- atlas_region_remove(
+          make_case_atlas(polygons = polygons),
+          "^lh_area_1$",
+          ignore.case = FALSE
+        )
+        geom_labels <- case_geom_labels(kept)
+
+        expect_true("lh_Area_1" %in% geom_labels)
+        expect_false("lh_area_1" %in% geom_labels)
+      }
+    )
+  }
+
+  it("atlas_region_remove() reports a context label it cannot match", {
+    # The guard consults the geometry labels, which core does not carry.
+    atlas <- make_case_atlas()
+
+    expect_warning(
+      unchanged <- atlas_region_remove(atlas, "^cortex$", ignore.case = FALSE),
+      "No regions matched"
+    )
+    expect_identical(unchanged, atlas)
+    expect_false(
+      "Cortex" %in% case_geom_labels(atlas_region_remove(atlas, "^cortex$"))
+    )
+  })
+
+  it("atlas_region_remove() reports a core label it cannot match", {
+    # And the core column, for a pattern only the other case would hit.
+    atlas <- make_case_atlas()
+
+    expect_warning(
+      unchanged <- atlas_region_remove(
+        atlas,
+        "^LH_AREA_1$",
+        ignore.case = FALSE
+      ),
+      "No regions matched"
+    )
+    expect_identical(unchanged, atlas)
+    expect_identical(
+      atlas_labels(atlas_region_remove(atlas, "^LH_AREA_1$")),
+      "lh_other"
+    )
+  })
+
+  it("atlas_region_keep() keeps only the exact-case label", {
+    atlas <- make_case_atlas()
+
+    expect_setequal(
+      atlas_labels(atlas_region_keep(atlas, "^lh_area_1$")),
+      c("lh_Area_1", "lh_area_1")
+    )
+    expect_identical(
+      atlas_labels(
+        atlas_region_keep(atlas, "^lh_area_1$", ignore.case = FALSE)
+      ),
+      "lh_area_1"
+    )
+  })
+
+  it("atlas_region_rename() renames only the exact-case region", {
+    atlas <- make_case_atlas()
+
+    expect_identical(
+      atlas_core(
+        atlas_region_rename(atlas, "^area_1$", "renamed", match_on = "region")
+      )$region,
+      c("renamed", "renamed", "Other_other")
+    )
+    expect_identical(
+      atlas_core(
+        atlas_region_rename(
+          atlas,
+          "^area_1$",
+          "renamed",
+          match_on = "region",
+          ignore.case = FALSE
+        )
+      )$region,
+      c("Area_1", "renamed", "Other_other")
+    )
+  })
+
+  it("atlas_region_rename() selects rows by the exact case", {
+    # A function replacement rewrites whatever rows were selected, so it is
+    # the row selection this pins rather than the substitution.
+    atlas <- make_case_atlas()
+
+    expect_identical(
+      atlas_core(
+        atlas_region_rename(
+          atlas,
+          "^area_1$",
+          toupper,
+          match_on = "region",
+          ignore.case = FALSE
+        )
+      )$region,
+      c("Area_1", "AREA_1", "Other_other")
+    )
+  })
+
+  it("atlas_region_rename() substitutes in the exact case", {
+    # `Other_other` holds the pattern in both cases, which is what tells the
+    # substitution's `ignore.case` from the row selection's.
+    atlas <- make_case_atlas()
+
+    expect_identical(
+      atlas_core(
+        atlas_region_rename(
+          atlas,
+          "other",
+          "X",
+          match_on = "region",
+          ignore.case = FALSE
+        )
+      )$region,
+      c("Area_1", "area_1", "Other_X")
+    )
+  })
+
+  it("atlas_prune_region() prunes only the exact-case label", {
+    atlas <- make_case_atlas()
+    drawn_in <- function(x, view) {
+      flat <- polygons_unnest(atlas_polygons(x))
+      sort(unique(flat$label[flat$view == view]))
+    }
+
+    both <- atlas_prune_region(atlas, "^lh_area_1$", views = "axial_1")
+    one <- atlas_prune_region(
+      atlas,
+      "^lh_area_1$",
+      views = "axial_1",
+      ignore.case = FALSE
+    )
+
+    expect_identical(drawn_in(both, "axial_1"), c("Cortex", "lh_other"))
+    expect_identical(
+      drawn_in(one, "axial_1"),
+      c("Cortex", "lh_Area_1", "lh_other")
+    )
+  })
+
+  it("atlas_prune_region() prunes only the exact-case label on sf", {
+    skip_if_not_installed("sf")
+    atlas <- make_case_atlas(polygons = FALSE)
+    drawn_in <- function(x, view) {
+      geom <- atlas_geom(x)
+      sort(unique(geom$label[geom$view == view]))
+    }
+
+    both <- atlas_prune_region(atlas, "^lh_area_1$", views = "axial_1")
+    one <- atlas_prune_region(
+      atlas,
+      "^lh_area_1$",
+      views = "axial_1",
+      ignore.case = FALSE
+    )
+
+    expect_identical(drawn_in(both, "axial_1"), c("Cortex", "lh_other"))
+    expect_identical(
+      drawn_in(one, "axial_1"),
+      c("Cortex", "lh_Area_1", "lh_other")
+    )
+  })
+
+  for (polygons in c(TRUE, FALSE)) {
+    it(
+      paste0(
+        "atlas_prune_region() prunes only the exact-case region (",
+        if (polygons) "polygons" else "sf",
+        ")"
+      ),
+      {
+        if (!polygons) {
+          skip_if_not_installed("sf")
+        }
+        atlas <- make_case_atlas(polygons = polygons)
+        drawn_in <- function(x, view) {
+          geom <- atlas_geom(x)
+          flat <- if (polygons) polygons_unnest(geom) else geom
+          sort(unique(flat$label[flat$view == view]))
+        }
+
+        both <- atlas_prune_region(
+          atlas,
+          "^area_1$",
+          match_on = "region",
+          views = "axial_1"
+        )
+        one <- atlas_prune_region(
+          atlas,
+          "^area_1$",
+          match_on = "region",
+          views = "axial_1",
+          ignore.case = FALSE
+        )
+
+        expect_identical(drawn_in(both, "axial_1"), c("Cortex", "lh_other"))
+        expect_identical(
+          drawn_in(one, "axial_1"),
+          c("Cortex", "lh_Area_1", "lh_other")
+        )
+      }
+    )
+  }
+
+  it("defaults to TRUE on every verb that takes it", {
+    verbs <- c(
+      "atlas_region_remove",
+      "atlas_region_keep",
+      "atlas_region_rename",
+      "atlas_region_contextual",
+      "atlas_prune_region"
+    )
+    defaults <- vapply(
+      verbs,
+      function(f) formals(get(f))[["ignore.case"]],
+      logical(1)
+    )
+
+    expect_true(all(defaults))
+  })
+})
+
+
+describe("apply_prune_weak() call volume", {
+  # The loop used to run label by label, and each `atlas_prune_region()` call
+  # re-packs every view's coordinates and revalidates the whole atlas. Counting
+  # the calls is what pins the inversion: a per-label loop costs one call per
+  # dropped label, a per-view loop one per view and 500-label batch.
+  it("calls atlas_prune_region() once per view and batch, not per label", {
+    view_names <- c("v1", "v2", "v3")
+    keep <- matrix(
+      FALSE,
+      nrow = 600,
+      ncol = 3,
+      dimnames = list(paste0("lh_r", seq_len(600)), view_names)
+    )
+    keep[, "v1"] <- TRUE
+    keep[1, "v2"] <- TRUE
+    keep[2, "v3"] <- TRUE
+
+    calls <- 0L
+    local_mocked_bindings(
+      atlas_prune_region = function(atlas, ...) {
+        calls <<- calls + 1L
+        atlas
+      }
+    )
+    apply_prune_weak("atlas", keep, view_names)
+
+    # v1 drops nothing; v2 and v3 drop 599 labels each, two batches apiece.
+    expect_identical(calls, 4L)
+  })
+})
