@@ -1,9 +1,11 @@
 cohort_data <- function() {
+  # `lh_a` is skewed on purpose: with c(1, 3) mean and median are both 2, so
+  # the default `fun = mean` was indistinguishable from `median`.
   data.frame(
-    label = c("lh_a", "lh_a", "lh_b"),
+    label = c("lh_a", "lh_a", "lh_a", "lh_b"),
     hemi = "left",
-    subject = c("s01", "s02", "s01"),
-    value = c(1, 3, 10)
+    subject = c("s01", "s02", "s03", "s01"),
+    value = c(1, 2, 9, 10)
   )
 }
 
@@ -14,7 +16,56 @@ describe("aggregate_brain_values()", {
       "label",
       warn_collapse = FALSE
     )
-    expect_identical(agg$value, c(2, 10))
+    # mean(c(1, 2, 9)) is 4; median is 2, so this pins the default.
+    expect_identical(agg$value, c(4, 10))
+  })
+
+  it("keeps an NA key distinct from one spelled \"NA\"", {
+    # `as.character(NA)` is the string "NA", so keying on values merged the two
+    # into one group and averaged a region's value into its namesake.
+    agg <- aggregate_brain_values(
+      data.frame(label = c("NA", NA, "NA"), value = c(1, 100, 3)),
+      "label",
+      warn_collapse = FALSE
+    )
+
+    expect_identical(nrow(agg), 2L)
+    expect_identical(agg$value, c(2, 100))
+  })
+
+  it("keeps numeric keys that print alike but differ", {
+    # `as.character()` rounds, so 0.1 + 0.2 and 0.3 keyed as one group.
+    agg <- aggregate_brain_values(
+      data.frame(k = c(0.1 + 0.2, 0.3), value = c(1, 100)),
+      "k",
+      warn_collapse = FALSE
+    )
+
+    expect_identical(nrow(agg), 2L)
+  })
+
+  it("does not merge two distinct multi-column keys", {
+    # The key is a pasted tuple of INDICES, so it needs its separator. The
+    # first eleven rows make both columns index 1..11; the last two are then
+    # (label 1, view 11) and (label 11, view 1), which unseparated both
+    # render "111" and would merge into one group.
+    labels <- paste0("L", 1:11)
+    views <- paste0("V", 1:11)
+    data <- data.frame(
+      label = c(labels, labels[1], labels[11]),
+      view = c(views, views[11], views[1]),
+      value = c(rep(0, 11), 7, 70)
+    )
+
+    agg <- aggregate_brain_values(
+      data,
+      c("label", "view"),
+      warn_collapse = FALSE
+    )
+
+    expect_identical(nrow(agg), 13L)
+    expect_identical(agg$value[agg$label == "L1" & agg$view == "V11"], 7)
+    expect_identical(agg$value[agg$label == "L11" & agg$view == "V1"], 70)
   })
 
   it("honours a custom aggregating function", {
@@ -25,7 +76,7 @@ describe("aggregate_brain_values()", {
         fun = max,
         warn_collapse = FALSE
       )$value,
-      c(3, 10)
+      c(9, 10)
     )
     expect_identical(
       aggregate_brain_values(
@@ -126,7 +177,7 @@ describe("warn_collapsed_rows()", {
   it("stays silent when every region appears once", {
     rlang::reset_warning_verbosity("ggseg_collapsed_rows")
     expect_no_warning(
-      warn_collapsed_rows(cohort_data()[2:3, ], "label", "value"),
+      warn_collapsed_rows(cohort_data()[3:4, ], "label", "value"),
       class = "ggseg_collapsed_rows"
     )
   })

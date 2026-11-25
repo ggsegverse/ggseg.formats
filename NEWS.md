@@ -8,6 +8,9 @@
   for an `NA` key and an `NA` index yields a row of `NA`s, so the `NA` row
   leaked into its neighbour's group as an all-`NA` row AND the `NA` group came
   back as every row filled with `NA`.
+- `aggregate_brain_values()` keys on `match()` indices rather than pasted
+  values, so an `NA` key stays distinct from one spelled `"NA"` and two
+  numeric keys that print alike stay distinct.
 
 ## Bug fixes
 
