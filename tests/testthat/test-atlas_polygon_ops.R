@@ -325,3 +325,67 @@ describe("area-keyed helpers with an NA label", {
     expect_setequal(res$polygons$label, c(NA_character_, "NA"))
   })
 })
+
+
+describe("polygons_remove_small_pieces() row alignment", {
+  # `areas` is re-indexed by `rows_by_key[pieces_key]` so element i belongs to
+  # pieces[i, ]. Everything downstream -- the `ave()` grouping, `pieces$view`,
+  # `pieces$label` -- indexes against that. Dropping the re-index leaves the
+  # areas in split()'s sorted key order, which is NOT pieces order once there
+  # are enough pieces, and the wrong ones get pruned.
+  many_piece_flat <- function() {
+    # Ten pieces whose keys sort out of row order: group 10 sorts before
+    # group 2 as a string, so the mis-indexed form picks different pieces.
+    sizes <- c(10, 1, 9, 1, 8, 1, 7, 1, 6, 1)
+    do.call(
+      rbind,
+      lapply(seq_along(sizes), function(g) {
+        side <- sizes[g]
+        data.frame(
+          label = "lh_a",
+          view = "lateral",
+          x = c(0, side, side, 0) + g * 100,
+          y = c(0, 0, side, side),
+          group = g,
+          subgroup = 1L,
+          stringsAsFactors = FALSE
+        )
+      })
+    )
+  }
+
+  it("scopes piece pruning to the requested views", {
+    # The old code read the view back out of the key with strsplit(); the
+    # rewrite takes it from `pieces$view`, and nothing exercised that.
+    flat <- many_piece_flat()
+    other <- flat
+    other$view <- "medial"
+    polygons <- polygons_renest(rbind(flat, other))
+
+    scoped <- polygons_remove_small_pieces(
+      polygons,
+      min_area = 5,
+      views = "lateral"
+    )
+    kept <- polygons_unnest(scoped$polygons)
+
+    expect_identical(scoped$n_removed, 5L)
+    expect_setequal(
+      unique(kept$group[kept$view == "lateral"]),
+      c(1L, 3L, 5L, 7L, 9L)
+    )
+    expect_setequal(unique(kept$group[kept$view == "medial"]), 1:10)
+  })
+
+  it("prunes the pieces that are actually small", {
+    flat <- many_piece_flat()
+    polygons <- polygons_renest(flat)
+
+    result <- polygons_remove_small_pieces(polygons, min_area = 5)
+    kept <- polygons_unnest(result$polygons)
+
+    # The five 1x1 pieces go; the five larger ones stay, largest kept always.
+    expect_identical(result$n_removed, 5L)
+    expect_setequal(unique(kept$group), c(1L, 3L, 5L, 7L, 9L))
+  })
+})

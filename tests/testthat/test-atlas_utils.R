@@ -1126,6 +1126,21 @@ describe("the deprecated pruning wrappers", {
     expect_identical(formals(relabel_atlas), formals(atlas_relabel))
   })
 
+  it("forwards ignore.case rather than only declaring it", {
+    # Comparing formals() sees the DECLARED argument and can never see whether
+    # it is passed on, so the wrapper could accept `ignore.case` and silently
+    # ignore it -- the failure class this argument exists to remove.
+    atlas <- make_case_atlas(polygons = TRUE)
+    pattern <- "^lh_area_1$"
+
+    wrapped <- suppressWarnings(
+      atlas_view_remove_region(atlas, pattern, ignore.case = FALSE)
+    )
+    direct <- atlas_prune_region(atlas, pattern, ignore.case = FALSE)
+
+    expect_identical(case_geom_labels(wrapped), case_geom_labels(direct))
+  })
+
   it("warn, naming their replacement, and forward their arguments", {
     # `relabel_atlas()` is the fourth of these and the only one renamed for
     # findability rather than for reading wrong: a verb-first name never
