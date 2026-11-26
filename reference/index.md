@@ -63,6 +63,9 @@ Convert old ggseg/ggseg3d atlases to the unified ggseg_atlas format.
   [`brain_views()`](https://ggsegverse.github.io/ggseg.formats/reference/atlas_views.md)
   : Get available views in atlas
 
+- [`brain_join_keys()`](https://ggsegverse.github.io/ggseg.formats/reference/brain_join_keys.md)
+  : The columns user data joins an atlas on
+
 - [`brain_mesh()`](https://ggsegverse.github.io/ggseg.formats/reference/brain_mesh.md)
   : Build a mesh that describes itself
 
