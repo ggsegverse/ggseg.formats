@@ -170,3 +170,32 @@ describe("atlas provenance", {
     }
   })
 })
+
+
+describe("set_atlas_core() with a palette no label survives", {
+  rekeyed <- function() {
+    a <- dk()
+    core <- atlas_core(a)
+    core$label <- paste0("zz_", core$label)
+    set_atlas_core(a, core)
+  }
+
+  it("clears the palette rather than keeping it empty", {
+    # A zero-length *named* vector is not NULL, and the consumers below only
+    # test !is.null(), so keeping an empty one greyed out every region.
+    expect_null(atlas_palette(rekeyed()))
+  })
+
+  it("does not write an all-NA colour column in atlas_sf()", {
+    # Both consumers write `colour` on `!is.null(palette)` alone, so an empty
+    # named palette gave every row colour = NA. No column at all is what lets
+    # atlas_plot_palette()'s fallback run.
+    skip_if_not_installed("sf")
+    expect_false("colour" %in% names(atlas_sf(rekeyed())))
+  })
+
+  it("does not write an all-NA colour column in as.data.frame()", {
+    skip_if_not_installed("sf")
+    expect_false("colour" %in% names(as.data.frame(rekeyed())))
+  })
+})

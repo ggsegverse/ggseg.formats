@@ -217,13 +217,7 @@ convert_legacy_brain_data <- function(x) {
   core <- legacy_core_from_sf(sf_data, atlas_slot(x, "atlas"))
   palette <- legacy_palette_from_sf(sf_data)
 
-  data <- switch(
-    type,
-    "cortical" = ggseg_data_cortical(geom = sf_data, vertices = NULL),
-    "subcortical" = ggseg_data_subcortical(geom = sf_data, meshes = NULL),
-    "tract" = ggseg_data_tract(geom = sf_data, meshes = NULL),
-    ggseg_data_cortical(geom = sf_data, vertices = NULL)
-  )
+  data <- as_atlas_data(sf_data, type)
 
   ggseg_atlas(
     atlas = atlas_slot(x, "atlas"),
@@ -256,21 +250,11 @@ convert_legacy_structure <- function(x) {
   }
   core <- repair_legacy_core(core, atlas_slot(x, "atlas"))
 
-  data <- switch(
+  data <- as_atlas_data(
+    atlas_slot(x, "sf"),
     type,
-    "cortical" = ggseg_data_cortical(
-      geom = atlas_slot(x, "sf"),
-      vertices = atlas_slot(x, "vertices")
-    ),
-    "subcortical" = ggseg_data_subcortical(
-      geom = atlas_slot(x, "sf"),
-      meshes = atlas_slot(x, "meshes")
-    ),
-    "tract" = ggseg_data_tract(
-      geom = atlas_slot(x, "sf"),
-      meshes = atlas_slot(x, "meshes")
-    ),
-    cli::cli_abort("Unknown atlas type: {.val {type}}")
+    vertices = atlas_slot(x, "vertices"),
+    meshes = atlas_slot(x, "meshes")
   )
 
   ggseg_atlas(
@@ -313,7 +297,7 @@ restamp_class <- function(x) {
 }
 
 
-#' Wrap a legacy bare geometry table in the payload class for its type
+#' Wrap legacy geometry, vertices and meshes in the payload class for a type
 #'
 #' Legacy `brain_atlas` objects kept 2D geometry directly in `$data` as an sf
 #' frame, and the old list representation let it stay there: `new_ggseg_atlas()`
@@ -322,23 +306,32 @@ restamp_class <- function(x) {
 #' constructor, so the geometry is wrapped in the `ggseg_data_*()` payload its
 #' type calls for, which is what every other construction path already
 #' produces.
+#'
+#' This is the single type-to-constructor map every upgrade path uses, so a new
+#' member of `atlas_types()` cannot be reachable from one path and not another.
 #' @noRd
-as_atlas_data <- function(data, type) {
-  if (
-    is.null(data) || inherits(data, c("ggseg_atlas_data", "brain_atlas_data"))
-  ) {
-    return(data)
-  }
-  if (!is.data.frame(data)) {
-    return(data)
+as_atlas_data <- function(data, type, vertices = NULL, meshes = NULL) {
+  if (is.null(vertices) && is.null(meshes)) {
+    if (
+      is.null(data) || inherits(data, c("ggseg_atlas_data", "brain_atlas_data"))
+    ) {
+      return(data)
+    }
+    if (!is.data.frame(data)) {
+      return(data)
+    }
   }
   switch(
     type,
-    subcortical = ggseg_data_subcortical(geom = data, meshes = NULL),
-    tract = ggseg_data_tract(geom = data, meshes = NULL),
-    cerebellar = ggseg_data_cerebellar(geom = data, meshes = NULL),
-    wm = ggseg_data_wm(geom = data, meshes = NULL),
-    ggseg_data_cortical(geom = data, vertices = NULL)
+    subcortical = ggseg_data_subcortical(geom = data, meshes = meshes),
+    tract = ggseg_data_tract(geom = data, meshes = meshes),
+    cerebellar = ggseg_data_cerebellar(
+      geom = data,
+      vertices = vertices,
+      meshes = meshes
+    ),
+    wm = ggseg_data_wm(geom = data, meshes = meshes),
+    ggseg_data_cortical(geom = data, vertices = vertices)
   )
 }
 

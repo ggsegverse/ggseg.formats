@@ -826,7 +826,7 @@ describe("convert_legacy_brain_atlas palette remap", {
 })
 
 
-describe("build_atlas_data for tract type", {
+describe("as_atlas_data for tract type", {
   it("builds tract atlas data from meshes", {
     withr::local_options(lifecycle_verbosity = "quiet")
     centerline <- matrix(rnorm(30), ncol = 3)
@@ -842,7 +842,7 @@ describe("build_atlas_data for tract type", {
       )
     ))
 
-    result <- build_atlas_data("tract", NULL, NULL, meshes_df)
+    result <- as_atlas_data(NULL, "tract", meshes = meshes_df)
     expect_s3_class(result, "ggseg_data_tract")
   })
 })
@@ -965,11 +965,95 @@ describe("try_infer_vertices", {
 })
 
 
-describe("build_atlas_data default branch", {
+describe("as_atlas_data default branch", {
   it("falls through to default for unknown type", {
     vertices <- data.frame(label = "lh_frontal")
     vertices$vertices <- list(1L:3L)
-    result <- build_atlas_data("unknown_type", NULL, vertices, NULL)
+    result <- as_atlas_data(NULL, "unknown_type", vertices = vertices)
     expect_s3_class(result, "ggseg_data_cortical")
+  })
+})
+
+
+describe("convert_legacy_brain_atlas across every atlas type", {
+  it("keeps a cerebellar atlas cerebellar", {
+    # Before the type map was shared, the payload came out
+    # <ggseg_data_cortical> and the constructor rejected it as the data's
+    # fault: "Atlas type cerebellar requires <ggseg_data_cerebellar>".
+    withr::local_options(lifecycle_verbosity = "quiet")
+    result <- suppressMessages(convert_legacy_brain_atlas(atlas_2d = suit()))
+    expect_identical(atlas_type(result), "cerebellar")
+    expect_s3_class(atlas_data(result), "ggseg_data_cerebellar")
+  })
+
+  it("keeps a cerebellar 3D atlas's meshes", {
+    # A cerebellar atlas stores its deep nuclei as per-region meshes, but
+    # `cerebellar` was missing from the mesh-bearing types, so the call fell
+    # through to the vertex and cortical branches -- which do nothing for it --
+    # and every mesh was dropped with no warning.
+    withr::local_options(lifecycle_verbosity = "quiet")
+    mock_3d <- data.frame(atlas = "test_3d", hemi = "left", surf = "LCBC")
+    mock_3d$ggseg_3d <- list(
+      data.frame(
+        region = "Dentate",
+        label = "Left-Dentate",
+        colour = "#0000FF",
+        stringsAsFactors = FALSE
+      )
+    )
+    mock_3d$ggseg_3d[[1]]$mesh <- list(
+      list(
+        vb = matrix(c(1, 2, 3, 1, 4, 5, 6, 1, 7, 8, 9, 1), nrow = 4),
+        it = matrix(c(1, 2, 3), nrow = 3)
+      )
+    )
+
+    result <- suppressMessages(
+      convert_legacy_brain_atlas(atlas_3d = mock_3d, type = "cerebellar")
+    )
+
+    expect_identical(atlas_type(result), "cerebellar")
+    expect_s3_class(atlas_data(result), "ggseg_data_cerebellar")
+    expect_identical(nrow(atlas_data(result)$meshes), 1L)
+  })
+
+  it("keeps a white-matter atlas white-matter", {
+    withr::local_options(lifecycle_verbosity = "quiet")
+    result <- suppressMessages(
+      convert_legacy_brain_atlas(atlas_2d = wm_geom_atlas())
+    )
+    expect_identical(atlas_type(result), "wm")
+    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+  })
+
+  it("converts a legacy rgl tract atlas end to end", {
+    # convert_rgl_mesh() used to drop `metadata`, where the centerline lives,
+    # so meshes_to_centerlines() aborted with "No valid centerlines could be
+    # extracted from meshes" for every legacy tract atlas.
+    withr::local_options(lifecycle_verbosity = "quiet")
+    centerline <- matrix(as.numeric(1:30), ncol = 3)
+    rgl_mesh <- list(
+      vb = matrix(as.numeric(1:12), nrow = 4),
+      it = matrix(1:3, nrow = 3),
+      metadata = list(
+        centerline = centerline,
+        tangents = centerline,
+        n_centerline_points = 10
+      )
+    )
+    mock_3d <- data.frame(atlas = "jhu_3d", hemi = "left", surf = "LCBC")
+    mock_3d$ggseg_3d <- list(
+      data.frame(region = "cst", label = "cst_left", colour = "#FF0000")
+    )
+    mock_3d$ggseg_3d[[1]]$mesh <- list(rgl_mesh)
+
+    result <- suppressMessages(
+      convert_legacy_brain_atlas(atlas_3d = mock_3d, type = "tract")
+    )
+    expect_s3_class(atlas_data(result), "ggseg_data_tract")
+    expect_identical(
+      atlas_data(result)$centerlines$points[[1]],
+      centerline
+    )
   })
 })

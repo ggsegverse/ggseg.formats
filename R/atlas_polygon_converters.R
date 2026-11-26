@@ -14,11 +14,9 @@
 #' names, and they are dropped with a warning.
 #'
 #' This doubles as the backward-compatible path for sf-optional installs: a
-#' lite-only ggseg that meets a still-sf-backed atlas converts it on the fly
-#' when sf is installed. When sf is not installed the geometry cannot be read,
-#' so the call aborts with a pointer to [migrate_atlas_files()] — which the
-#' atlas maintainer runs once (on a machine with sf) to ship the package in the
-#' polygon format.
+#' lite-only ggseg that meets a still-sf-backed atlas converts it on the fly.
+#' The conversion reads the geometry through sfheaders, so sf itself is never
+#' needed.
 #'
 #' @param atlas A `ggseg_atlas` (or legacy `brain_atlas`) object.
 #'
@@ -28,24 +26,7 @@
 #' poly <- as_polygon_atlas(dk())
 #' is_atlas_polygon(poly) # TRUE
 as_polygon_atlas <- function(atlas) {
-  assert_ggseg_atlas(atlas)
-
-  geom <- geom_from_data(atlas_slot(atlas, "data"))
-  if (is.null(geom)) {
-    cli::cli_abort(c(
-      "Atlas has no 2D geometry to convert.",
-      "i" = "Need {.field geom} in the atlas payload; see {.fn atlas_data}."
-    ))
-  }
-  if (!inherits(geom, "brain_polygons")) {
-    geom <- sf_to_polygons(geom)
-  }
-
-  data <- atlas_slot(atlas, "data")
-  data$geom <- geom
-  data$sf <- NULL
-  data$polygons <- NULL
-  set_atlas_slot(atlas, "data", data)
+  convert_atlas_geom(atlas, to_sf = FALSE)
 }
 
 
@@ -71,6 +52,14 @@ as_polygon_atlas <- function(atlas) {
 #' atlas <- as_sf_atlas(as_polygon_atlas(dk()))
 #' sf::st_buffer(atlas_geom(atlas)$geometry[[1]], dist = 2)
 as_sf_atlas <- function(atlas) {
+  convert_atlas_geom(atlas, to_sf = TRUE)
+}
+
+
+#' Swap an atlas's 2D geometry to one representation or the other
+#' @noRd
+#' @keywords internal
+convert_atlas_geom <- function(atlas, to_sf) {
   assert_ggseg_atlas(atlas)
 
   geom <- geom_from_data(atlas_slot(atlas, "data"))
@@ -80,10 +69,20 @@ as_sf_atlas <- function(atlas) {
       "i" = "Need {.field geom} in the atlas payload; see {.fn atlas_data}."
     ))
   }
-  if (inherits(geom, "brain_polygons")) {
+  is_poly <- inherits(geom, "brain_polygons")
+  if (to_sf && is_poly) {
     geom <- polygons_to_sf(geom)
+  } else if (!to_sf && !is_poly) {
+    geom <- sf_to_polygons(geom)
   }
+  set_atlas_geom_slot(atlas, geom)
+}
 
+
+#' Put `geom` in the single geometry slot and drop the legacy ones
+#' @noRd
+#' @keywords internal
+set_atlas_geom_slot <- function(atlas, geom) {
   data <- atlas_slot(atlas, "data")
   data$geom <- geom
   data$sf <- NULL

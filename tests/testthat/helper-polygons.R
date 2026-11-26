@@ -117,3 +117,51 @@ case_geom_labels <- function(x) {
     geom$label
   }
 }
+
+
+# A two-region core plus matching `brain_polygons` geometry, for any atlas
+# type. `rings_as_polygons()` needs no sf, so the conversion paths these
+# fixtures feed are exercised on an install without sf too.
+type_fixture_core <- function() {
+  data.frame(
+    hemi = c("left", "right"),
+    region = c("cst", "cst"),
+    label = c("cst_left", "cst_right"),
+    display = c("cst_left", "cst_right"),
+    stringsAsFactors = FALSE
+  )
+}
+
+type_fixture_geom <- function() {
+  rings_as_polygons(list(
+    ring_square("cst_left", "lateral", x_off = 0, y_off = 0),
+    ring_square("cst_right", "lateral", x_off = 2, y_off = 0)
+  ))
+}
+
+wm_geom_atlas <- function() {
+  ggseg_atlas(
+    atlas = "demo_wm_2d",
+    type = "wm",
+    core = type_fixture_core(),
+    data = ggseg_data_wm(geom = type_fixture_geom())
+  )
+}
+
+# The pre-3.0.0 shape: `core` alongside separate `sf`/`vertices`/`meshes`
+# slots, which `convert_legacy_structure()` upgrades.
+legacy_structure_atlas <- function(type) {
+  structure(
+    list(
+      atlas = paste0("legacy_", type),
+      type = type,
+      palette = NULL,
+      core = type_fixture_core(),
+      sf = type_fixture_geom(),
+      vertices = NULL,
+      meshes = NULL,
+      provenance = NULL
+    ),
+    class = c("brain_atlas", "list")
+  )
+}

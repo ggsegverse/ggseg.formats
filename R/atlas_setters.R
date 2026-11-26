@@ -237,6 +237,12 @@ set_atlas_core <- function(atlas, value, palette = "keep") {
     palette <- atlas_slot(atlas, "palette")
     if (!is.null(palette)) {
       palette <- palette[names(palette) %in% value$label]
+      # A zero-length named vector is not "no palette" to the consumers:
+      # `as.data.frame()` and `atlas_sf()` only test `!is.null()`, so they
+      # would write `colour = NA` for every row.
+      if (length(palette) == 0) {
+        palette <- NULL
+      }
     }
   }
 
