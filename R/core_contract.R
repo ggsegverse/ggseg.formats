@@ -367,6 +367,33 @@ labels_to_pattern <- function(labels) {
 }
 
 
+#' The columns user data joins an atlas on
+#'
+#' The key vocabulary a plotting function matches `data` against an atlas
+#' with. `label` comes first: it is the canonical matching key described in
+#' [core_contract], unique per atlas row, hemisphere-qualified, and what a
+#' palette is keyed by. Every key the data carries is used, so data keyed on
+#' `region` still joins.
+#'
+#' Only these columns are keys. An incidental shared column -- a `lobe`
+#' classification, say -- would otherwise become a join key and silently drop
+#' most of the matches, which is the defect ggseg #217 fixed. The vocabulary
+#' is stated here, once, because `ggseg` and `ggseg3d` must agree on it.
+#'
+#' @return Character vector of the join-key column names.
+#'
+#' @examples
+#' brain_join_keys()
+#'
+#' intersect(brain_join_keys(), names(atlas_core(dk())))
+#'
+#' @seealso [core_contract], [aggregate_brain_values()]
+#' @export
+brain_join_keys <- function() {
+  c("label", "region", "hemi")
+}
+
+
 #' Every label/view pair an atlas's 2D geometry draws, whichever backend
 #' holds it
 #'
