@@ -60,8 +60,9 @@ unify_legacy_atlases(
 
 - type:
 
-  Atlas type: `"cortical"` or `"subcortical"`. If NULL, inferred from
-  the input atlases.
+  Atlas type, as accepted by
+  [`ggseg_atlas()`](https://ggsegverse.github.io/ggseg.formats/reference/ggseg_atlas.md).
+  If NULL, inferred from the input atlases.
 
 - surface:
 

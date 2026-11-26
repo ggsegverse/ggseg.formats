@@ -33,11 +33,8 @@ reserves those names, and they are dropped with a warning.
 
 This doubles as the backward-compatible path for sf-optional installs: a
 lite-only ggseg that meets a still-sf-backed atlas converts it on the
-fly when sf is installed. When sf is not installed the geometry cannot
-be read, so the call aborts with a pointer to
-[`migrate_atlas_files()`](https://ggsegverse.github.io/ggseg.formats/reference/migrate_atlas_files.md)
-— which the atlas maintainer runs once (on a machine with sf) to ship
-the package in the polygon format.
+fly. The conversion reads the geometry through sfheaders, so sf itself
+is never needed.
 
 ## Examples
 

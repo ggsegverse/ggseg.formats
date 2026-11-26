@@ -15,7 +15,7 @@ machinery in $data — useful for wasm builds and air-gapped installs."><meta pr
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9035</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9036</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -83,11 +83,9 @@ geometry columns are carried over; only columns named <code>x</code>, <code>y</c
 <code>subgroup</code> cannot be, since the nested coordinate table reserves those
 names, and they are dropped with a warning.</p>
 <p>This doubles as the backward-compatible path for sf-optional installs: a
-lite-only ggseg that meets a still-sf-backed atlas converts it on the fly
-when sf is installed. When sf is not installed the geometry cannot be read,
-so the call aborts with a pointer to <code><a href="migrate_atlas_files.html">migrate_atlas_files()</a></code> — which the
-atlas maintainer runs once (on a machine with sf) to ship the package in the
-polygon format.</p>
+lite-only ggseg that meets a still-sf-backed atlas converts it on the fly.
+The conversion reads the geometry through sfheaders, so sf itself is never
+needed.</p>
     </div>
 
     <div class="section level2">
