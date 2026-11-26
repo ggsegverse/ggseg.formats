@@ -208,3 +208,74 @@ describe("df_nest()", {
     expect_identical(nrow(back), nrow(flat))
   })
 })
+
+
+describe("df_key", {
+  it("keeps an NA distinct from a value spelled \"NA\"", {
+    # The reason this keys on indices: paste() renders NA as the string "NA",
+    # so pasting the values themselves merges these two rows.
+    df <- data.frame(label = c(NA, "NA"), stringsAsFactors = FALSE)
+
+    expect_length(unique(df_key(df, "label")), 2L)
+  })
+
+  it("keeps doubles that print alike distinct", {
+    # as.character() on a double loses precision, so 0.1 + 0.2 and 0.3 paste
+    # to the same string while being different numbers.
+    df <- data.frame(value = c(0.1 + 0.2, 0.3))
+    expect_identical(as.character(df$value[1]), as.character(df$value[2]))
+
+    expect_length(unique(df_key(df, "value")), 2L)
+  })
+
+  it("gives one key per distinct combination, not per row", {
+    df <- data.frame(
+      label = c("a", "b", "a", "a"),
+      view = c("x", "x", "x", "y"),
+      stringsAsFactors = FALSE
+    )
+
+    key <- df_key(df, c("label", "view"))
+
+    expect_length(unique(key), 3L)
+    expect_identical(key[1], key[3])
+    expect_false(key[1] == key[4])
+  })
+
+  it("separates the columns, so indices cannot run together", {
+    # Without a separator, index 11 beside index 1 and index 1 beside index 11
+    # both paste to "111".
+    df <- data.frame(
+      a = c(letters[11], letters[1]),
+      b = c(letters[1], letters[11]),
+      stringsAsFactors = FALSE
+    )
+    levels_df <- data.frame(
+      a = letters[1:11],
+      b = letters[1:11],
+      stringsAsFactors = FALSE
+    )
+
+    key <- df_key(df, c("a", "b"), levels = levels_df)
+
+    expect_length(unique(key), 2L)
+  })
+
+  it("puts two frames in one key space when given shared levels", {
+    # What the polygon ops need: rows of `flat` and the distinct pieces must
+    # produce the SAME key for the same combination, which only holds when
+    # both are matched against one level table.
+    flat <- data.frame(
+      label = c("b", "a", "b"),
+      view = c("x", "x", "y"),
+      stringsAsFactors = FALSE
+    )
+    pieces <- unique(flat[, c("label", "view")])
+
+    shared <- df_key(flat, c("label", "view"), levels = pieces)
+    own <- df_key(pieces, c("label", "view"), levels = pieces)
+
+    expect_true(all(shared %in% own))
+    expect_identical(shared[1], own[1])
+  })
+})

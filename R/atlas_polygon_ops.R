@@ -156,22 +156,6 @@ polygon_ring_area <- function(x, y) {
 }
 
 
-#' A unique key per distinct combination of geometry columns
-#'
-#' Keyed on `match()` indices into `levels_df`, never on the values:
-#' `paste()` renders `NA` as the string `"NA"`, so pasting labels merges an
-#' `NA` label with one literally spelled `"NA"`. Indices are pasted instead,
-#' which is injective and -- unlike positional arithmetic -- cannot overflow
-#' on a three-column key. `levels_df` must contain every combination in `df`,
-#' which is what `unique(df[, cols])` gives.
-#' @noRd
-#' @keywords internal
-geometry_key <- function(df, levels_df, cols = c("label", "view")) {
-  idx <- lapply(cols, function(col) match(df[[col]], levels_df[[col]]))
-  do.call(paste, c(idx, list(sep = "\r")))
-}
-
-
 #' Area per label x view (exterior minus holes, summed over disjoint pieces)
 #'
 #' Mirrors `sf::st_area()` on each MULTIPOLYGON row: within a `group` the
@@ -191,9 +175,12 @@ polygon_geometry_areas <- function(flat) {
     ring_area_of(piece, ext) -
       sum(vapply(holes, function(r) ring_area_of(piece, r), numeric(1)))
   }
-  rows_by_key <- split(seq_len(nrow(flat)), geometry_key(flat, lv))
+  rows_by_key <- split(
+    seq_len(nrow(flat)),
+    df_key(flat, c("label", "view"), levels = lv)
+  )
   lv$area <- as.numeric(vapply(
-    rows_by_key[geometry_key(lv, lv)],
+    rows_by_key[df_key(lv, c("label", "view"))],
     function(idx) {
       sub <- flat[idx, , drop = FALSE]
       sum(vapply(split(sub, as.character(sub$group)), piece_area, numeric(1)))
@@ -226,7 +213,8 @@ polygons_remove_small <- function(
   small <- areas[is_small, c("label", "view"), drop = FALSE]
 
   kept <- flat[
-    !geometry_key(flat, areas) %in% geometry_key(small, areas),
+    !df_key(flat, c("label", "view"), levels = areas) %in%
+      df_key(small, c("label", "view"), levels = areas),
     ,
     drop = FALSE
   ]
@@ -264,8 +252,8 @@ polygons_remove_small_pieces <- function(
 
   cols <- c("label", "view", "group")
   pieces <- unique(flat[, cols])
-  piece_key <- geometry_key(flat, pieces, cols)
-  pieces_key <- geometry_key(pieces, pieces, cols)
+  piece_key <- df_key(flat, cols, levels = pieces)
+  pieces_key <- df_key(pieces, cols)
   rows_by_key <- split(seq_len(nrow(flat)), piece_key)
   areas <- vapply(
     rows_by_key[pieces_key],

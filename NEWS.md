@@ -10,7 +10,8 @@
   back as every row filled with `NA`.
 - `aggregate_brain_values()` keys on `match()` indices rather than pasted
   values, so an `NA` key stays distinct from one spelled `"NA"` and two
-  numeric keys that print alike stay distinct.
+  numeric keys that print alike stay distinct. That rule is now written once,
+  as `df_key()`, shared with the polygon ops rather than spelled out twice.
 
 ## Bug fixes
 

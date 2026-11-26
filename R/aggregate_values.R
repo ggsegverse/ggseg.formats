@@ -65,16 +65,7 @@ aggregate_brain_values <- function(
     return(data[, out_cols, drop = FALSE])
   }
 
-  # Keyed on match() indices, not on the values: `as.character(NA)` is the
-  # string "NA", so pasting values merges an NA key with one literally spelled
-  # "NA", and `as.character()` on a double loses precision the same way.
-  key_strings <- do.call(
-    paste,
-    c(
-      lapply(data[keys], function(col) match(col, unique(col))),
-      sep = "\r"
-    )
-  )
+  key_strings <- df_key(data, keys)
   groups <- split(
     seq_len(nrow(data)),
     factor(key_strings, levels = unique(key_strings))

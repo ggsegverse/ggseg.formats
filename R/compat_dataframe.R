@@ -65,6 +65,25 @@ df_distinct <- function(df, cols) {
   as_tbl(unique(df[, cols, drop = FALSE]))
 }
 
+#' A key string per distinct combination of columns
+#'
+#' Keyed on `match()` indices, never on the values: `paste()` renders `NA` as
+#' the string `"NA"`, so pasting values merges an `NA` key with one literally
+#' spelled `"NA"`, and `as.character()` on a double loses precision the same
+#' way. Indices are pasted instead, which is injective and -- unlike
+#' positional arithmetic -- cannot overflow on a three-column key.
+#'
+#' `levels` supplies the value-to-index mapping and must contain every
+#' combination present in `df`. It defaults to `df` itself, which trivially
+#' does; pass another frame when two frames have to share one key space, as
+#' the polygon ops do when indexing rows by their distinct pieces.
+#' @noRd
+#' @keywords internal
+df_key <- function(df, cols, levels = df) {
+  idx <- lapply(cols, function(col) match(df[[col]], levels[[col]]))
+  do.call(paste, c(idx, list(sep = "\r")))
+}
+
 #' Left join on one or more key columns
 #'
 #' Replicates dplyr's one-to-many semantics: each row of `x` is repeated once
