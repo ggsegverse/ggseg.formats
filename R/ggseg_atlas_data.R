@@ -390,6 +390,12 @@ validate_centerlines <- function(centerlines) {
         "points[[{i}]] must be an n x 3 matrix, got {class(pts)[1]}"
       )
     }
+    if (nrow(pts) < 2) {
+      cli::cli_abort(
+        "points[[{i}]] must have at least 2 points to have a direction,
+         got {nrow(pts)}"
+      )
+    }
   }
 
   if (!"tangents" %in% names(centerlines)) {

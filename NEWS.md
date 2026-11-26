@@ -15,6 +15,20 @@
 
 ## Bug fixes
 
+- `read_freesurfer_table()` refuses a repeated column name instead of dropping
+  its values, and says why `check.names` cannot be passed through `...`.
+
+- `read_freesurfer_table()` keeps the dots in a label. It rewrote every dot to
+  a dash to undo `read.table()`'s mangling, which destroyed all 42 `tracula()`
+  labels and left the stats table joining to nothing.
+- `ggseg_data_tract()` names a centerline of fewer than two points, instead of
+  aborting with `subscript out of bounds` from the tangent computation.
+- `atlas_region_rename()` warns when its `pattern` selects no row, for a
+  function `replacement` as well as a string.
+- `migrate_atlas_hemi()` names a `core` carrying no `hemi` column, instead of
+  aborting with a recycling error from the assignment.
+- `atlas_view_keep()` on an sf atlas requires `sf` where it needs it, as
+  `atlas_view_remove()` already did, rather than part-way through the call.
 - `atlas_prune_weak()` prunes a label holding regex metacharacters. The views
   it ruled out kept `lh_V5-MT+_L` (ggsegBrainnetome) silently, and a label
   with an unbalanced `(` aborted.
