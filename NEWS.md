@@ -8,6 +8,10 @@
   for an `NA` key and an `NA` index yields a row of `NA`s, so the `NA` row
   leaked into its neighbour's group as an all-`NA` row AND the `NA` group came
   back as every row filled with `NA`.
+- `aggregate_brain_values()` keys on `match()` indices rather than pasted
+  values, so an `NA` key stays distinct from one spelled `"NA"` and two
+  numeric keys that print alike stay distinct. That rule is now written once,
+  as `df_key()`, shared with the polygon ops rather than spelled out twice.
 
 ## Bug fixes
 
@@ -75,6 +79,9 @@
   relying on locale-dependent folding.
 - `labels_to_pattern()` is exported, for matching labels literally where a
   verb takes a pattern.
+- `aggregate_brain_values()` and `warn_collapsed_rows()` are exported.
+  They move here from ggseg, so ggseg3d can collapse several data rows per
+  region with one shared implementation instead of letting the last row win.
 
 ## Breaking changes
 
