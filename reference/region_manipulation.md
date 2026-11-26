@@ -6,7 +6,12 @@ does or does not belong to them:
 ## Usage
 
 ``` r
-atlas_region_remove(atlas, pattern, match_on = c("label", "region"))
+atlas_region_remove(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  ignore.case = TRUE
+)
 
 atlas_region_contextual(
   atlas,
@@ -31,10 +36,16 @@ atlas_region_rename(
   atlas,
   pattern,
   replacement,
-  match_on = c("label", "region")
+  match_on = c("label", "region"),
+  ignore.case = TRUE
 )
 
-atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
+atlas_region_keep(
+  atlas,
+  pattern,
+  match_on = c("label", "region"),
+  ignore.case = TRUE
+)
 ```
 
 ## Arguments
@@ -45,7 +56,9 @@ atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
 
 - pattern:
 
-  Character pattern to match. Uses `grepl(..., ignore.case = TRUE)`.
+  Character pattern to match, with
+  [`grepl()`](https://rdrr.io/r/base/grep.html). Case is ignored unless
+  `ignore.case = FALSE`.
 
 - match_on:
 
@@ -56,11 +69,12 @@ atlas_region_keep(atlas, pattern, match_on = c("label", "region"))
 
 - ignore.case:
 
-  For `atlas_region_contextual()`: passed to
+  Whether `pattern` matches case-insensitively, passed to
   [`grepl()`](https://rdrr.io/r/base/grep.html). Defaults to `TRUE` for
-  backwards compatibility, but note that a context pattern like
-  `"Thalamus"` then also matches focus labels such as `"hypothalamus"`;
-  set `FALSE` (and/or anchor the pattern) when that matters.
+  backwards compatibility, so a pattern like `"abc"` also selects
+  `"ABC"` and a context pattern like `"Thalamus"` also selects a focus
+  label such as `"hypothalamus"`. Case folding is locale-dependent; set
+  `FALSE` (and/or anchor the pattern) when labels differ only in case.
 
 - x, y:
 

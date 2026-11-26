@@ -56,7 +56,8 @@
 <span>  <span class="va">pattern</span>,</span>
 <span>  match_on <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label"</span>, <span class="st">"region"</span><span class="op">)</span>,</span>
 <span>  views <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exact"</span>, <span class="st">"pattern"</span><span class="op">)</span></span>
+<span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exact"</span>, <span class="st">"pattern"</span><span class="op">)</span>,</span>
+<span>  ignore.case <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">atlas_prune_small</span><span class="op">(</span></span>
@@ -78,7 +79,8 @@
 <span>  <span class="va">pattern</span>,</span>
 <span>  match_on <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"label"</span>, <span class="st">"region"</span><span class="op">)</span>,</span>
 <span>  views <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exact"</span>, <span class="st">"pattern"</span><span class="op">)</span></span>
+<span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"exact"</span>, <span class="st">"pattern"</span><span class="op">)</span>,</span>
+<span>  ignore.case <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">atlas_view_remove_small</span><span class="op">(</span></span>
@@ -101,8 +103,8 @@
 
 
 <dt id="arg-pattern">pattern<a class="anchor" aria-label="anchor" href="#arg-pattern"></a></dt>
-<dd><p>Character pattern to match. Uses
-<code>grepl(..., ignore.case = TRUE)</code>.</p></dd>
+<dd><p>Character pattern to match, with <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl()</a></code>. Case is ignored
+unless <code>ignore.case = FALSE</code>.</p></dd>
 
 
 <dt id="arg-match-on">match_on<a class="anchor" aria-label="anchor" href="#arg-match-on"></a></dt>
@@ -127,6 +129,15 @@ as a whole view name. <code>"pattern"</code> takes <code>views</code> as a regul
 instead, matched as a substring — <code>"axial"</code> then reaches <code>axial_1</code> and
 <code>axial_2</code> as well. Prefer <code>"exact"</code>: a name that happens to sit inside
 another view's name silently scopes to both views under <code>"pattern"</code>.</p></dd>
+
+
+<dt id="arg-ignore-case">ignore.case<a class="anchor" aria-label="anchor" href="#arg-ignore-case"></a></dt>
+<dd><p>Whether <code>pattern</code> matches case-insensitively, passed to
+<code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl()</a></code>. Defaults to <code>TRUE</code> for backwards compatibility, so a pattern
+like <code>"abc"</code> also selects <code>"ABC"</code> and a context pattern like
+<code>"Thalamus"</code> also selects a focus label such as <code>"hypothalamus"</code>. Case
+folding is locale-dependent; set <code>FALSE</code> (and/or anchor the pattern) when
+labels differ only in case.</p></dd>
 
 
 <dt id="arg-min-area">min_area<a class="anchor" aria-label="anchor" href="#arg-min-area"></a></dt>

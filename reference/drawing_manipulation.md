@@ -10,7 +10,8 @@ atlas_prune_region(
   pattern,
   match_on = c("label", "region"),
   views = NULL,
-  match = c("exact", "pattern")
+  match = c("exact", "pattern"),
+  ignore.case = TRUE
 )
 
 atlas_prune_small(
@@ -32,7 +33,8 @@ atlas_view_remove_region(
   pattern,
   match_on = c("label", "region"),
   views = NULL,
-  match = c("exact", "pattern")
+  match = c("exact", "pattern"),
+  ignore.case = TRUE
 )
 
 atlas_view_remove_small(
@@ -54,7 +56,9 @@ atlas_view_remove_small(
 
 - pattern:
 
-  Character pattern to match. Uses `grepl(..., ignore.case = TRUE)`.
+  Character pattern to match, with
+  [`grepl()`](https://rdrr.io/r/base/grep.html). Case is ignored unless
+  `ignore.case = FALSE`.
 
 - match_on:
 
@@ -80,6 +84,15 @@ atlas_view_remove_small(
   instead, matched as a substring — `"axial"` then reaches `axial_1` and
   `axial_2` as well. Prefer `"exact"`: a name that happens to sit inside
   another view's name silently scopes to both views under `"pattern"`.
+
+- ignore.case:
+
+  Whether `pattern` matches case-insensitively, passed to
+  [`grepl()`](https://rdrr.io/r/base/grep.html). Defaults to `TRUE` for
+  backwards compatibility, so a pattern like `"abc"` also selects
+  `"ABC"` and a context pattern like `"Thalamus"` also selects a focus
+  label such as `"hypothalamus"`. Case folding is locale-dependent; set
+  `FALSE` (and/or anchor the pattern) when labels differ only in case.
 
 - min_area:
 
