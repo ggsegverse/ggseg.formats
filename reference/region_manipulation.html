@@ -11,7 +11,7 @@ or does not belong to them:"><meta property="og:image" content="https://ggsegver
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9034</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9035</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -203,8 +203,9 @@ the prefix from regions that still carry it. A function <code>replacement</code>
 receives the regions of the matching rows and returns the new ones, which
 is how to set a region outright for a label:
 <code>atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")</code>. A
-string that changes nothing, because the pattern is in the labels but
-not in their regions, is reported with a warning.</p></li>
+pattern that matches no row, and a string that changes nothing because
+the pattern is in the labels but not in their regions, are each reported
+with a warning.</p></li>
 <li><p><code>atlas_region_keep()</code>: Keep only matching regions. Non-matching
 regions are removed from core, palette, and 3D data but sf geometry
 is preserved for surface continuity.</p></li>

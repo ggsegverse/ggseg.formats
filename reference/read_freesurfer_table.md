@@ -23,7 +23,10 @@ read_freesurfer_table(path, measure = NULL, ...)
 
 - ...:
 
-  additional arguments to `read.table`
+  additional arguments to `read.table`. `check.names` is not among them:
+  the reader needs it `FALSE`, because mangling `Left-Thalamus` to
+  `Left.Thalamus` cannot be undone when a tract label like
+  `lh.af.bbr.prep` has dots of its own.
 
 ## Value
 

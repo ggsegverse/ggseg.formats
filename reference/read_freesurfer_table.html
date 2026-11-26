@@ -19,7 +19,7 @@ for ggseg."><meta property="og:image" content="https://ggsegverse.github.io/ggse
 
     <a class="navbar-brand me-2" href="../index.html">ggseg.formats</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9034</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4.9035</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,7 +82,10 @@ for ggseg.</p>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>additional arguments to <code>read.table</code></p></dd>
+<dd><p>additional arguments to <code>read.table</code>. <code>check.names</code> is not
+among them: the reader needs it <code>FALSE</code>, because mangling
+<code>Left-Thalamus</code> to <code>Left.Thalamus</code> cannot be undone when a tract label
+like <code>lh.af.bbr.prep</code> has dots of its own.</p></dd>
 
 </dl></div>
     <div class="section level2">

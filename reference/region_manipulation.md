@@ -169,8 +169,9 @@ itself, see
   regions of the matching rows and returns the new ones, which is how to
   set a region outright for a label:
   `atlas_region_rename(atlas, "^Brain-Stem$", \(region) "brainstem")`. A
-  string that changes nothing, because the pattern is in the labels but
-  not in their regions, is reported with a warning.
+  pattern that matches no row, and a string that changes nothing because
+  the pattern is in the labels but not in their regions, are each
+  reported with a warning.
 
 - `atlas_region_keep()`: Keep only matching regions. Non-matching
   regions are removed from core, palette, and 3D data but sf geometry is
