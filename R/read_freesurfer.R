@@ -117,7 +117,10 @@ read_atlas_files <- function(subjects_dir, atlas) {
 #'
 #' @param path path to the table file
 #' @param measure which measure is the table of
-#' @param ... additional arguments to \code{read.table}
+#' @param ... additional arguments to \code{read.table}. `check.names` is not
+#'   among them: the reader needs it `FALSE`, because mangling
+#'   `Left-Thalamus` to `Left.Thalamus` cannot be undone when a tract label
+#'   like `lh.af.bbr.prep` has dots of its own.
 #' @importFrom utils read.table
 #' @return data.frame with stats information for subjects from FreeSurfer
 #' @export
@@ -125,8 +128,31 @@ read_atlas_files <- function(subjects_dir, atlas) {
 #' file_path <- "all_subj_aseg.txt"
 #' read_freesurfer_table(file_path)
 read_freesurfer_table <- function(path, measure = NULL, ...) {
-  dat <- read.table(path, header = TRUE, ...)
+  if ("check.names" %in% names(list(...))) {
+    cli::cli_abort(c(
+      "{.arg check.names} cannot be set here.",
+      "i" = "The reader needs it {.code FALSE}: mangling {.val Left-Thalamus}
+        to {.val Left.Thalamus} cannot be undone when a tract label like
+        {.val lh.af.bbr.prep} has dots of its own."
+    ))
+  }
+
+  # check.names = FALSE: mangling `Left-Thalamus` to `Left.Thalamus` cannot be
+  # undone, since a tract label like `lh.af.bbr.prep` has dots of its own.
+  dat <- read.table(path, header = TRUE, check.names = FALSE, ...)
   names(dat)[1] <- "subject"
+
+  # Keeping the names verbatim means duplicates survive read.table, and the
+  # long format below cannot represent two columns with the same label: the
+  # second one's values are dropped without a word.
+  dupes <- unique(names(dat)[duplicated(names(dat))])
+  if (length(dupes)) {
+    cli::cli_abort(c(
+      "{.path {path}} repeats {cli::qty(length(dupes))}column name{?s}
+        {.val {dupes}}.",
+      "i" = "One label cannot carry two sets of values."
+    ))
+  }
 
   measure_cols <- setdiff(names(dat), "subject")
   dat <- data.frame(
@@ -147,10 +173,6 @@ read_freesurfer_table <- function(path, measure = NULL, ...) {
       nchar(dat$label[has_suffix]) - nchar(suffix)
     )
     names(dat)[names(dat) == "value"] <- measure
-  }
-
-  if (any(grepl(".", dat$label, fixed = TRUE))) {
-    dat$label <- gsub(".", "-", dat$label, fixed = TRUE)
   }
 
   as_tbl(dat)

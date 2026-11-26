@@ -185,6 +185,15 @@ migrate_atlas_hemi <- function(atlas) {
     cli::cli_abort("{.arg atlas} must be a list with a {.field core}.")
   }
   core <- atlas_slot(atlas, "core")
+  if (!"hemi" %in% names(core)) {
+    cli::cli_abort(
+      c(
+        "{.arg atlas} has no {.field hemi} column in {.field core}.",
+        "i" = "There is no legacy spelling to repair; add {.field hemi}
+               first."
+      )
+    )
+  }
   hemi <- as.character(core$hemi)
   core$hemi <- legacy_hemi_map[hemi] |>
     unname() |>

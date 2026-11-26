@@ -913,6 +913,16 @@ describe("atlas_region_rename", {
     expect_identical(atlas_core(result)$region, atlas_core(atlas)$region)
   })
 
+  it("warns when the pattern matches no row, function replacement too", {
+    atlas <- make_test_atlas(polygons = TRUE)
+
+    expect_warning(
+      result <- atlas_region_rename(atlas, "nosuchpattern", toupper),
+      "No regions matched"
+    )
+    expect_identical(atlas_core(result)$region, atlas_core(atlas)$region)
+  })
+
   it("rejects an unknown match_on", {
     atlas <- make_test_atlas(polygons = TRUE)
     expect_error(atlas_region_rename(atlas, "frontal", "f", match_on = "nope"))
@@ -1090,6 +1100,14 @@ describe("atlas_view_keep", {
       )
     })
   }
+
+  it("refuses an sf atlas without sf, as atlas_view_remove does", {
+    atlas <- make_multiview_atlas(polygons = FALSE)
+    local_mocked_bindings(has_sf = function() FALSE)
+    # Without the guard the call gets as far as reposition_views(), which
+    # aborts naming itself instead, after the sf subsetting has already run.
+    expect_error(atlas_view_keep(atlas, "sagittal"), "atlas_view_keep")
+  })
 
   for (polygons in c(FALSE, TRUE)) {
     it(paste0("warns when no views match [", rep_name(polygons), "]"), {
@@ -3593,10 +3611,8 @@ describe("atlas_prune_region() pattern guard", {
   # metacharacters: `ggsegBrainnetome` ships `lh_V5-MT+_L`, whose `+` reads as
   # a quantifier, so the call used to be a silent no-op.
   it("warns on a label whose metacharacters match nothing", {
-    atlas <- atlas_region_rename(dk(), "^bankssts$", "V5-MT+")
-
     expect_warning(
-      atlas_prune_region(atlas, "lh_V5-MT+_L", match_on = "label"),
+      atlas_prune_region(dk(), "lh_V5-MT+_L", match_on = "label"),
       "No regions matched"
     )
   })
