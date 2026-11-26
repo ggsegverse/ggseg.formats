@@ -1,5 +1,14 @@
 # ggseg.formats
 
+- `df_nest()` groups the rows in one pass instead of scanning and subsetting
+  the whole table once per key. `atlas_prune_weak()` on a 1000-label atlas
+  goes 30.0 s -> 10.5 s, and the view verbs 2-4x, because every re-pack went
+  through it.
+- An `NA` key no longer corrupts the nested geometry. `df[[key]] == k` is `NA`
+  for an `NA` key and an `NA` index yields a row of `NA`s, so the `NA` row
+  leaked into its neighbour's group as an all-`NA` row AND the `NA` group came
+  back as every row filled with `NA`.
+
 ## Bug fixes
 
 - `atlas_prune_weak()` prunes a label holding regex metacharacters. The views
