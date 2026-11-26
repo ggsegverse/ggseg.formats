@@ -614,3 +614,87 @@ describe("as_ggseg_atlas() at a package boundary", {
     }
   })
 })
+
+
+describe("legacy upgrade paths cover every atlas_types() member", {
+  it("upgrades a legacy-structure cerebellar atlas", {
+    # The switch in convert_legacy_structure() knew only three types and
+    # aborted with "Unknown atlas type: cerebellar" on the other two.
+    withr::local_options(lifecycle_verbosity = "quiet")
+    result <- as_ggseg_atlas(legacy_structure_atlas("cerebellar"))
+    expect_identical(atlas_type(result), "cerebellar")
+    expect_s3_class(atlas_data(result), "ggseg_data_cerebellar")
+  })
+
+  it("upgrades a legacy-structure white-matter atlas", {
+    withr::local_options(lifecycle_verbosity = "quiet")
+    result <- as_ggseg_atlas(legacy_structure_atlas("wm"))
+    expect_identical(atlas_type(result), "wm")
+    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+  })
+
+  it("carries legacy vertices and meshes onto the right payload slot", {
+    # as_atlas_data() previously only ever wrapped geometry, so routing the
+    # structure path through it must not silently drop the other two slots.
+    withr::local_options(lifecycle_verbosity = "quiet")
+    legacy <- legacy_structure_atlas("cerebellar")
+    legacy$vertices <- data.frame(label = c("cst_left", "cst_right"))
+    legacy$vertices$vertices <- list(1L:3L, 4L:6L)
+    result <- as_ggseg_atlas(legacy)
+    expect_identical(atlas_data(result)$vertices$vertices[[1]], 1L:3L)
+  })
+
+  it("still rejects a type outside atlas_types()", {
+    # The deleted switch had its own "Unknown atlas type" abort. The shared map
+    # falls through to the cortical payload instead, so the only thing stopping
+    # a bogus type becoming a silently cortical atlas is ggseg_atlas()'s
+    # match.arg().
+    withr::local_options(lifecycle_verbosity = "quiet")
+    expect_error(
+      as_ggseg_atlas(legacy_structure_atlas("banana")),
+      "should be one of"
+    )
+  })
+
+  it("upgrades a cerebellar brain_atlas whose geometry sits in $data", {
+    skip_if_not_installed("sf")
+    legacy <- structure(
+      list(
+        atlas = "legacy_cerebellar",
+        type = "cerebellar",
+        data = sf::st_sf(
+          hemi = c("left", "right"),
+          region = c("frontal", "frontal"),
+          label = c("lh_frontal", "rh_frontal"),
+          view = c("lateral", "lateral"),
+          geometry = sf::st_sfc(make_polygon(), make_polygon2())
+        )
+      ),
+      class = "brain_atlas"
+    )
+    result <- convert_legacy_brain_data(legacy)
+    expect_identical(atlas_type(result), "cerebellar")
+    expect_s3_class(atlas_data(result), "ggseg_data_cerebellar")
+  })
+
+  it("upgrades a white-matter brain_atlas whose geometry sits in $data", {
+    skip_if_not_installed("sf")
+    legacy <- structure(
+      list(
+        atlas = "legacy_wm",
+        type = "wm",
+        data = sf::st_sf(
+          hemi = c("left", "right"),
+          region = c("cst", "cst"),
+          label = c("cst_left", "cst_right"),
+          view = c("lateral", "lateral"),
+          geometry = sf::st_sfc(make_polygon(), make_polygon2())
+        )
+      ),
+      class = "brain_atlas"
+    )
+    result <- convert_legacy_brain_data(legacy)
+    expect_identical(atlas_type(result), "wm")
+    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+  })
+})

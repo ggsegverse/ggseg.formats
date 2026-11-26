@@ -31,7 +31,7 @@ or NULL.}
 
 \item{atlas_name}{Name for the output atlas. If NULL, derived from input.}
 
-\item{type}{Atlas type: \code{"cortical"} or \code{"subcortical"}. If NULL, inferred
+\item{type}{Atlas type, as accepted by \code{\link[=ggseg_atlas]{ggseg_atlas()}}. If NULL, inferred
 from the input atlases.}
 
 \item{surface}{Which surface to match against when inferring vertices

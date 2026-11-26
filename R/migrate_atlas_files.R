@@ -117,11 +117,7 @@ migrate_atlas_object <- function(obj, keep_sf) {
   if (already_migrated) {
     return(NULL)
   }
-  data <- atlas_slot(obj, "data")
-  data$geom <- target
-  data$sf <- NULL
-  data$polygons <- NULL
-  set_atlas_slot(obj, "data", data)
+  set_atlas_geom_slot(obj, target)
 }
 
 

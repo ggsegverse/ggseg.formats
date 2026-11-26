@@ -15,6 +15,23 @@
 
 ## Bug fixes
 
+- A legacy cerebellar 3D atlas keeps its deep-nucleus meshes. `cerebellar`
+  was missing from the mesh-bearing types, so the meshes were dropped in
+  silence rather than carried across.
+
+- Legacy upgrade paths handle `cerebellar` and `wm` atlases. Three separate
+  type-to-payload maps knew only three of the five `atlas_types()`, so
+  `convert_legacy_brain_atlas(atlas_2d = suit())` blamed the data and a legacy
+  list cerebellar atlas aborted with "Unknown atlas type".
+- `convert_legacy_brain_atlas()` keeps a 2D atlas's per-region `meshes`, which
+  a cerebellar atlas stores its deep nuclei in.
+- Legacy tract atlases convert again: the legacy mesh converter dropped
+  `metadata`, where the centerline lives, so every one aborted with "No valid
+  centerlines could be extracted from meshes".
+- `set_atlas_core()` clears the palette when no label survives the re-key,
+  instead of keeping a zero-length named one. `atlas_sf()` and
+  `as.data.frame()` only test `!is.null()`, so the empty palette wrote
+  `colour = NA` for every region.
 - `read_freesurfer_table()` refuses a repeated column name instead of dropping
   its values, and says why `check.names` cannot be passed through `...`.
 
