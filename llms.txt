@@ -396,6 +396,16 @@ inside a view. All return a new `ggseg_atlas`.
   [`regions()`](https://ggsegverse.github.io/ggseg.formats/reference/selectors.md)
   : Select an atlas's backdrop, or its regions, in a geometry verb
 
+## Data aggregation
+
+Collapse several data rows per atlas region to a single value, shared by
+the 2D and 3D plotting packages.
+
+- [`aggregate_brain_values()`](https://ggsegverse.github.io/ggseg.formats/reference/aggregate_brain_values.md)
+  : Collapse several data rows per atlas region into one
+- [`warn_collapsed_rows()`](https://ggsegverse.github.io/ggseg.formats/reference/warn_collapsed_rows.md)
+  : Warn once per session when values are collapsed per region
+
 ## Bundled atlases
 
 Ready-to-use atlases shipped with the package.

@@ -11,6 +11,7 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/authors.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/index.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/news/index.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/aggregate_brain_values.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/as_ggseg_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/as_polygon_atlas.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/as_sf_atlas.html</loc></url>
@@ -88,5 +89,6 @@
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/suit.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/tracula.html</loc></url>
 <url><loc>https://ggsegverse.github.io/ggseg.formats/reference/view_manipulation.html</loc></url>
+<url><loc>https://ggsegverse.github.io/ggseg.formats/reference/warn_collapsed_rows.html</loc></url>
 </urlset>
 
