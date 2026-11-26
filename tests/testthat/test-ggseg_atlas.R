@@ -895,3 +895,58 @@ describe("set_atlas_core() holds the invariants on a legacy atlas", {
     expect_identical(nrow(atlas_core(result)), 10L)
   })
 })
+
+describe("assert_atlas_core()", {
+  it("passes a real atlas's core", {
+    expect_silent(assert_atlas_core(atlas_core(dk()), "dk"))
+  })
+
+  it("refuses something that is not a data.frame", {
+    expect_error(assert_atlas_core(list(region = "a"), "mine"), "data.frame")
+  })
+
+  it("names the missing schema columns", {
+    expect_error(
+      assert_atlas_core(data.frame(region = "a"), "mine"),
+      "label"
+    )
+  })
+
+  it("refuses a duplicated label, as the constructor does", {
+    dupe <- data.frame(region = c("a", "a"), label = c("x", "x"))
+    expect_error(
+      assert_atlas_core(dupe, "mine"),
+      class = "ggseg.formats_duplicate_labels"
+    )
+  })
+
+  it("is the same gate the constructor applies", {
+    # The constructor must not grow a second copy of these rules: a core the
+    # checker rejects has to be one the constructor rejects too.
+    dupe <- data.frame(region = c("a", "a"), label = c("x", "x"))
+    expect_error(
+      ggseg_atlas(
+        atlas = "mine",
+        type = "cortical",
+        core = dupe,
+        data = ggseg_data_cortical(geom = NULL, vertices = NULL)
+      ),
+      class = "ggseg.formats_duplicate_labels"
+    )
+  })
+})
+
+describe("atlas_types()", {
+  it("names every type an atlas can carry", {
+    expect_setequal(
+      atlas_types(),
+      c("cortical", "subcortical", "tract", "cerebellar", "wm")
+    )
+  })
+
+  it("covers the bundled atlases' own types", {
+    expect_true(all(
+      vapply(list(dk(), aseg()), atlas_type, character(1)) %in% atlas_types()
+    ))
+  })
+})

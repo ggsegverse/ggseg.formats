@@ -1991,6 +1991,24 @@ pack_views_horizontally <- function(view_data, gap) {
 }
 
 
+#' The atlas types this ecosystem draws
+#'
+#' The closed vocabulary `type` takes. It is governed rather than open: each
+#' type names a geometry contract that the plotting packages know how to read,
+#' so a new one is a deliberate addition here, not something a caller invents.
+#'
+#' Read it rather than writing the strings out: a copied list goes stale
+#' silently, and the omission shows up as a type being rejected for no reason.
+#'
+#' @return Character vector of the valid atlas types.
+#'
+#' @examples
+#' atlas_types()
+#'
+#' atlas_type(dk()) %in% atlas_types()
+#'
+#' @seealso [assert_atlas_core()], [core_contract]
+#' @export
 atlas_types <- function() {
   c("cortical", "subcortical", "tract", "cerebellar", "wm")
 }

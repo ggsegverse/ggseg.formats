@@ -1,5 +1,9 @@
 # ggseg.formats
 
+- `assert_atlas_core()` applies the schema rules `ggseg_atlas()` enforces on
+  `core` without building an atlas, and `atlas_types()` is exported, so a
+  caller can read the type vocabulary rather than copy it.
+
 - `df_nest()` groups the rows in one pass instead of scanning and subsetting
   the whole table once per key. `atlas_prune_weak()` on a 1000-label atlas
   goes 30.0 s -> 10.5 s, and the view verbs 2-4x, because every re-pack went
