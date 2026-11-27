@@ -2,7 +2,7 @@
 % Please edit documentation in R/ggseg_atlas.R
 \name{assert_atlas_core}
 \alias{assert_atlas_core}
-\title{Validate constructor inputs for \code{\link[=ggseg_atlas]{ggseg_atlas()}}}
+\title{Check a \code{core} table against the atlas schema}
 \usage{
 assert_atlas_core(core, atlas = NA_character_)
 }
@@ -15,14 +15,12 @@ assert_atlas_core(core, atlas = NA_character_)
 \code{invisible(NULL)}; called for the abort.
 }
 \description{
-Check a \code{core} table against the atlas schema
-}
-\details{
 Applies the schema rules \code{\link[=ggseg_atlas]{ggseg_atlas()}} enforces on \code{core}, without
 building an atlas: \code{core} must be a data.frame carrying \code{region} and
 \code{label}, its \code{label} must be unique, and its \code{display} and \code{hemi} columns
 must follow \link{core_contract}. Aborts on the first violation.
-
+}
+\details{
 It exists so an atlas author can check a table they are still assembling --
 and so a test that mocks the constructor out can hold the pipeline to the
 same contract the real constructor would, instead of restating the rules
