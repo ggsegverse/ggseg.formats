@@ -511,20 +511,7 @@ normalise_legacy_hemi <- function(core) {
   }
 
   hemi <- as.character(core$hemi)
-  known <- c(
-    l = "left",
-    lh = "left",
-    left = "left",
-    r = "right",
-    rh = "right",
-    right = "right",
-    mid = "midline",
-    middle = "midline",
-    midline = "midline",
-    vermis = "midline",
-    subcort = NA_character_,
-    subcortical = NA_character_
-  )
+  known <- hemi_aliases()
   hit <- match(tolower(hemi), names(known))
   hemi[!is.na(hit)] <- unname(known[hit[!is.na(hit)]])
   core$hemi <- hemi

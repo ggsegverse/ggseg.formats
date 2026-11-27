@@ -389,3 +389,46 @@ describe("brain_join_keys()", {
     expect_identical(brain_join_keys()[[1]], "label")
   })
 })
+
+describe("the hemi vocabulary is written once", {
+  it("is the set the three validators enforce", {
+    # These were three separate writings of one list. A test per validator
+    # would pass with three different lists, so the claim is that they agree.
+    expect_identical(atlas_hemis(), c("left", "right", "midline"))
+
+    bad <- data.frame(region = "a", label = "x", hemi = "sideways")
+    expect_error(
+      validate_core_hemi(bad, "mine"),
+      class = "ggseg.formats_invalid_hemi"
+    )
+    expect_error(check_mesh_hemi("sideways"), "must be one of")
+    expect_match(
+      core_hemi_defect(bad),
+      toString(atlas_hemis()),
+      fixed = TRUE
+    )
+  })
+
+  it("accepts every allowed value, and NA, in all three", {
+    for (h in c(atlas_hemis(), NA_character_)) {
+      core <- data.frame(region = "a", label = "x", hemi = h)
+      expect_silent(validate_core_hemi(core, "mine"))
+      expect_null(core_hemi_defect(core))
+    }
+    for (h in atlas_hemis()) {
+      expect_identical(check_mesh_hemi(h), h)
+    }
+  })
+
+  it("repairs the legacy spellings and leaves the rest to the parser", {
+    # migrate_atlas_hemi() repairs a stored legacy spelling; it must not
+    # reinterpret `subcort`, which hemi_aliases() maps to NA for the legacy
+    # conversion path only.
+    expect_setequal(names(legacy_hemi_map()), c("middle", "vermis", "mid"))
+    expect_true(all(legacy_hemi_map() %in% atlas_hemis()))
+    expect_identical(
+      unname(hemi_aliases()[names(legacy_hemi_map())]),
+      unname(legacy_hemi_map())
+    )
+  })
+})

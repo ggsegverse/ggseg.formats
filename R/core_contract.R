@@ -195,19 +195,11 @@ migrate_atlas_hemi <- function(atlas) {
     )
   }
   hemi <- as.character(core$hemi)
-  core$hemi <- legacy_hemi_map[hemi] |>
+  core$hemi <- legacy_hemi_map()[hemi] |>
     unname() |>
     (\(mapped) ifelse(is.na(mapped), hemi, mapped))()
   set_atlas_slot(atlas, "core", core)
 }
-
-#' Legacy `hemi` spellings and what they mean
-#' @noRd
-legacy_hemi_map <- c(
-  middle = "midline",
-  vermis = "midline",
-  mid = "midline"
-)
 
 
 #' Select an atlas's backdrop, or its regions, in a geometry verb
@@ -391,6 +383,60 @@ labels_to_pattern <- function(labels) {
 #' @export
 brain_join_keys <- function() {
   c("label", "region", "hemi")
+}
+
+
+#' The values `core$hemi` may hold
+#'
+#' Side, and nothing finer: a distinction below left/right/midline belongs in a
+#' column of its own. `NA` is allowed as well, for a structure whose side is
+#' genuinely undeclared.
+#'
+#' Internal on purpose. Every consumer that looked like it needed this list
+#' really needed something narrower -- ggseg3d validates a cortical surface
+#' argument, where only lh/rh exist, and ggseg.extra parses source spellings,
+#' which is its own job -- so exporting it would invite agreement where the
+#' domains genuinely differ. What must not differ is the three validators
+#' below, which is why they read it from here.
+#' @noRd
+atlas_hemis <- function() {
+  c("left", "right", "midline")
+}
+
+
+#' Source spellings of `hemi` and what they mean
+#'
+#' Read by [convert_legacy_brain_atlas()]'s normaliser and, in the subset that
+#' is purely a legacy spelling of a value we already accept, by
+#' [migrate_atlas_hemi()]. One table, so the two cannot disagree about what
+#' `mid` means.
+#' @noRd
+hemi_aliases <- function() {
+  c(
+    l = "left",
+    lh = "left",
+    left = "left",
+    r = "right",
+    rh = "right",
+    right = "right",
+    mid = "midline",
+    middle = "midline",
+    midline = "midline",
+    vermis = "midline",
+    subcort = NA_character_,
+    subcortical = NA_character_
+  )
+}
+
+
+#' The legacy spellings [migrate_atlas_hemi()] repairs
+#'
+#' A subset of [hemi_aliases()]: the spellings that mean a value already in
+#' [atlas_hemis()]. Deliberately not the whole table -- migration repairs a
+#' stored value, it does not reinterpret `subcort` as "no side".
+#' @noRd
+legacy_hemi_map <- function() {
+  hemi_aliases()[c("middle", "vermis", "mid")]
 }
 
 

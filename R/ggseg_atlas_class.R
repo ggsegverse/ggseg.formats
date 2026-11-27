@@ -227,7 +227,7 @@ core_hemi_defect <- function(core) {
   if (!"hemi" %in% names(core)) {
     return(NULL)
   }
-  allowed <- c("left", "right", "midline")
+  allowed <- atlas_hemis()
   present <- unique(as.character(core$hemi[!is.na(core$hemi)]))
   unexpected <- setdiff(present, allowed)
   if (length(unexpected) == 0) {

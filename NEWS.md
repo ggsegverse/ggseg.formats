@@ -1,5 +1,8 @@
 # ggseg.formats
 
+- The `hemi` vocabulary and its source spellings are each written once
+  internally, so the three validators that enforce them cannot disagree about
+  what `mid` means.
 - `brain_join_keys()` states the columns user data joins an atlas on, so
   `ggseg` and `ggseg3d` match data the same way instead of each spelling the
   vocabulary out.
