@@ -274,6 +274,50 @@ is_atlas_class <- function(x) {
 }
 
 
+#' Check a `core` table against the atlas schema
+#'
+#' Applies the schema rules [ggseg_atlas()] enforces on `core`, without
+#' building an atlas: `core` must be a data.frame carrying `region` and
+#' `label`, its `label` must be unique, and its `display` and `hemi` columns
+#' must follow [core_contract]. Aborts on the first violation.
+#'
+#' It exists so an atlas author can check a table they are still assembling --
+#' and so a test that mocks the constructor out can hold the pipeline to the
+#' same contract the real constructor would, instead of restating the rules
+#' and drifting from them.
+#'
+#' @param core The `core` data.frame to check.
+#' @param atlas Atlas name, used only to name the atlas in the error message.
+#' @return `invisible(NULL)`; called for the abort.
+#'
+#' @examples
+#' assert_atlas_core(atlas_core(dk()), "dk")
+#'
+#' bad <- data.frame(region = c("a", "a"), label = c("x", "x"))
+#' try(assert_atlas_core(bad, "mine"))
+#'
+#' @seealso [ggseg_atlas()], [atlas_types()], [core_contract]
+#' @export
+assert_atlas_core <- function(core, atlas = NA_character_) {
+  if (!is.data.frame(core)) {
+    cli::cli_abort("{.arg core} must be a data.frame.")
+  }
+
+  missing_core <- setdiff(c("region", "label"), names(core))
+  if (length(missing_core) > 0) {
+    cli::cli_abort(
+      "{.arg core} must contain columns: {.field {missing_core}}."
+    )
+  }
+
+  validate_core_display(core, atlas)
+  validate_core_hemi(core, atlas)
+  validate_core_label_unique(core, atlas)
+
+  invisible(NULL)
+}
+
+
 #' Structurally revalidate an atlas, without signalling
 #'
 #' Reports only whether the `ggseg_atlas()` constructor accepts the parts of
@@ -664,49 +708,6 @@ plot_cells <- function(flat, hemi = NULL, gap_frac = 0.12) {
 
 #' Validate constructor inputs for [ggseg_atlas()]
 #'
-#' Check a `core` table against the atlas schema
-#'
-#' Applies the schema rules [ggseg_atlas()] enforces on `core`, without
-#' building an atlas: `core` must be a data.frame carrying `region` and
-#' `label`, its `label` must be unique, and its `display` and `hemi` columns
-#' must follow [core_contract]. Aborts on the first violation.
-#'
-#' It exists so an atlas author can check a table they are still assembling --
-#' and so a test that mocks the constructor out can hold the pipeline to the
-#' same contract the real constructor would, instead of restating the rules
-#' and drifting from them.
-#'
-#' @param core The `core` data.frame to check.
-#' @param atlas Atlas name, used only to name the atlas in the error message.
-#' @return `invisible(NULL)`; called for the abort.
-#'
-#' @examples
-#' assert_atlas_core(atlas_core(dk()), "dk")
-#'
-#' bad <- data.frame(region = c("a", "a"), label = c("x", "x"))
-#' try(assert_atlas_core(bad, "mine"))
-#'
-#' @seealso [ggseg_atlas()], [atlas_types()], [core_contract]
-#' @export
-assert_atlas_core <- function(core, atlas = NA_character_) {
-  if (!is.data.frame(core)) {
-    cli::cli_abort("{.arg core} must be a data.frame.")
-  }
-
-  missing_core <- setdiff(c("region", "label"), names(core))
-  if (length(missing_core) > 0) {
-    cli::cli_abort(
-      "{.arg core} must contain columns: {.field {missing_core}}."
-    )
-  }
-
-  validate_core_display(core, atlas)
-  validate_core_hemi(core, atlas)
-  validate_core_label_unique(core, atlas)
-
-  invisible(NULL)
-}
-
 
 #' Checks `atlas`, `core`, and `data` for type, required columns, and the
 #' expected `ggseg_data_*`/`brain_data_*` class for `type`. Aborts on the first
