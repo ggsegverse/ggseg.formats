@@ -3,7 +3,9 @@
 - The `hemi` vocabulary and its source spellings are each written once
   internally, so the three validators that enforce them cannot disagree about
   what `mid` means.
-
+- `brain_join_keys()` states the columns user data joins an atlas on, so
+  `ggseg` and `ggseg3d` match data the same way instead of each spelling the
+  vocabulary out.
 - `df_nest()` groups the rows in one pass instead of scanning and subsetting
   the whole table once per key. `atlas_prune_weak()` on a 1000-label atlas
   goes 30.0 s -> 10.5 s, and the view verbs 2-4x, because every re-pack went
