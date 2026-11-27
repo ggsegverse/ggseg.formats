@@ -404,7 +404,7 @@ describe("the hemi vocabulary is written once", {
     expect_error(check_mesh_hemi("sideways"), "must be one of")
     expect_match(
       core_hemi_defect(bad),
-      paste(atlas_hemis(), collapse = ", "),
+      toString(atlas_hemis()),
       fixed = TRUE
     )
   })
