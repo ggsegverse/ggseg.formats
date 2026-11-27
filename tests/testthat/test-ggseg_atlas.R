@@ -940,7 +940,7 @@ describe("atlas_types()", {
   it("names every type an atlas can carry", {
     expect_setequal(
       atlas_types(),
-      c("cortical", "subcortical", "tract", "cerebellar", "wm")
+      c("cortical", "subcortical", "tract", "cerebellar", "white_matter")
     )
   })
 
