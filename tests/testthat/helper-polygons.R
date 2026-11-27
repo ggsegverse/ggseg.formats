@@ -142,9 +142,9 @@ type_fixture_geom <- function() {
 wm_geom_atlas <- function() {
   ggseg_atlas(
     atlas = "demo_wm_2d",
-    type = "wm",
+    type = "white_matter",
     core = type_fixture_core(),
-    data = ggseg_data_wm(geom = type_fixture_geom())
+    data = ggseg_data_white_matter(geom = type_fixture_geom())
   )
 }
 

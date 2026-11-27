@@ -1,5 +1,16 @@
 # ggseg.formats
 
+- Breaking, with a deprecation path: the atlas type `"wm"` is now
+  `"white_matter"`, because the abbreviation reads as jargon next to `tract`
+  and hides exactly the distinction a reader needs. `ggseg_data_wm()` and
+  `is_wm_atlas()` are deprecated in favour of `ggseg_data_white_matter()` and
+  `is_white_matter_atlas()`, and `type = "wm"` is repaired with a deprecation
+  warning on construction and on every legacy conversion path. No published
+  atlas carried the old spelling -- all 109 objects were read to check -- so
+  nothing on r-universe needs rebuilding.
+- `assert_atlas_core()` applies the schema rules `ggseg_atlas()` enforces on
+  `core` without building an atlas, and `atlas_types()` is exported, so a
+  caller can read the type vocabulary rather than copy it.
 - `brain_join_keys()` states the columns user data joins an atlas on, so
   `ggseg` and `ggseg3d` match data the same way instead of each spelling the
   vocabulary out.

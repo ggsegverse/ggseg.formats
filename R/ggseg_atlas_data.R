@@ -105,11 +105,11 @@ ggseg_data_subcortical <- function(geom = NULL, meshes = NULL, ...) {
 #' @param meshes A data frame of per-structure meshes, or `NULL`.
 #' @param ... Passed to the shared geometry resolver.
 #'
-#' @return A `ggseg_data_wm` object.
+#' @return A `ggseg_data_white_matter` object.
 #' @seealso [ggseg_data_subcortical()], [ggseg_data_tract()]
 #' @export
 #' @examples
-#' ggseg_data_wm(
+#' ggseg_data_white_matter(
 #'   meshes = data.frame(
 #'     label = "cst_left",
 #'     mesh = I(list(list(
@@ -118,8 +118,8 @@ ggseg_data_subcortical <- function(geom = NULL, meshes = NULL, ...) {
 #'     )))
 #'   )
 #' )
-ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
-  geom <- resolve_geom(geom, ..., .fn = "ggseg_data_wm")
+ggseg_data_white_matter <- function(geom = NULL, meshes = NULL, ...) {
+  geom <- resolve_geom(geom, ..., .fn = "ggseg_data_white_matter")
 
   if (is.null(geom) && is.null(meshes)) {
     cli::cli_abort("At least one of {.arg geom} or {.arg meshes} is required.")
@@ -134,8 +134,24 @@ ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
       geom = geom,
       meshes = meshes
     ),
-    class = c("ggseg_data_wm", "ggseg_data_subcortical", "ggseg_atlas_data")
+    class = c(
+      "ggseg_data_white_matter",
+      "ggseg_data_subcortical",
+      "ggseg_atlas_data"
+    )
   )
+}
+
+
+#' @rdname ggseg_data_white_matter
+#' @export
+ggseg_data_wm <- function(geom = NULL, meshes = NULL, ...) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "ggseg_data_wm()",
+    "ggseg_data_white_matter()"
+  )
+  ggseg_data_white_matter(geom = geom, meshes = meshes, ...)
 }
 
 

@@ -1022,8 +1022,8 @@ describe("convert_legacy_brain_atlas across every atlas type", {
     result <- suppressMessages(
       convert_legacy_brain_atlas(atlas_2d = wm_geom_atlas())
     )
-    expect_identical(atlas_type(result), "wm")
-    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+    expect_identical(atlas_type(result), "white_matter")
+    expect_s3_class(atlas_data(result), "ggseg_data_white_matter")
   })
 
   it("converts a legacy rgl tract atlas end to end", {

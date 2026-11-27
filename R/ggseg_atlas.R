@@ -62,6 +62,7 @@ ggseg_atlas <- function(
   palette = NULL,
   provenance = NULL
 ) {
+  type <- migrate_atlas_type(type)
   type <- match.arg(type, atlas_types())
 
   validate_ggseg_atlas_inputs(atlas, core, data, type)
@@ -143,8 +144,19 @@ is_cerebellar_atlas <- function(x) {
 
 #' @rdname is_ggseg_atlas
 #' @export
+is_white_matter_atlas <- function(x) {
+  inherits(x, "white_matter_atlas") && validate_ggseg_atlas(x)
+}
+
+#' @rdname is_ggseg_atlas
+#' @export
 is_wm_atlas <- function(x) {
-  inherits(x, "wm_atlas") && validate_ggseg_atlas(x)
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "is_wm_atlas()",
+    "is_white_matter_atlas()"
+  )
+  is_white_matter_atlas(x)
 }
 
 #' @rdname is_ggseg_atlas
@@ -259,6 +271,50 @@ is_ggseg3d_atlas <- function(x) {
 #' is_ggseg_atlas(broken)
 is_atlas_class <- function(x) {
   inherits(x, "ggseg_atlas") || inherits(x, "brain_atlas")
+}
+
+
+#' Check a `core` table against the atlas schema
+#'
+#' Applies the schema rules [ggseg_atlas()] enforces on `core`, without
+#' building an atlas: `core` must be a data.frame carrying `region` and
+#' `label`, its `label` must be unique, and its `display` and `hemi` columns
+#' must follow [core_contract]. Aborts on the first violation.
+#'
+#' It exists so an atlas author can check a table they are still assembling --
+#' and so a test that mocks the constructor out can hold the pipeline to the
+#' same contract the real constructor would, instead of restating the rules
+#' and drifting from them.
+#'
+#' @param core The `core` data.frame to check.
+#' @param atlas Atlas name, used only to name the atlas in the error message.
+#' @return `invisible(NULL)`; called for the abort.
+#'
+#' @examples
+#' assert_atlas_core(atlas_core(dk()), "dk")
+#'
+#' bad <- data.frame(region = c("a", "a"), label = c("x", "x"))
+#' try(assert_atlas_core(bad, "mine"))
+#'
+#' @seealso [ggseg_atlas()], [atlas_types()], [core_contract]
+#' @export
+assert_atlas_core <- function(core, atlas = NA_character_) {
+  if (!is.data.frame(core)) {
+    cli::cli_abort("{.arg core} must be a data.frame.")
+  }
+
+  missing_core <- setdiff(c("region", "label"), names(core))
+  if (length(missing_core) > 0) {
+    cli::cli_abort(
+      "{.arg core} must contain columns: {.field {missing_core}}."
+    )
+  }
+
+  validate_core_display(core, atlas)
+  validate_core_hemi(core, atlas)
+  validate_core_label_unique(core, atlas)
+
+  invisible(NULL)
 }
 
 
@@ -652,6 +708,7 @@ plot_cells <- function(flat, hemi = NULL, gap_frac = 0.12) {
 
 #' Validate constructor inputs for [ggseg_atlas()]
 #'
+
 #' Checks `atlas`, `core`, and `data` for type, required columns, and the
 #' expected `ggseg_data_*`/`brain_data_*` class for `type`. Aborts on the first
 #' violation; returns invisibly when all checks pass.
@@ -664,21 +721,7 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
     )
   }
 
-  if (!is.data.frame(core)) {
-    cli::cli_abort("{.arg core} must be a data.frame.")
-  }
-
-  required_core <- c("region", "label")
-  missing_core <- setdiff(required_core, names(core))
-  if (length(missing_core) > 0) {
-    cli::cli_abort(
-      "{.arg core} must contain columns: {.field {missing_core}}."
-    )
-  }
-
-  validate_core_display(core, atlas)
-  validate_core_hemi(core, atlas)
-  validate_core_label_unique(core, atlas)
+  assert_atlas_core(core, atlas)
 
   if (
     !inherits(data, "ggseg_atlas_data") &&
@@ -688,7 +731,7 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
       "{.arg data} must be a {.cls ggseg_atlas_data} object.",
       "i" = "Use {.fn ggseg_data_cortical}, {.fn ggseg_data_subcortical},
       {.fn ggseg_data_tract}, {.fn ggseg_data_cerebellar}, or
-      {.fn ggseg_data_wm}."
+      {.fn ggseg_data_white_matter}."
     ))
   }
 
@@ -703,6 +746,27 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
 
   invisible()
 }
+
+#' Repair a legacy spelling of an atlas `type`
+#'
+#' `wm` was renamed `white_matter` in 0.1.0: the abbreviation reads as jargon
+#' next to `tract`, and the distinction a reader most needs to make is exactly
+#' the one `wm` hides. No published atlas carried the old spelling -- all 109
+#' objects were read to check -- so this exists for a build in progress and
+#' for anyone who wrote the string by hand.
+#' @noRd
+migrate_atlas_type <- function(type) {
+  if (!identical(as.character(type), "wm")) {
+    return(type)
+  }
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    I('`type = "wm"`'),
+    I('`type = "white_matter"`')
+  )
+  "white_matter"
+}
+
 
 #' Abort when `core$label` is not unique
 #'
@@ -953,7 +1017,8 @@ new_ggseg_atlas <- function(
     schema = atlas_schema_version()
   )
   # The validator computes `type` from the class, and S7 runs it while a
-  # two-level subclass -- `wm_atlas` under `subcortical_atlas` -- still carries
+  # two-level subclass -- `white_matter_atlas` under `subcortical_atlas` --
+  # carries
   # its parent, so the type it checks against is the parent's and a wm atlas
   # with a subcortical payload passes. Revalidating the finished object closes
   # that, for this subclass and any added later.

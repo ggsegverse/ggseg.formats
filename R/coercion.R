@@ -311,6 +311,9 @@ restamp_class <- function(x) {
 #' member of `atlas_types()` cannot be reachable from one path and not another.
 #' @noRd
 as_atlas_data <- function(data, type, vertices = NULL, meshes = NULL) {
+  # A legacy object on disk can carry the pre-0.1.0 `wm`, and this is the one
+  # door every conversion path goes through.
+  type <- migrate_atlas_type(type)
   if (is.null(vertices) && is.null(meshes)) {
     if (
       is.null(data) || inherits(data, c("ggseg_atlas_data", "brain_atlas_data"))
@@ -330,7 +333,7 @@ as_atlas_data <- function(data, type, vertices = NULL, meshes = NULL) {
       vertices = vertices,
       meshes = meshes
     ),
-    wm = ggseg_data_wm(geom = data, meshes = meshes),
+    white_matter = ggseg_data_white_matter(geom = data, meshes = meshes),
     ggseg_data_cortical(geom = data, vertices = vertices)
   )
 }

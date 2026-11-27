@@ -6,6 +6,7 @@
 \alias{is_subcortical_atlas}
 \alias{is_tract_atlas}
 \alias{is_cerebellar_atlas}
+\alias{is_white_matter_atlas}
 \alias{is_wm_atlas}
 \alias{is_brain_atlas}
 \title{Check ggseg atlas class}
@@ -19,6 +20,8 @@ is_subcortical_atlas(x)
 is_tract_atlas(x)
 
 is_cerebellar_atlas(x)
+
+is_white_matter_atlas(x)
 
 is_wm_atlas(x)
 
