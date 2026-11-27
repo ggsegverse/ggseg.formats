@@ -374,3 +374,18 @@ describe("atlas_views_empty", {
     expect_error(atlas_views_empty(mtcars), "ggseg_atlas")
   })
 })
+
+describe("brain_join_keys()", {
+  it("names only columns the core actually carries", {
+    # The vocabulary is useless if it names a column no atlas has: an
+    # intersect() against the core would then quietly drop that key.
+    expect_setequal(
+      intersect(brain_join_keys(), names(atlas_core(dk()))),
+      brain_join_keys()
+    )
+  })
+
+  it("puts the canonical key first", {
+    expect_identical(brain_join_keys()[[1]], "label")
+  })
+})
