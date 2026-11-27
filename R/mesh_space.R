@@ -209,7 +209,7 @@ check_vertex_space <- function(space, call = rlang::caller_env()) {
 
 #' @noRd
 check_mesh_hemi <- function(hemi, call = rlang::caller_env()) {
-  allowed <- c("left", "right", "midline")
+  allowed <- atlas_hemis()
   if (!is.character(hemi) || length(hemi) != 1L || !hemi %in% allowed) {
     cli::cli_abort(
       c(

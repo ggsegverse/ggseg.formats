@@ -782,7 +782,7 @@ validate_core_hemi <- function(core, atlas) {
     return(invisible())
   }
 
-  allowed <- c("left", "right", "midline")
+  allowed <- atlas_hemis()
   present <- unique(as.character(core$hemi[!is.na(core$hemi)]))
   unexpected <- setdiff(present, allowed)
   if (length(unexpected) == 0) {
