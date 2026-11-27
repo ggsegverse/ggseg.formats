@@ -629,8 +629,8 @@ describe("legacy upgrade paths cover every atlas_types() member", {
   it("upgrades a legacy-structure white-matter atlas", {
     withr::local_options(lifecycle_verbosity = "quiet")
     result <- as_ggseg_atlas(legacy_structure_atlas("wm"))
-    expect_identical(atlas_type(result), "wm")
-    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+    expect_identical(atlas_type(result), "white_matter")
+    expect_s3_class(atlas_data(result), "ggseg_data_white_matter")
   })
 
   it("carries legacy vertices and meshes onto the right payload slot", {
@@ -682,7 +682,7 @@ describe("legacy upgrade paths cover every atlas_types() member", {
     legacy <- structure(
       list(
         atlas = "legacy_wm",
-        type = "wm",
+        type = "white_matter",
         data = sf::st_sf(
           hemi = c("left", "right"),
           region = c("cst", "cst"),
@@ -694,7 +694,7 @@ describe("legacy upgrade paths cover every atlas_types() member", {
       class = "brain_atlas"
     )
     result <- convert_legacy_brain_data(legacy)
-    expect_identical(atlas_type(result), "wm")
-    expect_s3_class(atlas_data(result), "ggseg_data_wm")
+    expect_identical(atlas_type(result), "white_matter")
+    expect_s3_class(atlas_data(result), "ggseg_data_white_matter")
   })
 })

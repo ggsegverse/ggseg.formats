@@ -1611,8 +1611,8 @@ rebuild_data_with_geom <- function(data, geom, keep_row = NULL) {
       )
     }
   } else if (!is.null(atlas_slot(data, "meshes"))) {
-    if (inherits(data, "ggseg_data_wm")) {
-      ggseg_data_wm(
+    if (inherits(data, "ggseg_data_white_matter")) {
+      ggseg_data_white_matter(
         geom = geom,
         meshes = filt(atlas_slot(data, "meshes"))
       )
@@ -2010,7 +2010,7 @@ pack_views_horizontally <- function(view_data, gap) {
 #' @seealso [assert_atlas_core()], [core_contract]
 #' @export
 atlas_types <- function() {
-  c("cortical", "subcortical", "tract", "cerebellar", "wm")
+  c("cortical", "subcortical", "tract", "cerebellar", "white_matter")
 }
 
 

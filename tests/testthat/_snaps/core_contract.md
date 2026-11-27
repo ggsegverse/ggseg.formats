@@ -33,6 +33,6 @@
                                                                                                         "print" 
                                                                                                ggseg_data_tract 
                                                                                                         "print" 
-                                                                                                  ggseg_data_wm 
+                                                                                        ggseg_data_white_matter 
                                                                                                              "" 
 
