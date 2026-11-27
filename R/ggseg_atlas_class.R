@@ -2,7 +2,8 @@
 #'
 #' The type vocabulary is expressed as the class hierarchy rather than as a
 #' `type` string checked against a list of permitted values. Each type is a
-#' concrete subclass of the abstract `ggseg_atlas` parent, and `wm_atlas`
+#' concrete subclass of the abstract `ggseg_atlas` parent, and
+#' `white_matter_atlas`
 #' descends from `subcortical_atlas` because a white-matter label map stores
 #' and draws exactly what a subcortical atlas does. The abstract parent cannot
 #' be instantiated, so there is no way to make an atlas of an unknown type at
@@ -79,8 +80,8 @@ cerebellar_atlas <- S7::new_class(
 )
 
 #' @noRd
-wm_atlas <- S7::new_class(
-  "wm_atlas",
+white_matter_atlas <- S7::new_class(
+  "white_matter_atlas",
   parent = subcortical_atlas
 )
 
@@ -91,7 +92,7 @@ atlas_class_for_type <- function(type) {
     subcortical = subcortical_atlas,
     tract = tract_atlas,
     cerebellar = cerebellar_atlas,
-    wm = wm_atlas,
+    white_matter = white_matter_atlas,
     cli::cli_abort("No atlas class for type {.val {type}}.")
   )
 }

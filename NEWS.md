@@ -1,5 +1,14 @@
 # ggseg.formats
 
+- Breaking, with a deprecation path: the atlas type `"wm"` is now
+  `"white_matter"`, because the abbreviation reads as jargon next to `tract`
+  and hides exactly the distinction a reader needs. `ggseg_data_wm()` and
+  `is_wm_atlas()` are deprecated in favour of `ggseg_data_white_matter()` and
+  `is_white_matter_atlas()`, and `type = "wm"` is repaired with a deprecation
+  warning on construction and on every legacy conversion path. No published
+  atlas carried the old spelling -- all 109 objects were read to check -- so
+  nothing on r-universe needs rebuilding.
+
 - `df_nest()` groups the rows in one pass instead of scanning and subsetting
   the whole table once per key. `atlas_prune_weak()` on a 1000-label atlas
   goes 30.0 s -> 10.5 s, and the view verbs 2-4x, because every re-pack went

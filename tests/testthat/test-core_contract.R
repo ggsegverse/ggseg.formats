@@ -284,7 +284,7 @@ describe("the published dispatch surface", {
       "ggseg_data_subcortical",
       "ggseg_data_cerebellar",
       "ggseg_data_tract",
-      "ggseg_data_wm"
+      "ggseg_data_white_matter"
     )
     # Only generics a consumer can actually reach: the package's own exports
     # plus the base generics. An internal dispatcher is visible to

@@ -62,6 +62,7 @@ ggseg_atlas <- function(
   palette = NULL,
   provenance = NULL
 ) {
+  type <- migrate_atlas_type(type)
   type <- match.arg(type, atlas_types())
 
   validate_ggseg_atlas_inputs(atlas, core, data, type)
@@ -143,8 +144,19 @@ is_cerebellar_atlas <- function(x) {
 
 #' @rdname is_ggseg_atlas
 #' @export
+is_white_matter_atlas <- function(x) {
+  inherits(x, "white_matter_atlas") && validate_ggseg_atlas(x)
+}
+
+#' @rdname is_ggseg_atlas
+#' @export
 is_wm_atlas <- function(x) {
-  inherits(x, "wm_atlas") && validate_ggseg_atlas(x)
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "is_wm_atlas()",
+    "is_white_matter_atlas()"
+  )
+  is_white_matter_atlas(x)
 }
 
 #' @rdname is_ggseg_atlas
@@ -688,7 +700,7 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
       "{.arg data} must be a {.cls ggseg_atlas_data} object.",
       "i" = "Use {.fn ggseg_data_cortical}, {.fn ggseg_data_subcortical},
       {.fn ggseg_data_tract}, {.fn ggseg_data_cerebellar}, or
-      {.fn ggseg_data_wm}."
+      {.fn ggseg_data_white_matter}."
     ))
   }
 
@@ -703,6 +715,27 @@ validate_ggseg_atlas_inputs <- function(atlas, core, data, type) {
 
   invisible()
 }
+
+#' Repair a legacy spelling of an atlas `type`
+#'
+#' `wm` was renamed `white_matter` in 0.1.0: the abbreviation reads as jargon
+#' next to `tract`, and the distinction a reader most needs to make is exactly
+#' the one `wm` hides. No published atlas carried the old spelling -- all 109
+#' objects were read to check -- so this exists for a build in progress and
+#' for anyone who wrote the string by hand.
+#' @noRd
+migrate_atlas_type <- function(type) {
+  if (!identical(as.character(type), "wm")) {
+    return(type)
+  }
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    I('`type = "wm"`'),
+    I('`type = "white_matter"`')
+  )
+  "white_matter"
+}
+
 
 #' Abort when `core$label` is not unique
 #'
@@ -953,7 +986,8 @@ new_ggseg_atlas <- function(
     schema = atlas_schema_version()
   )
   # The validator computes `type` from the class, and S7 runs it while a
-  # two-level subclass -- `wm_atlas` under `subcortical_atlas` -- still carries
+  # two-level subclass -- `white_matter_atlas` under `subcortical_atlas` --
+  # carries
   # its parent, so the type it checks against is the parent's and a wm atlas
   # with a subcortical payload passes. Revalidating the finished object closes
   # that, for this subclass and any added later.
